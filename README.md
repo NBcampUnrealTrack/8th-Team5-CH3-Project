@@ -31,6 +31,7 @@
 * **개발 도구:** 언리얼 엔진 (5.5.4), Visual Studio, Rider
 * **코딩 컨벤션:** [Epic C++ Coding Standard](https://dev.epicgames.com/documentation/unreal-engine/epic-cplusplus-coding-standard-for-unreal-engine)
 * **팀 깃허브:** [GitHub Repository](https://github.com/NbcampUnreal/8th-Team5-CH3-Project)
+* **팀 Trello:** [Trello Link](https://trello.com/b/Fl8u6NBN/5jounrealteamproject)
 
 ### 👥 역할 분배
 
