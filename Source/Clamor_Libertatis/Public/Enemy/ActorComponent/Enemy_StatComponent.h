@@ -5,6 +5,20 @@
 #include "Enemy_StatComponent.generated.h"
 
 
+USTRUCT()
+struct FEnemyStat
+{
+	GENERATED_BODY()
+	
+	float HP;
+	float Attack_Damage;
+	float SightRadius;
+	float LoseSightRadius;
+	float PeripheralVisionAngleDegrees;
+	float SightConfig_MaxAge;
+};
+
+
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class CLAMOR_LIBERTATIS_API UEnemy_StatComponent : public UActorComponent
 {
@@ -13,15 +27,13 @@ class CLAMOR_LIBERTATIS_API UEnemy_StatComponent : public UActorComponent
 public:
 	UEnemy_StatComponent();
 	
-	void InitializeEnemyStat();
-	FORCEINLINE float GetEnemyHP() const {return HP;}
-	FORCEINLINE float GetEnemyAttack_Damage() const {return Attack_Damage;}
+	void InitializeStat();
+	FORCEINLINE const FEnemyStat& GetEnemyStat() const {return EnemyStat;}
 protected:
 	virtual void BeginPlay() override;
 	
 #pragma region EnemyStat
-	float HP;
-	float Attack_Damage;
+	FEnemyStat EnemyStat;
 #pragma endregion 
 #pragma region DataTable
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataTable")

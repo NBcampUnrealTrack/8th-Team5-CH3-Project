@@ -14,11 +14,12 @@ class CLAMOR_LIBERTATIS_API ABaseEnemy : public ACharacter
 
 public:
 	ABaseEnemy();
+	
+	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
 protected:
 	virtual void BeginPlay() override;
 	
 	void EquipWeapon();
-	void InitializedStat();
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;
