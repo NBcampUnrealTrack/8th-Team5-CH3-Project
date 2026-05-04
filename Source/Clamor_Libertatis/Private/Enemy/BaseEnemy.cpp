@@ -1,6 +1,7 @@
 #include "Enemy/BaseEnemy.h"
 
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
+#include "Enemy/AIController/Enemy_AIController.h"
 #include "Enemy/E_Weapon/Enemy_BaseWeapon.h"
 
 
@@ -17,7 +18,15 @@ void ABaseEnemy::BeginPlay()
 	Super::BeginPlay();
 	
 	EquipWeapon();
-	InitializedStat();
+	if (Enemy_StatComp)
+	{
+		UE_LOG(LogTemp,Warning,TEXT("Initialized Stat"));
+		Enemy_StatComp->InitializeStat();
+	}
+	if (AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController()))
+	{
+		AIC->InitializeAIPerceptionComponent();
+	}
 }
 
 void ABaseEnemy::Tick(float DeltaTime)
@@ -37,14 +46,5 @@ void ABaseEnemy::EquipWeapon()
 			Enemy_WeaponInst->AttachToComponent(GetMesh(),AttachmentTransformRules,TEXT("WeaponSocket"));
 			UE_LOG(LogTemp,Warning,TEXT("Enemy Weapon Initialized"));
 		}
-	}
-}
-
-void ABaseEnemy::InitializedStat()
-{
-	if (Enemy_StatComp)
-	{
-		Enemy_StatComp->InitializeEnemyStat();
-		UE_LOG(LogTemp,Warning,TEXT("Enemy HP: %f, Att : %f"),Enemy_StatComp->GetEnemyHP(), Enemy_StatComp->GetEnemyAttack_Damage());
 	}
 }
