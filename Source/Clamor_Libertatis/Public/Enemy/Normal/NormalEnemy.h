@@ -10,17 +10,9 @@ class CLAMOR_LIBERTATIS_API ANormalEnemy : public ABaseEnemy
 	GENERATED_BODY()
 
 public:
-	
 	ANormalEnemy();
-
 protected:
-	
 	virtual void BeginPlay() override;
-
 public:
-	
 	virtual void Tick(float DeltaTime) override;
-
-	
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 };
