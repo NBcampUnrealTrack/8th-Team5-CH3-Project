@@ -1,6 +1,9 @@
 #include "Enemy/AIController/Enemy_AIController.h"
 
+#include "Enemy/BaseEnemy.h"
+#include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Perception/AIPerceptionComponent.h"
+#include "Perception/AIPerceptionTypes.h"
 #include "Perception/AISenseConfig_Sight.h"
 
 
@@ -10,24 +13,17 @@ AEnemy_AIController::AEnemy_AIController()
 	
 	AIPerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
 	Sight_Config = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight_Config"));
-	Sight_Config->SightRadius = 800.f;
-	Sight_Config->LoseSightRadius = 1000.f;
-	Sight_Config->PeripheralVisionAngleDegrees = 180.f;
-	Sight_Config->SetMaxAge(5.f);
-	
-	Sight_Config->DetectionByAffiliation.bDetectEnemies = true;
-	Sight_Config->DetectionByAffiliation.bDetectFriendlies = true;
-	Sight_Config->DetectionByAffiliation.bDetectNeutrals = true;
-	
-	AIPerceptionComp->ConfigureSense(*Sight_Config);
-	AIPerceptionComp->RequestStimuliListenerUpdate();
-	AIPerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this,&AEnemy_AIController::OnTargetPerceived);
 }
 
 
 void AEnemy_AIController::BeginPlay()
 {
 	Super::BeginPlay();
+}
+
+void AEnemy_AIController::OnPossess(APawn* InPawn)
+{
+	Super::OnPossess(InPawn);
 }
 
 void AEnemy_AIController::Tick(float DeltaTime)
@@ -53,5 +49,25 @@ void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 	}
 }
 
-
+void AEnemy_AIController::InitializeAIPerceptionComponent()
+{
+	if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(GetPawn()))
+	{
+		if (Enemy->GetEnemyStatComp())
+		{
+			Sight_Config->SightRadius = Enemy->GetEnemyStatComp()->GetEnemyStat().SightRadius;
+			Sight_Config->LoseSightRadius = Enemy->GetEnemyStatComp()->GetEnemyStat().LoseSightRadius;
+			Sight_Config->PeripheralVisionAngleDegrees = Enemy->GetEnemyStatComp()->GetEnemyStat().PeripheralVisionAngleDegrees;
+			Sight_Config->SetMaxAge(Enemy->GetEnemyStatComp()->GetEnemyStat().SightConfig_MaxAge);
+	
+			Sight_Config->DetectionByAffiliation.bDetectEnemies = true;
+			Sight_Config->DetectionByAffiliation.bDetectFriendlies = true;
+			Sight_Config->DetectionByAffiliation.bDetectNeutrals = true;
+			
+			AIPerceptionComp->ConfigureSense(*Sight_Config);
+			AIPerceptionComp->RequestStimuliListenerUpdate();
+			AIPerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this,&AEnemy_AIController::OnTargetPerceived);
+		}
+	}
+}
 
