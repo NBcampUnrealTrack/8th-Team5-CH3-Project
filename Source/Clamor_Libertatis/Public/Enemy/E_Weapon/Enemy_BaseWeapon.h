@@ -12,6 +12,10 @@ public:
 	AEnemy_BaseWeapon();
 protected:
 	virtual void BeginPlay() override;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Mesh")
+	TObjectPtr<USceneComponent> SceneComp;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Mesh")
+	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
 public:
 	virtual void Tick(float DeltaTime) override;
 };
