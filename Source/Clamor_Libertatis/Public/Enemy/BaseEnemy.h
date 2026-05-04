@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "BaseEnemy.generated.h"
 
+class UEnemy_StatComponent;
 class AEnemy_BaseWeapon;
 
 UCLASS()
@@ -17,11 +18,14 @@ protected:
 	virtual void BeginPlay() override;
 	
 	void EquipWeapon();
+	void InitializedStat();
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;
 	UPROPERTY()
 	TObjectPtr<AEnemy_BaseWeapon> Enemy_WeaponInst;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="ActorComponent")
+	TObjectPtr<UEnemy_StatComponent> Enemy_StatComp;
 public:
 	virtual void Tick(float DeltaTime) override;
 };
