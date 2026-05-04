@@ -4,7 +4,6 @@
 
 AEnemy_AIController::AEnemy_AIController()
 {
-	
 	PrimaryActorTick.bCanEverTick = true;
 }
 
@@ -12,7 +11,6 @@ AEnemy_AIController::AEnemy_AIController()
 void AEnemy_AIController::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 
