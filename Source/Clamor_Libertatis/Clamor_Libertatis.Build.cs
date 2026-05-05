@@ -18,6 +18,7 @@ PublicDependencyModuleNames.AddRange(new string[]
     "AIModule",
     "AnimGraphRuntime"
 });
+
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
 		// Uncomment if you are using Slate UI

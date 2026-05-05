@@ -19,16 +19,21 @@ void UEnemy_StatComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void UEnemy_StatComponent::InitializeEnemyStat()
+void UEnemy_StatComponent::InitializeStat()
 {
 	if (!DT_EnemyRowHandle.IsNull())
 	{
-		const static FString ContextString = "Initialized Stat by Row";
-		if (FBaseEnemyStat* EnemyStat = DT_EnemyRowHandle.GetRow<FBaseEnemyStat>(ContextString))
+		const static FString ContextString = "Initialized EnemyStat";
+		if (FBaseEnemyStat* EnemyStats = DT_EnemyRowHandle.GetRow<FBaseEnemyStat>(ContextString))
 		{
-			HP = EnemyStat->Enemy_HP;
-			Attack_Damage = EnemyStat->Enemy_AttackDamage;
-			UE_LOG(LogTemp,Warning,TEXT("Initialized Enemy Stat"));
+			EnemyStat.HP = EnemyStats->Enemy_HP;
+			EnemyStat.Attack_Damage = EnemyStats->Enemy_AttackDamage;
+			EnemyStat.SightRadius = EnemyStats->Enemy_SightRadius;
+			EnemyStat.LoseSightRadius = EnemyStats->Enemy_LoseSightRadius;
+			EnemyStat.PeripheralVisionAngleDegrees = EnemyStats->Enemy_PeripheralVisionAngleDegrees;
+			EnemyStat.SightConfig_MaxAge = EnemyStats->Enemy_SightConfig_MaxAge;
+			UE_LOG(LogTemp,Warning,TEXT("HP: %f, Attack Damage : %f"),EnemyStat.HP, EnemyStat.Attack_Damage);
 		}
 	}
+	
 }
