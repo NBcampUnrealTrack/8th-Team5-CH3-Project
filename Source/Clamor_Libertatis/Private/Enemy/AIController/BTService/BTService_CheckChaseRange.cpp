@@ -28,6 +28,7 @@ void UBTService_CheckChaseRange::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 		else
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"),false);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"),false);
 		}
 	}
 	
