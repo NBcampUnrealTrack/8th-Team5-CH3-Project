@@ -16,7 +16,8 @@ PublicDependencyModuleNames.AddRange(new string[]
     "InputCore",
     "EnhancedInput",
     "AIModule",
-    "AnimGraphRuntime"
+    "AnimGraphRuntime",
+	"UMG"
 });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
