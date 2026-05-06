@@ -52,12 +52,12 @@ void AStageGameModeBase::BeginPlay()
 }
 
 // Binding
-/*void AStageGameModeBase::HandleStageResult()
+void AStageGameModeBase::HandleStageResult()
 {
     // 적 캐릭터 사망 조건 확인
     // 사망 시, 게임 승리로 간주 후 이동
 
     // 플레이어 사망 조건 확인
     // 사망시 게임 오버
-}*/
+}
 
