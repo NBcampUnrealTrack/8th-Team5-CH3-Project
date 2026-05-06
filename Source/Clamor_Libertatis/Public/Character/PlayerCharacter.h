@@ -1,4 +1,4 @@
-//PlayerCharacter.h
+ï»¿//PlayerCharacter.h
 
 #pragma once
 
@@ -20,19 +20,20 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// Ä«¸Ş¶ó, ½ºÇÁ¸µ¾Ï ÄÄÆ÷³ÍÆ® Ãß°¡
+	// ì¹´ë©”ë¼, ìŠ¤í”„ë§ì•” ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComp;
 
-	// Ä³¸¯ÅÍ Çàµ¿ ÀÔ·Â
+	// ìºë¦­í„° í–‰ë™ ì…ë ¥
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
 	UFUNCTION()
@@ -46,7 +47,7 @@ public:
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& value);
 
-	// Ä³¸¯ÅÍ ¼Óµµ
+	// ìºë¦­í„° ì†ë„
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")

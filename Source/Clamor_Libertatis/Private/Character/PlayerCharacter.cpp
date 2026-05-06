@@ -1,4 +1,4 @@
-//PlayerCharacter.cpp
+ï»¿//PlayerCharacter.cpp
 
 #include "Character/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
@@ -11,7 +11,7 @@ APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// ½ºÇÁ¸µ¾Ï, Ä«¸Ş¶ó ÄÄÆ÷³ÍÆ® Ãß°¡
+	// ìŠ¤í”„ë§ì•”, ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 
@@ -23,13 +23,13 @@ APlayerCharacter::APlayerCharacter()
 	SpringArmComp->bUsePawnControlRotation = true;
 	CameraComp->bUsePawnControlRotation = false;
 
-    // Ä³¸¯ÅÍ ÀÌµ¿ ¼Óµµ ¼³Á¤
+    // ìºë¦­í„° ì´ë™ ì†ë„ ì„¤ì •
     NormalSpeed = 500.0f;
     SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
-    // Ä³¸¯ÅÍ È¸Àü ¼³Á¤
+    // ìºë¦­í„° íšŒì „ ì„¤ì •
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
     SpringArmComp->bUsePawnControlRotation = true;
@@ -40,8 +40,17 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    
 }
+
+void APlayerCharacter::OnConstruction(const FTransform& Transform)
+{
+    if (GetCharacterMovement())
+    {
+        SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+    }
+}
+
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
