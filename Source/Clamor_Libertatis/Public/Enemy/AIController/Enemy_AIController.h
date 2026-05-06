@@ -24,6 +24,12 @@ protected:
 	TObjectPtr<UAIPerceptionComponent> AIPerceptionComp;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AIPerception")
 	TObjectPtr<UAISenseConfig_Sight> Sight_Config;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AIComponent")
+	TObjectPtr<UBlackboardData> BB_BaseEnemy;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AIComponent")
+	TObjectPtr<UBehaviorTree> BT_BaseEnemy;
+	
+	
 	UFUNCTION()
 	void OnTargetPerceived(AActor* Actor ,FAIStimulus Stimulus);
 public:

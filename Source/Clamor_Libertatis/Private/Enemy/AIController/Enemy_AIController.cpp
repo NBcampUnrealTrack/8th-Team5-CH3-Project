@@ -15,7 +15,6 @@ AEnemy_AIController::AEnemy_AIController()
 	Sight_Config = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight_Config"));
 }
 
-
 void AEnemy_AIController::BeginPlay()
 {
 	Super::BeginPlay();
@@ -32,7 +31,6 @@ void AEnemy_AIController::Tick(float DeltaTime)
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->SightRadius,32,FColor::Green);
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->LoseSightRadius,32,FColor::Red);
 }
-
 
 void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 {
@@ -67,6 +65,10 @@ void AEnemy_AIController::InitializeAIPerceptionComponent()
 			AIPerceptionComp->ConfigureSense(*Sight_Config);
 			AIPerceptionComp->RequestStimuliListenerUpdate();
 			AIPerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this,&AEnemy_AIController::OnTargetPerceived);
+		}
+		if (RunBehaviorTree(BT_BaseEnemy))
+		{
+			UE_LOG(LogTemp,Warning,TEXT("Enemy BehaviorTree Run"));
 		}
 	}
 }
