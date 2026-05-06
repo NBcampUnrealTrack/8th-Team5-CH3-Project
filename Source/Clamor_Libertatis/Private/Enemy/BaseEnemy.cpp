@@ -2,6 +2,7 @@
 
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/AIController/Enemy_AIController.h"
+#include "Enemy/Animations/BaseEnemyAnimInst.h"
 #include "Enemy/E_Weapon/Enemy_BaseWeapon.h"
 
 
@@ -27,6 +28,15 @@ void ABaseEnemy::BeginPlay()
 	{
 		AIC->InitializeAIPerceptionComponent();
 	}
+	if (GetMesh()->GetAnimInstance())
+	{
+		AnimInst = Cast<UBaseEnemyAnimInst>(GetMesh()->GetAnimInstance());
+	}
+}
+
+void ABaseEnemy::AttackToPlayer()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
 }
 
 void ABaseEnemy::Tick(float DeltaTime)
