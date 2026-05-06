@@ -65,9 +65,17 @@ public:
 	UFUNCTION()
 	void ShowDeathUI();
 	UFUNCTION()
+	void HideDeathUI();
+	UFUNCTION()
+	void HideVictoryUI();
+	UFUNCTION()
 	void ShowVictoryUI();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void ShowMainMenu();
-	UFUNCTION()
-	void HideMainMenu();
+	UFUNCTION(BlueprintCallable)
+	void ContinueGame();
+	UFUNCTION(BlueprintCallable)
+	void RestartGame();
+	UFUNCTION(BlueprintCallable)
+	void QuitGame();
 };

@@ -1,6 +1,8 @@
 ﻿#include "Character/BasePlayerController.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetSystemLibrary.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -32,19 +34,7 @@ void ABasePlayerController::BeginPlay()
 		HUDWidgetRef->AddToViewport(0);
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("TEST: Death UI 실행"));
-
-	SetGameState(EGameState::Death);
-
-	FTimerHandle TimerHandle;
-	GetWorld()->GetTimerManager().SetTimer(TimerHandle, [this]()
-		{
-			UE_LOG(LogTemp, Warning, TEXT("TEST: Victory UI 실행"));
-			SetGameState(EGameState::Victory);
-		}, 3.0f, false);
 }
-
-
 
 void ABasePlayerController::SetGameState(EGameState NewState)
 {
@@ -94,6 +84,14 @@ void ABasePlayerController::ShowDeathUI()
 	}
 }
 
+void ABasePlayerController::HideDeathUI()
+{
+	if (DeathWidgetRef)
+	{
+		DeathWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+	}
+}
+
 void ABasePlayerController::ShowVictoryUI()
 {
 	if (!VictoryWidgetRef && VictoryWidgetClass)
@@ -110,11 +108,20 @@ void ABasePlayerController::ShowVictoryUI()
 	}
 }
 
+void ABasePlayerController::HideVictoryUI()
+{
+	if (VictoryWidgetRef)
+	{
+		VictoryWidgetRef->SetVisibility(ESlateVisibility::Collapsed); // Hidden보다 Collapsed가 성능상 이점이 있을 수 있습니다.
+	}
+}
+
 void ABasePlayerController::ShowMainMenu()
 {
 	if (!MainMenuWidgetRef && MainMenuWidgetClass)
 	{
 		MainMenuWidgetRef = CreateWidget<UUserWidget>(this, MainMenuWidgetClass);
+
 		if (MainMenuWidgetRef)
 		{
 			MainMenuWidgetRef->AddToViewport(30);
@@ -126,17 +133,45 @@ void ABasePlayerController::ShowMainMenu()
 		MainMenuWidgetRef->SetVisibility(ESlateVisibility::Visible);
 	}
 
-	SetInputMode(FInputModeUIOnly());
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+
+	FInputModeUIOnly Mode;
+	Mode.SetWidgetToFocus(MainMenuWidgetRef->TakeWidget());
+	SetInputMode(Mode);
+
 	bShowMouseCursor = true;
 }
 
-void ABasePlayerController::HideMainMenu()
+void ABasePlayerController::ContinueGame()
 {
 	if (MainMenuWidgetRef)
 	{
 		MainMenuWidgetRef->SetVisibility(ESlateVisibility::Hidden);
 	}
 
-	SetInputMode(FInputModeGameOnly());
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+
+	FInputModeGameOnly Mode;
+	SetInputMode(Mode);
+
 	bShowMouseCursor = false;
+}
+
+void ABasePlayerController::RestartGame()
+{
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+	FInputModeGameOnly Mode;
+	SetInputMode(Mode);
+	bShowMouseCursor = false;
+	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+}
+
+void ABasePlayerController::QuitGame()
+{
+	UKismetSystemLibrary::QuitGame(
+		this,
+		this,
+		EQuitPreference::Quit,
+		false
+	);
 }
