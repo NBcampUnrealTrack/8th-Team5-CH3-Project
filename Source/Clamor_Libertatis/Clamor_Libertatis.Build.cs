@@ -8,8 +8,17 @@ public class Clamor_Libertatis : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AnimGraphRuntime","AIModule" });
-
+PublicDependencyModuleNames.AddRange(new string[]
+{
+    "Core",
+    "CoreUObject",
+    "Engine",
+    "InputCore",
+    "EnhancedInput",
+    "AIModule",
+    "AnimGraphRuntime",
+	"UMG"
+});
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 

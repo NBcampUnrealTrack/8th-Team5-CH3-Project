@@ -4,24 +4,23 @@
 #include "Gamemode/StageGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
+#include "Enemy/BaseEnemy.h"
+#include "Combat/HealthComponent.h"
+#include "Combat/TestCharacter.h"
 
 
-void AStageGameModeBase::PostLogin(APlayerController* NewPlayer)
+// 게임 승리
+// Level에 배치된 단일 적 가정
+void AStageGameModeBase::OnEnemyDeath()
 {
-    Super::PostLogin(NewPlayer);
+    CurrentStatus = ECheckStageResult::Win;
+}
 
-    // Player & Enemy 사망 이벤트에 대해서 바인딩
-
-    /**
-     *
-     *  적 리스트 가져오기
-     *
-        TArray<AActor*> OutEnemies;
-        UGameplayStatics::GetAllActorsOfClass(GetWorld(), AEnemyDummy::StaticClass(), OutEnemies);
-     *
-     **/
-
-    // 캐릭터 & 적 사망시 승리 & 종료 조건 체크하도록 바인딩 처리.
+// 플레이어 한명, 사망 가정
+// 게임 오버,
+void AStageGameModeBase::OnPlayerDeath()
+{
+    CurrentStatus = ECheckStageResult::Defeat;
 }
 
 void AStageGameModeBase::BeginPlay()
@@ -29,6 +28,27 @@ void AStageGameModeBase::BeginPlay()
     Super::BeginPlay();
 
     CachedGameState = GetGameState<AGameStateBase>();
+    CurrentStatus = ECheckStageResult::NotEnd;
+
+    // 런타임 Spawn시 별도로 바인딩이 필요함.
+    TArray<AActor*> Enemies;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), ABaseEnemy::StaticClass(), Enemies);
+    for (AActor* Actor : Enemies)
+    {
+        if (UHealthComponent* HC = Actor->GetComponentByClass<UHealthComponent>())
+        {
+            HC->OnDeath.AddDynamic(this, &AStageGameModeBase::OnEnemyDeath);
+        }
+    }
+
+    // TODO:: TestCharacter가 아니라 플레이어 캐릭터로 교체
+    if (AActor* Player = UGameplayStatics::GetActorOfClass(GetWorld(), ATestCharacter::StaticClass()))
+    {
+        if (UHealthComponent* HC = Player->GetComponentByClass<UHealthComponent>())
+        {
+            HC->OnDeath.AddDynamic(this, &AStageGameModeBase::OnPlayerDeath);
+        }
+    }
 }
 
 // Binding

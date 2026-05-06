@@ -2,8 +2,18 @@
 
 
 #include "Gamemode/LobbyGameModeBase.h"
+#include "Gamemode/LoreManagerComponent.h"
 #include "GameFramework/PlayerController.h"
+#include "Kismet/GameplayStatics.h"
 
+ALobbyGameModeBase::ALobbyGameModeBase()
+{
+    LoreManagerComp = CreateDefaultSubobject<ULoreManagerComponent>(TEXT("LoreManagerComp"));
+    
+    if (LoreManagerComp) {
+        UE_LOG(LogTemp, Warning, TEXT("LoreManager initialized"));
+    }
+}
 
 void ALobbyGameModeBase::BeginPlay()
 {
@@ -27,7 +37,6 @@ void ALobbyGameModeBase::BeginPlay()
 
 void ALobbyGameModeBase::LobbyLoop()
 {
-    // 로비관련 UI 활성화
 }
 
 void ALobbyGameModeBase::ReadyComplete()
@@ -56,9 +65,21 @@ void ALobbyGameModeBase::ReadyComplete()
 void ALobbyGameModeBase::LookAround()
 {
     UE_LOG(LogTemp, Warning, TEXT("Called Look Around"));
+
+    if (LoreManagerComp)
+    {
+        FText SelectedLore = LoreManagerComp->GetRandomLoreText(0);
+        UE_LOG(LogTemp, Warning, TEXT("Selected Lore: %s"), *SelectedLore.ToString());
+    }
 }
 
 void ALobbyGameModeBase::GotoBattle()
 {
+    // TODO:: 고쳐야 할 코드
+    // Battle 장소로 이동할 때, 연출과 동작 방식 등을 아직 결정하지 못함.
+    // 지연 로딩을 통해 느낌만 부여함.
 
+
+
+    FTimerHandle BattleTimerHandle;
 }

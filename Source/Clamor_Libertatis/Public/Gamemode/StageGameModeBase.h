@@ -7,6 +7,7 @@
 #include "StageGameModeBase.generated.h"
 
 class AGameStateBase;
+class ABaseEnemy;
 
 
 
@@ -21,17 +22,14 @@ enum class ECheckStageResult : uint8
 
 
 /**
- * 
+ *
  */
 UCLASS()
 class  AStageGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
 
-
-
 protected:
-	virtual void PostLogin(APlayerController* NewPlayer) override;
 	virtual void BeginPlay() override;
 
 private:
@@ -39,8 +37,16 @@ private:
 	UFUNCTION()
 	void HandleStageResult();
 
-	UPROPERTY()
-	TObjectPtr<class AGameStateBase> CachedGameState;	
+	UFUNCTION()
+	void OnEnemyDeath();
 
-	
+	UFUNCTION()
+	void OnPlayerDeath();
+
+	UPROPERTY()
+	TObjectPtr<class AGameStateBase> CachedGameState;
+
+	ECheckStageResult CurrentStatus;
+
+
 };
