@@ -14,6 +14,9 @@ class CLAMOR_LIBERTATIS_API UBaseEnemyAnimInst : public UAnimInstance
 public:
 	virtual void NativeInitializeAnimation() override;
 	virtual void NativeUpdateAnimation(float DeltaSeconds) override;
+	
+	void PlayAM_Attack_Sweep();
+	void PlayAM_JumpAttack();
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Stat")
 	float Enemy_GroundSpeed;
