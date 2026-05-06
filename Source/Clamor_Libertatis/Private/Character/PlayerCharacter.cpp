@@ -40,8 +40,17 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    
 }
+
+void APlayerCharacter::OnConstruction(const FTransform& Transform)
+{
+    if (GetCharacterMovement())
+    {
+        SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+    }
+}
+
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
