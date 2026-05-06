@@ -1,5 +1,6 @@
 #include "Enemy/AIController/Enemy_AIController.h"
 
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/BaseEnemy.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -39,10 +40,12 @@ void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Player 감지 성공"));
+			GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"),Actor);
 		}
 		else
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Player 감지 실패"));
+			GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"),nullptr);
 		}
 	}
 }
