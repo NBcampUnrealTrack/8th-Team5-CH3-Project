@@ -6,6 +6,11 @@
 #include "Components/ActorComponent.h"
 #include "CombatComponent.generated.h"
 
+class ACharacter;
+class AWeaponBase;
+class UHealthComponent;
+class UAnimMontage;
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
@@ -15,35 +20,61 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 
-	UFUNCTION()
-	void BasicAttack();
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Combat")
-	TObjectPtr<UAnimMontage> BasicAttackAnimMontage;
-
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	void StartAttack();
+public:
+
 	UFUNCTION()
-	void EndAttack(FName NotifyName);
+	void BasicAttack();//플레이어입력받아 공격시작/콤보이행
+
 	UFUNCTION()
-	void EnableCombo();
+	void EnableCombo();//콤보 입력 가능
 	UFUNCTION()
-	void CloseCombo();
+	void DisableCombo();//콤보 입력 불가
 	UFUNCTION()
-	void CheckCombo(FName NotifyName);
+	void CheckCombo();//다음공격으로 이어가는지 체크
+	UFUNCTION()
+	void EnableWeaponHitbox();
+	UFUNCTION()
+	void DisableWeaponHitbox();
+	UFUNCTION()
+	void EndAttack();
+
+	void SetCurrentWeapon(AWeaponBase* NewWeapon);
+	AWeaponBase* GetCurrentWeapon() const;
+
+	int32 GetCurrentComboIndex() const;
+	float GetCurrentAttackDamage() const;
+	float GetCurrentAttackStaminaCost() const;
+
 
 private:
 	UPROPERTY()
 	ACharacter* OwnerCharacter;
 
-	//아래로 데이터 에셋 등으로 뺄것.
-	bool bIsAttacking = false;
-	bool bIsComboEnabled = false;
-	bool bComboInputBuffered = false;
+	UPROPERTY()
+	UHealthComponent* HealthComponent;
+
+	UPROPERTY()
+    AWeaponBase* CurrentWeapon;
+
+	void StartAttack();
+
+	void JumpToComboSection(int32 InComboIndex);
+	UAnimMontage* GetCurrentAttackMontage() const;
+	int32 GetMaxComboCount() const;
+	FName GetComboSectionName(int32 InComboIndex) const;
+	
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
+	bool bIsAttacking = false;//공격 재생중
+	bool bIsComboEnabled = false;//콤보입력가능한지
+	bool bComboInputBuffered = false;//콤보입력했는지
+	bool bIsAttackEnding = false;//종료중인지
+	bool bAttackInputBufferedDuringRecovery = false;//종료 딜레이 중 입력
 	int32 ComboIndex = 0;
-	int32 MaxCombo = 3;
 
 };
