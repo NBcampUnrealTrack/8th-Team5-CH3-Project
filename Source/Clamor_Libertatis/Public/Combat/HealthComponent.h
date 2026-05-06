@@ -18,6 +18,8 @@ class CLAMOR_LIBERTATIS_API UHealthComponent : public UActorComponent
 public:	
 	UHealthComponent();
 
+
+
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
 
@@ -46,12 +48,14 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Stamina")
 	float CurrentStamina = 100.f;
 	UPROPERTY(EditAnywhere, Category="Stamina")
-	float RegenerateStaminaPerSecond = 40.f;
+	float RegenerateStaminaPerSecond = 45.f;
 	UPROPERTY(VisibleAnywhere, Category="Stamina")
-	float bIsStaminaRegenLocked = false;
+	bool bIsStaminaRegenLocked = false;
+	UPROPERTY(EditAnywhere, Category="Stamina")
+	float StaminaRegenLockTime = 1.5f;
+
 
 	FTimerHandle StaminaRegenLockHandle;
-
 
 	FOnDeath OnDeath;
 	FOnHealthChanged OnHealthChanged;

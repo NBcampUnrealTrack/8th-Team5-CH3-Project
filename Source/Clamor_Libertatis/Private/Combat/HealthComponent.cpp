@@ -6,7 +6,7 @@
 
 UHealthComponent::UHealthComponent()
 {
-	PrimaryComponentTick.bCanEverTick = false;
+	PrimaryComponentTick.bCanEverTick = true;
 	CurrentHealth = MaxHealth;
 	bDead = false;
 
@@ -48,19 +48,35 @@ void UHealthComponent::Heal(float Amount)
 
 float UHealthComponent::GetHealthRatio() const
 {
-	return 0.0f;
+	if (MaxHealth <= 0.0f)
+	{
+		return 0.0f;
+	}
+
+	return CurrentHealth / MaxHealth;
 }
 
 bool UHealthComponent::ConsumeStamina(float Amount)
 {
 	//소울류 게임은 스테미너가 1이라도있으면 사용가능
 	bool b = CurrentStamina > 0.f;
-	CurrentStamina = FMath::Clamp(CurrentStamina - Amount, 0.f, MaxHealth);
+
+
+	CurrentStamina = FMath::Clamp(CurrentStamina - Amount, 0.f, MaxStamina);
 	OnStaminaChanged.Broadcast(CurrentStamina, MaxStamina);
-	if (CurrentStamina <= 0.f) {
-		//1초동안 스테미너 회복이 제한됨.
-		StartStaminaLock();
-		GetWorld()->GetTimerManager().SetTimer(StaminaRegenLockHandle, this, &UHealthComponent::UnlockStaminaRegen, 1, false);
+
+	GEngine->AddOnScreenDebugMessage(0, 1.f, FColor::Green, FString::Printf(TEXT("Stamina:%f"), CurrentStamina));
+
+	StartStaminaLock();
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			StaminaRegenLockHandle,
+			this,
+			&UHealthComponent::UnlockStaminaRegen,
+			StaminaRegenLockTime,
+			false
+		);
 	}
 	return b;
 }
@@ -76,8 +92,11 @@ void UHealthComponent::BeginPlay()
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (bIsStaminaRegenLocked == false)
+	{
+		RegenStamina(DeltaTime);
+	}
 }
-
 
 void UHealthComponent::StartStaminaLock()
 {
@@ -93,5 +112,6 @@ void UHealthComponent::RegenStamina(float DeltaTime)
 {
 	CurrentStamina = FMath::Clamp(CurrentStamina + (RegenerateStaminaPerSecond * DeltaTime), 0.f, MaxStamina);
 	OnStaminaChanged.Broadcast(CurrentStamina, MaxStamina);
+	GEngine->AddOnScreenDebugMessage(0, 1.f, FColor::Green, FString::Printf(TEXT("Stamina:%f"), CurrentStamina));
 }
 
