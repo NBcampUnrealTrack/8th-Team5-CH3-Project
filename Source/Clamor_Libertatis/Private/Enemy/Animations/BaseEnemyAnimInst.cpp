@@ -33,3 +33,15 @@ void UBaseEnemyAnimInst::PlayAM_JumpAttack()
 	UE_LOG(LogTemp,Warning,TEXT("Play AnimMontage JumpAttack"));
 	Montage_Play(AM_JumpAttack);
 }
+
+void UBaseEnemyAnimInst::PlayAM_SingleAttack()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Play AnimMontage SingleAttack"));
+	Montage_Play(AM_SingleAttack);
+}
+
+void UBaseEnemyAnimInst::PlayAM_3ComboAttack()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Play AnimMontage 3ComboAttack"));
+	Montage_Play(AM_3ComboAttack);
+}
