@@ -11,6 +11,8 @@ class CLAMOR_LIBERTATIS_API ABossEnemy : public ABaseEnemy
 
 public:
 	ABossEnemy();
+	
+	virtual void AttackToPlayer() override;
 protected:
 	virtual void BeginPlay() override;
 public:

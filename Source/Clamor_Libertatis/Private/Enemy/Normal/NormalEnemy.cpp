@@ -7,6 +7,11 @@ ANormalEnemy::ANormalEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void ANormalEnemy::AttackToPlayer()
+{
+	Super::AttackToPlayer();
+}
+
 
 void ANormalEnemy::BeginPlay()
 {

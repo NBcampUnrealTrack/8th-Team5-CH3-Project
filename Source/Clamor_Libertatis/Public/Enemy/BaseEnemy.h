@@ -16,6 +16,8 @@ public:
 	ABaseEnemy();
 	
 	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
+	
+	virtual void AttackToPlayer();
 protected:
 	virtual void BeginPlay() override;
 	

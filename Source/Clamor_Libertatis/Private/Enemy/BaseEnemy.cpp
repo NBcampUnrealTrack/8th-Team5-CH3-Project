@@ -29,6 +29,11 @@ void ABaseEnemy::BeginPlay()
 	}
 }
 
+void ABaseEnemy::AttackToPlayer()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
+}
+
 void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

@@ -7,6 +7,11 @@ ABossEnemy::ABossEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 }
 
+void ABossEnemy::AttackToPlayer()
+{
+	Super::AttackToPlayer();
+}
+
 
 void ABossEnemy::BeginPlay()
 {
