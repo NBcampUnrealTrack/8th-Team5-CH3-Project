@@ -2,6 +2,7 @@
 
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/AIController/Enemy_AIController.h"
+#include "Enemy/Animations/BaseEnemyAnimInst.h"
 #include "Enemy/E_Weapon/Enemy_BaseWeapon.h"
 
 
@@ -26,6 +27,10 @@ void ABaseEnemy::BeginPlay()
 	if (AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController()))
 	{
 		AIC->InitializeAIPerceptionComponent();
+	}
+	if (GetMesh()->GetAnimInstance())
+	{
+		AnimInst = Cast<UBaseEnemyAnimInst>(GetMesh()->GetAnimInstance());
 	}
 }
 
