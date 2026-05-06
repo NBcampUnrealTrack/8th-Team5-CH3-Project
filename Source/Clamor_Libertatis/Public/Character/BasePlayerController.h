@@ -2,16 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/PlayerController.h"
+#include "Gamemode/StageGameModeBase.h" 
 #include "BasePlayerController.generated.h"
-
-UENUM(BlueprintType)
-enum class EGameState : uint8
-{
-	Room UMETA(DisplayName = "Room"),
-	Combat UMETA(DisplayName = "Combat"),
-	Victory UMETA(DisplayName = "Victory"),
-	Death UMETA(DisplayName = "Death")
-};
 
 class UInputMappingContext;
 class UInputAction;
@@ -40,42 +32,64 @@ public:
 
 
 	//UI
-	UPROPERTY(EditAnyWhere,BlueprintReadWrite,Category ="UI")
-	TSubclassOf<UUserWidget>HUDWidgetClass;
-	UPROPERTY()
-	UUserWidget* HUDWidgetRef;
-	UPROPERTY(BlueprintReadWrite, Category = "UI")
-	EGameState CurrentState;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> DeathWidgetClass;
-	UPROPERTY()
-	UUserWidget* DeathWidgetRef;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> VictoryWidgetClass;
-	UPROPERTY()
-	UUserWidget* VictoryWidgetRef;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-	UPROPERTY()
-	UUserWidget* MainMenuWidgetRef;
 
-
-	UFUNCTION(BlueprintCallable)
-	void SetGameState(EGameState NewState);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void SetStageState(ECheckStageResult NewState);
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowGameStartUI();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void HideGameStartUI();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowLobbyUI();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void HideLobbyUI();
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowDeathUI();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void HideDeathUI();
-	UFUNCTION()
-	void HideVictoryUI();
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowVictoryUI();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void HideVictoryUI();
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMainMenu();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ContinueGame();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void RestartGame();
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
+
+protected:
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> GameStartWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UUserWidget> GameStartWidgetRef;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> HUDWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> LobbyWidgetClass;  
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> DeathWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> VictoryWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UUserWidget> MainMenuWidgetClass;
+private:
+	UPROPERTY()
+	TObjectPtr<UUserWidget> HUDWidgetRef;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> LobbyWidgetRef;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> DeathWidgetRef;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> VictoryWidgetRef;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> MainMenuWidgetRef;
+
+	
 };

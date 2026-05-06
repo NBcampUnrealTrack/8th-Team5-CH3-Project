@@ -27,45 +27,79 @@ void ABasePlayerController::BeginPlay()
 			}
 		}
 	}
-	HUDWidgetRef = CreateWidget<UUserWidget>(this, HUDWidgetClass);
-
-	if (HUDWidgetRef)
-	{
-		HUDWidgetRef->AddToViewport(0);
-	}
-
+	ShowGameStartUI();
 }
 
-void ABasePlayerController::SetGameState(EGameState NewState)
+void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 {
-	CurrentState = NewState;
-
 	if (DeathWidgetRef)
 		DeathWidgetRef->SetVisibility(ESlateVisibility::Hidden);
-
 	if (VictoryWidgetRef)
 		VictoryWidgetRef->SetVisibility(ESlateVisibility::Hidden);
 
-	switch (CurrentState)
+	switch (NewState)
 	{
-	case EGameState::Room:
+	case ECheckStageResult::NotEnd:
+		if (!HUDWidgetRef && HUDWidgetClass)
+		{
+			HUDWidgetRef = CreateWidget<UUserWidget>(this, HUDWidgetClass);
+			if (HUDWidgetRef) HUDWidgetRef->AddToViewport(0);
+		}
 		if (HUDWidgetRef)
 			HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
 		break;
 
-	case EGameState::Combat:
-		if (HUDWidgetRef)
-			HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
-		break;
-
-	case EGameState::Victory:
+	case ECheckStageResult::Win:
 		ShowVictoryUI();
 		break;
 
-	case EGameState::Death:
+	case ECheckStageResult::Defeat:
 		ShowDeathUI();
 		break;
 	}
+}
+
+void ABasePlayerController::ShowGameStartUI()
+{
+	if (!GameStartWidgetRef && GameStartWidgetClass)
+	{
+		GameStartWidgetRef = CreateWidget<UUserWidget>(this, GameStartWidgetClass);
+		if (GameStartWidgetRef) GameStartWidgetRef->AddToViewport(0);
+	}
+	if (GameStartWidgetRef)
+		GameStartWidgetRef->SetVisibility(ESlateVisibility::Visible);
+	
+	bShowMouseCursor = true;
+	FInputModeUIOnly Mode;
+	Mode.SetWidgetToFocus(GameStartWidgetRef->TakeWidget());
+	SetInputMode(Mode);
+}
+
+void ABasePlayerController::HideGameStartUI()
+{
+	if (GameStartWidgetRef)
+		GameStartWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
+	
+	bShowMouseCursor = false;
+	FInputModeGameOnly Mode;
+	SetInputMode(Mode);
+}
+
+void ABasePlayerController::ShowLobbyUI()
+{
+	if (!LobbyWidgetRef && LobbyWidgetClass)
+	{
+		LobbyWidgetRef = CreateWidget<UUserWidget>(this, LobbyWidgetClass);
+		if (LobbyWidgetRef) LobbyWidgetRef->AddToViewport(0);
+	}
+	if (LobbyWidgetRef)
+		LobbyWidgetRef->SetVisibility(ESlateVisibility::Visible);
+}
+
+void ABasePlayerController::HideLobbyUI()
+{
+	if (LobbyWidgetRef)
+		LobbyWidgetRef->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ABasePlayerController::ShowDeathUI()
