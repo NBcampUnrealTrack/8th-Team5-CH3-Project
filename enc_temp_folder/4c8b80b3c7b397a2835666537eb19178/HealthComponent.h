@@ -48,14 +48,12 @@ public:
 	UPROPERTY(VisibleAnywhere, Category="Stamina")
 	float CurrentStamina = 100.f;
 	UPROPERTY(EditAnywhere, Category="Stamina")
-	float RegenerateStaminaPerSecond = 45.f;
+	float RegenerateStaminaPerSecond = 40.f;
 	UPROPERTY(VisibleAnywhere, Category="Stamina")
 	bool bIsStaminaRegenLocked = false;
-	UPROPERTY(EditAnywhere, Category="Stamina")
-	float StaminaRegenLockTime = 1.5f;
-
 
 	FTimerHandle StaminaRegenLockHandle;
+
 
 	FOnDeath OnDeath;
 	FOnHealthChanged OnHealthChanged;
