@@ -19,4 +19,10 @@ protected:
 	float Enemy_GroundSpeed;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Instance")
 	TObjectPtr<ABaseEnemy> MyOwnerInst;
+#pragma region AnimMontage
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage")
+	TObjectPtr<UAnimMontage> AM_Attack_Sweep;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage")
+	TObjectPtr<UAnimMontage> AM_JumpAttack;
+#pragma endregion 
 };
