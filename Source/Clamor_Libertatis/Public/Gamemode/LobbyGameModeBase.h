@@ -6,6 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "LobbyGameModeBase.generated.h"
 
+class ULoreManagerComponent;
+
 /**
  * 
  */
@@ -18,6 +20,8 @@ protected:
 	virtual void BeginPlay() override;
 
 public:
+
+	ALobbyGameModeBase();
 
 	// 로비에서 할 수 있는 메뉴들을 띄움
 	void LobbyLoop();
@@ -32,5 +36,9 @@ public:
 	// 배틀로 진입함
 	UFUNCTION(BlueprintCallable, Category = "GameLogic")
 	void GotoBattle();
+
+private:
+	UPROPERTY(VisibleAnywhere, Category = "GameLogic")
+	TObjectPtr<ULoreManagerComponent> LoreManagerComp;
 	
 };
