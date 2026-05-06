@@ -4,6 +4,7 @@
 #include "GameFramework/Character.h"
 #include "BaseEnemy.generated.h"
 
+class UBaseEnemyAnimInst;
 class UEnemy_StatComponent;
 class AEnemy_BaseWeapon;
 
@@ -16,6 +17,8 @@ public:
 	ABaseEnemy();
 	
 	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
+	
+	virtual void AttackToPlayer();
 protected:
 	virtual void BeginPlay() override;
 	
@@ -27,6 +30,8 @@ protected:
 	TObjectPtr<AEnemy_BaseWeapon> Enemy_WeaponInst;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="ActorComponent")
 	TObjectPtr<UEnemy_StatComponent> Enemy_StatComp;
+	UPROPERTY()
+	TObjectPtr<UBaseEnemyAnimInst> AnimInst;
 public:
 	virtual void Tick(float DeltaTime) override;
 };

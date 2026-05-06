@@ -11,6 +11,7 @@ AEnemy_BaseWeapon::AEnemy_BaseWeapon()
 	
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComp->SetupAttachment(SceneComp);
+	StaticMeshComp->SetCollisionProfileName(TEXT("NoCollision"));
 }
 
 
