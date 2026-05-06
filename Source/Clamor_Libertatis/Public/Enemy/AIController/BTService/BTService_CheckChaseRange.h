@@ -12,4 +12,6 @@ public:
 	UBTService_CheckChaseRange();
 protected:
 	virtual void TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
+	
+	float MaxChasingDistance = 300.f;
 };
