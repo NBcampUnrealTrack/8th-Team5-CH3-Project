@@ -1,5 +1,6 @@
 #include "Enemy/BaseEnemy.h"
 
+#include "BrainComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/AIController/Enemy_AIController.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
@@ -12,7 +13,6 @@ ABaseEnemy::ABaseEnemy()
 	
 	Enemy_StatComp = CreateDefaultSubobject<UEnemy_StatComponent>(TEXT("StatComponent"));
 }
-
 
 void ABaseEnemy::BeginPlay()
 {
@@ -34,11 +34,6 @@ void ABaseEnemy::BeginPlay()
 	}
 }
 
-void ABaseEnemy::AttackToPlayer()
-{
-	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
-}
-
 void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -56,5 +51,39 @@ void ABaseEnemy::EquipWeapon()
 			Enemy_WeaponInst->AttachToComponent(GetMesh(),AttachmentTransformRules,TEXT("WeaponSocket"));
 			UE_LOG(LogTemp,Warning,TEXT("Enemy Weapon Initialized"));
 		}
+	}
+}
+
+float ABaseEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (Enemy_StatComp)
+	{
+		if (Enemy_StatComp->GetEnemyStat().SetHP(ActualDamage))
+		{
+			// Enemy is Not Dead
+		}
+		else
+		{
+			OnDead();
+		}
+	}
+	return ActualDamage;
+}
+
+void ABaseEnemy::AttackToPlayer()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
+}
+
+void ABaseEnemy::OnDead()
+{
+	UE_LOG(LogTemp,Warning,TEXT("%s Was Dead"),*GetName());
+	
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC && AIC->GetBrainComponent())
+	{
+		AIC->GetBrainComponent()->StopLogic(TEXT("Because Owner Was Dead"));
 	}
 }
