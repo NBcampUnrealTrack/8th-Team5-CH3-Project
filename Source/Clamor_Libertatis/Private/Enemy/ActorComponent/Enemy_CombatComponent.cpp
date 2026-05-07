@@ -1,9 +1,9 @@
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 
 
-
 UEnemy_CombatComponent::UEnemy_CombatComponent()
 {
+	DA_EnemyAnim = nullptr;
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
