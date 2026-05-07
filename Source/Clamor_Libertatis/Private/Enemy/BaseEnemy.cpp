@@ -84,7 +84,7 @@ void ABaseEnemy::AttackToPlayer()
 
 void ABaseEnemy::AttackHitCheck()
 {
-	
+	UE_LOG(LogTemp,Warning,TEXT("AttackHitCheckOn"));
 }
 
 void ABaseEnemy::OnDead()
