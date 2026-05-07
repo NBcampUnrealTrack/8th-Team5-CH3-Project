@@ -10,6 +10,8 @@ ABasePlayerController::ABasePlayerController()
 	, JumpAction(nullptr)
 	, LookAction(nullptr)
 	, SprintAction(nullptr)
+	, AttackAction(nullptr)
+	, DodgeAction(nullptr)
 {
 }
 
