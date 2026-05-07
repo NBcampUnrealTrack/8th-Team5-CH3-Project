@@ -20,4 +20,6 @@ struct FBaseEnemyStat : public FTableRowBase
 	float Enemy_PeripheralVisionAngleDegrees = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="BaseEnemyStat")
 	float Enemy_SightConfig_MaxAge = 0.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataAsset")
+	TObjectPtr<UPrimaryDataAsset> DA_EnemyAnim;
 };
