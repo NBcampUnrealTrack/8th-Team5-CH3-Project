@@ -17,13 +17,15 @@ USTRUCT(BlueprintType)
 struct FEnemyAttackCollision
 {
 	GENERATED_BODY()
-	
+public:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
 	EAttackCollisionShape CollisionShape;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
-	float Distance;
+	float Distance = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
-	FVector CollisionSize;
+	FVector CollisionSize = FVector::ZeroVector;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
+	float SphereRadius = 0.f;
 };
 
 
