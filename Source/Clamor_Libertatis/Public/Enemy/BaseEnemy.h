@@ -22,9 +22,10 @@ public:
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	virtual void OnDead();
 	
 	void EquipWeapon();
-	void OnDead();
+	
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;
