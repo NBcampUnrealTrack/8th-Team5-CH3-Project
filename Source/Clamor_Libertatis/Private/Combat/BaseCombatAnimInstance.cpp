@@ -73,3 +73,32 @@ void UBaseCombatAnimInstance::AnimNotify_DisableWeaponHitbox()
         Comp->DisableWeaponHitbox();
     }
 }
+
+void UBaseCombatAnimInstance::AnimNotify_UseSkill()
+{
+
+}
+
+
+
+
+void UBaseCombatAnimInstance::AnimNotify_EnableInvincible()
+{
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->SetInvincible(true);
+    }
+}
+
+void UBaseCombatAnimInstance::AnimNotify_DisableInvincible()
+{
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->SetInvincible(false);
+    }
+}
+
+void UBaseCombatAnimInstance::AnimNotify_DodgeEnd()
+{
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->EndDodge();
+    }
+}
