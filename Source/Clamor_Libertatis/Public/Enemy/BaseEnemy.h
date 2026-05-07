@@ -21,17 +21,16 @@ public:
 	FORCEINLINE UEnemy_CombatComponent* GetEnemyCombatComp() const {return Enemy_CombatComp;}
 	
 	virtual void AttackToPlayer();
+	
+	UFUNCTION(BlueprintCallable)
+	virtual void AttackHitCheck();
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
 	virtual void Destroyed() override;
 	virtual void OnDead();
 	
-	UFUNCTION(BlueprintCallable)
-	virtual void AttackHitCheck();
-	
 	void EquipWeapon();
-	
 	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;

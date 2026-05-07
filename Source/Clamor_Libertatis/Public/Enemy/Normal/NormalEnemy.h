@@ -13,10 +13,10 @@ public:
 	ANormalEnemy();
 	
 	virtual void AttackToPlayer() override;
+	virtual void AttackHitCheck() override;
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnDead() override;
-	virtual void AttackHitCheck() override;
 public:
 	virtual void Tick(float DeltaTime) override;
 };
