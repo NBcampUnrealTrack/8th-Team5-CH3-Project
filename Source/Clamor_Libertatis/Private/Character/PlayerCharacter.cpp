@@ -31,6 +31,9 @@ APlayerCharacter::APlayerCharacter()
     // 전투 컴포넌트 추가
     CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
 
+    // 체력 컴포넌트 추가
+    HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
     // 캐릭터 이동 속도 설정
     NormalSpeed = 500.0f;
     SprintSpeedMultiplier = 1.5f;
@@ -165,7 +168,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
             {
                 EnhancedInput->BindAction(
                     PlayerController->DodgeAction,
-                    ETriggerEvent::Triggered,
+                    ETriggerEvent::Started,
                     this,
                     &APlayerCharacter::StartDodge
                 );
@@ -261,4 +264,23 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
 void APlayerCharacter::StopDodge(const FInputActionValue& value)
 {
 
+}
+
+
+float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+    const float ActualDamage = Super::TakeDamage(
+        DamageAmount,
+        DamageEvent,
+        EventInstigator,
+        DamageCauser
+    );
+
+    if (HealthComp)
+    {
+        HealthComp->TakeDamageValue(ActualDamage);
+
+    }
+
+    return ActualDamage;
 }
