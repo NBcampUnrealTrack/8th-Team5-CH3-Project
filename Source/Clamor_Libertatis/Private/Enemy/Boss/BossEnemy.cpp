@@ -13,7 +13,6 @@ ABossEnemy::ABossEnemy()
 void ABossEnemy::BeginPlay()
 {
 	Super::BeginPlay();
-	
 }
 
 void ABossEnemy::OnDead()

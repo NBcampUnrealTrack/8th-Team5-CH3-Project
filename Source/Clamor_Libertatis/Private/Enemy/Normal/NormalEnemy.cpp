@@ -40,7 +40,7 @@ void ANormalEnemy::AttackToPlayer()
 	}
 	else
 	{
-		AnimInst->Montage_Play(Enemy_CombatComp->GetAnimMontage(EAnimMontage::AM_SweepAttack));
+		AnimInst->Montage_Play(Enemy_CombatComp->GetAnimMontage(EAnimMontage::AM_JumpAttack));
 	}
 	
 	
