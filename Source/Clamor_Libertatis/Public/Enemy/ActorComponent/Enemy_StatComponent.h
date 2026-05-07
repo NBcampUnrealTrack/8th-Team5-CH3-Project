@@ -9,13 +9,25 @@ USTRUCT()
 struct FEnemyStat
 {
 	GENERATED_BODY()
-	
+public:
 	float HP;
+	float MaxHP;
 	float Attack_Damage;
 	float SightRadius;
 	float LoseSightRadius;
 	float PeripheralVisionAngleDegrees;
 	float SightConfig_MaxAge;
+	
+	bool SetHP(float DamageAmount)
+	{
+		HP = FMath::Clamp(HP - DamageAmount, 0.f, MaxHP);
+		if (HP <= 0.f)
+		{
+			return false;
+		}
+		UE_LOG(LogTemp,Warning,TEXT("Current HP : %f"),HP);
+		return true;
+	}
 };
 
 
@@ -28,7 +40,7 @@ public:
 	UEnemy_StatComponent();
 	
 	void InitializeStat();
-	FORCEINLINE const FEnemyStat& GetEnemyStat() const {return EnemyStat;}
+	FORCEINLINE FEnemyStat GetEnemyStat() const {return EnemyStat;}
 protected:
 	virtual void BeginPlay() override;
 	

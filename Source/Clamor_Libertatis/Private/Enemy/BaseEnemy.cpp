@@ -1,6 +1,8 @@
 #include "Enemy/BaseEnemy.h"
 #include "Components/WidgetComponent.h"
 #include "UI/DamageTextWidget.h"
+#include "BrainComponent.h"
+#include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/AIController/Enemy_AIController.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
@@ -19,8 +21,8 @@ ABaseEnemy::ABaseEnemy()
 	HPWidgetComp->SetupAttachment(GetRootComponent());
 	HPWidgetComp->SetWidgetSpace(EWidgetSpace::World);
 	
+	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
 }
-
 
 void ABaseEnemy::BeginPlay()
 {
@@ -99,7 +101,18 @@ void ABaseEnemy::EquipWeapon()
 float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
-	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	if (Enemy_StatComp)
+	{
+		if (Enemy_StatComp->GetEnemyStat().SetHP(ActualDamage))
+		{
+			// Enemy is Not Dead
+		}
+		else
+		{
+			OnDead();
+		}
+	}
 
 	if (HealthComp)
 	{
@@ -140,4 +153,38 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		}
 	}
 	return DamageAmount;
+}
+
+void ABaseEnemy::AttackHitCheck()
+{
+	UE_LOG(LogTemp,Warning,TEXT("AttackHitCheckOn"));
+}
+
+void ABaseEnemy::OnDead()
+{
+	UE_LOG(LogTemp,Warning,TEXT("%s Was Dead"),*GetName());
+	
+	AAIController* AIC = Cast<AAIController>(GetController());
+	if (AIC && AIC->GetBrainComponent())
+	{
+		AIC->GetBrainComponent()->StopLogic(TEXT("Because Owner Was Dead"));
+	}
+	
+	UAnimMontage* AM_Dead = Enemy_CombatComp->DA_EnemyAnim->AM_Dead;
+	if (AnimInst && AM_Dead)
+	{
+		AnimInst->Montage_Play(AM_Dead);
+	}
+	
+	SetLifeSpan(4.f);
+}
+
+void ABaseEnemy::Destroyed()
+{
+	if (Enemy_WeaponInst)
+	{
+		Enemy_WeaponInst->Destroy();
+	}
+	
+	Super::Destroyed();
 }
