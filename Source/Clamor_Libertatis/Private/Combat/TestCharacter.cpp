@@ -3,6 +3,7 @@
 
 #include "Combat/TestCharacter.h"
 #include "EnhancedInputComponent.h"
+#include "EnhancedInputSubsystems.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
@@ -30,8 +31,6 @@ ATestCharacter::ATestCharacter()
 
 	CombatComponent = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComponent"));
 	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-
 }
 
 void ATestCharacter::BeginPlay()
@@ -109,11 +108,13 @@ float ATestCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		EventInstigator,
 		DamageCauser
 	);
+	//여기에 적 공격에 대한 검증 등 추가.
 
 	if (HealthComponent)
 	{
 		HealthComponent->TakeDamageValue(ActualDamage);
-
+		//히트 리액션 등 추가.
+		CombatComponent->HitReact();
 	}
 
 	return ActualDamage;

@@ -9,6 +9,7 @@
 class UCameraComponent;
 class USpringArmComponent;
 class UCombatComponent;
+class UHealthComponent;
 class AWeaponBase;
 struct FInputActionValue;
 
@@ -29,7 +30,7 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// 컴포넌트 추가
+	// 카메라, 스프링암 컴포넌트 추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -37,12 +38,13 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UCombatComponent* CombatComp;
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UHealthComponent* HealthComp;
 	UPROPERTY(EditAnywhere, Category = "Combat")
     TSubclassOf<AWeaponBase> WeaponClass; 
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     AWeaponBase* SpawnedWeapon;
-
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
@@ -64,7 +66,6 @@ public:
 	void StartDodge(const FInputActionValue& value);
 	UFUNCTION()
 	void StopDodge(const FInputActionValue& value);
-
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")

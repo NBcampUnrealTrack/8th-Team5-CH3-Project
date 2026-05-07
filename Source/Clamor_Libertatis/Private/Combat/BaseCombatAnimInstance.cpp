@@ -102,3 +102,11 @@ void UBaseCombatAnimInstance::AnimNotify_DodgeEnd()
         Comp->EndDodge();
     }
 }
+
+void UBaseCombatAnimInstance::AnimNotify_StartHitReact()
+{
+}
+
+void UBaseCombatAnimInstance::AnimNotify_EndHitReact()
+{
+}
