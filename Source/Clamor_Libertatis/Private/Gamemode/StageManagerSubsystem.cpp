@@ -3,8 +3,9 @@
 #include "Enemy/BaseEnemy.h"
 #include "Combat/HealthComponent.h"
 
-RemainingEnemyCount::RemainingEnemyCount() : RemainingEnemyCount(0)
+UStageManagerSubsystem::UStageManagerSubsystem() : RemainingEnemyCount(0)
 {
+
 }
 
 void UStageManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
