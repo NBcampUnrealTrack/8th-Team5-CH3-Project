@@ -46,10 +46,7 @@ public:
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     AWeaponBase* SpawnedWeapon;
-
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
-	UHealthComponent* HealthComp;
-
+	
 	UFUNCTION(BlueprintCallable)
 	UHealthComponent* GetHealthComponent() const{return HealthComp;}
 
