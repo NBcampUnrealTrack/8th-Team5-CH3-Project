@@ -27,6 +27,7 @@ void UEnemy_StatComponent::InitializeStat()
 		if (FBaseEnemyStat* EnemyStats = DT_EnemyRowHandle.GetRow<FBaseEnemyStat>(ContextString))
 		{
 			EnemyStat.HP = EnemyStats->Enemy_HP;
+			EnemyStat.MaxHP = EnemyStats->Enemy_HP;
 			EnemyStat.Attack_Damage = EnemyStats->Enemy_AttackDamage;
 			EnemyStat.SightRadius = EnemyStats->Enemy_SightRadius;
 			EnemyStat.LoseSightRadius = EnemyStats->Enemy_LoseSightRadius;
