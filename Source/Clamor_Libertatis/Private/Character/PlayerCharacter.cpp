@@ -1,4 +1,4 @@
-//PlayerCharacter.cpp
+ï»¿//PlayerCharacter.cpp
 
 #include "Character/PlayerCharacter.h"
 #include "Camera/CameraComponent.h"
@@ -7,11 +7,16 @@
 #include "Character/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+#include "Combat/CombatTestPlayerController.h"
+#include "Combat/CombatComponent.h"
+#include "Combat/Weapon/WeaponBase.h"
+#include "Combat/HealthComponent.h"
+
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
 
-	// ½ºÇÁ¸µ¾Ï, Ä«¸Ş¶ó ÄÄÆ÷³ÍÆ® Ãß°¡
+	// ìŠ¤í”„ë§ì•”, ì¹´ë©”ë¼ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€ ë° ì„¤ì •
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
 	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 
@@ -23,13 +28,16 @@ APlayerCharacter::APlayerCharacter()
 	SpringArmComp->bUsePawnControlRotation = true;
 	CameraComp->bUsePawnControlRotation = false;
 
-    // Ä³¸¯ÅÍ ÀÌµ¿ ¼Óµµ ¼³Á¤
+    // ì „íˆ¬ ì»´í¬ë„ŒíŠ¸ ì¶”ê°€
+    CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+
+    // ìºë¦­í„° ì´ë™ ì†ë„ ì„¤ì •
     NormalSpeed = 500.0f;
     SprintSpeedMultiplier = 1.5f;
     SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
     GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
 
-    // Ä³¸¯ÅÍ È¸Àü ¼³Á¤
+    // ìºë¦­í„° íšŒì „ ì„¤ì •
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
     SpringArmComp->bUsePawnControlRotation = true;
@@ -40,8 +48,35 @@ APlayerCharacter::APlayerCharacter()
 void APlayerCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    
+
+    if (WeaponClass)
+    {
+        FActorSpawnParameters SpawnParams;
+        SpawnParams.Owner = this;
+        SpawnParams.Instigator = GetInstigator();
+        SpawnedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass, GetActorLocation(), GetActorRotation(), SpawnParams);
+
+        if (SpawnedWeapon)
+        {
+            SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Hand_R_Weapon"));
+        }
+    }
+
+    if (CombatComp && SpawnedWeapon)
+    {
+        CombatComp->SetCurrentWeapon(SpawnedWeapon);
+    }
 }
+
+void APlayerCharacter::OnConstruction(const FTransform& Transform)
+{
+    if (GetCharacterMovement())
+    {
+        SprintSpeed = NormalSpeed * SprintSpeedMultiplier;
+        GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+    }
+}
+
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
@@ -109,6 +144,38 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                     &APlayerCharacter::StopSprint
                 );
             }
+
+            if (PlayerController->AttackAction)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->AttackAction,
+                    ETriggerEvent::Started,
+                    this,
+                    &APlayerCharacter::StartBasicAttack
+                );
+                EnhancedInput->BindAction(
+                    PlayerController->AttackAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &APlayerCharacter::StopBasicAttack
+                );
+            }
+
+            if (PlayerController->DodgeAction)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->DodgeAction,
+                    ETriggerEvent::Triggered,
+                    this,
+                    &APlayerCharacter::StartDodge
+                );
+                EnhancedInput->BindAction(
+                    PlayerController->DodgeAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &APlayerCharacter::StopDodge
+                );
+            }
         }
     }
 }
@@ -173,4 +240,25 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
     {
         GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
     }
+}
+
+void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
+{
+    if (!CombatComp) return;
+    CombatComp->BasicAttack();
+}
+
+void APlayerCharacter::StopBasicAttack(const FInputActionValue& value)
+{
+
+}
+
+void APlayerCharacter::StartDodge(const FInputActionValue& value)
+{
+
+}
+
+void APlayerCharacter::StopDodge(const FInputActionValue& value)
+{
+
 }

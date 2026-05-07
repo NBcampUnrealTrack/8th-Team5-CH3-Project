@@ -1,12 +1,12 @@
 #include "Enemy/Boss/BossEnemy.h"
 
+#include "Enemy/Animations/BaseEnemyAnimInst.h"
 
 
 ABossEnemy::ABossEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 }
-
 
 void ABossEnemy::BeginPlay()
 {
@@ -20,3 +20,20 @@ void ABossEnemy::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 }
 
+void ABossEnemy::AttackToPlayer()
+{
+	Super::AttackToPlayer();
+	
+	int32 RandomNum = FMath::RandRange(0,10);
+	if (AnimInst)
+	{
+		if (RandomNum % 2 == 0)
+		{
+			AnimInst->PlayAM_SingleAttack();
+		}
+		else
+		{
+			AnimInst->PlayAM_3ComboAttack();
+		}
+	}
+}

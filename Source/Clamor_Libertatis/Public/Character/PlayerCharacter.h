@@ -1,4 +1,4 @@
-//PlayerCharacter.h
+Ôªø//PlayerCharacter.h
 
 #pragma once
 
@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class UCombatComponent;
+class AWeaponBase;
 struct FInputActionValue;
 
 UCLASS()
@@ -20,19 +22,28 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnConstruction(const FTransform& Transform) override;
 
 public:
 	virtual void Tick(float DeltaTime) override;
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// ƒ´∏ﬁ∂Û, Ω∫«¡∏µæœ ƒƒ∆˜≥Õ∆Æ √ﬂ∞°
+	// Ïª¥Ìè¨ÎÑåÌä∏ Ï∂îÍ∞Ä
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComp;
 
-	// ƒ≥∏Ø≈Õ «‡µø ¿‘∑¬
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UCombatComponent* CombatComp;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+    TSubclassOf<AWeaponBase> WeaponClass; 
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+    AWeaponBase* SpawnedWeapon;
+
+	// Ï∫êÎ¶≠ÌÑ∞ ÌñâÎèô ÏûÖÎ†•
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
 	UFUNCTION()
@@ -45,12 +56,22 @@ public:
 	void StartSprint(const FInputActionValue& value);
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& value);
+	UFUNCTION()
+	void StartBasicAttack(const FInputActionValue& value);
+	UFUNCTION()
+	void StopBasicAttack(const FInputActionValue& value);
+	UFUNCTION()
+	void StartDodge(const FInputActionValue& value);
+	UFUNCTION()
+	void StopDodge(const FInputActionValue& value);
 
-	// ƒ≥∏Ø≈Õ º”µµ
+
+	// Ï∫êÎ¶≠ÌÑ∞ ÏÜçÎèÑ
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float NormalSpeed;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float SprintSpeedMultiplier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
+
 };

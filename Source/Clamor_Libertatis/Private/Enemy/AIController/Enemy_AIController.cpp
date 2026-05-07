@@ -1,5 +1,6 @@
 #include "Enemy/AIController/Enemy_AIController.h"
 
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/BaseEnemy.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Perception/AIPerceptionComponent.h"
@@ -14,7 +15,6 @@ AEnemy_AIController::AEnemy_AIController()
 	AIPerceptionComp = CreateDefaultSubobject<UAIPerceptionComponent>(TEXT("AIPerceptionComponent"));
 	Sight_Config = CreateDefaultSubobject<UAISenseConfig_Sight>(TEXT("Sight_Config"));
 }
-
 
 void AEnemy_AIController::BeginPlay()
 {
@@ -31,8 +31,8 @@ void AEnemy_AIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->SightRadius,32,FColor::Green);
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->LoseSightRadius,32,FColor::Red);
+	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),300.f,32,FColor::Blue);
 }
-
 
 void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 {
@@ -41,10 +41,12 @@ void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)
 		if (Stimulus.WasSuccessfullySensed())
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Player 감지 성공"));
+			GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"),Actor);
 		}
 		else
 		{
 			UE_LOG(LogTemp,Warning,TEXT("Player 감지 실패"));
+			GetBlackboardComponent()->SetValueAsObject(TEXT("TargetActor"),nullptr);
 		}
 	}
 }
@@ -67,6 +69,10 @@ void AEnemy_AIController::InitializeAIPerceptionComponent()
 			AIPerceptionComp->ConfigureSense(*Sight_Config);
 			AIPerceptionComp->RequestStimuliListenerUpdate();
 			AIPerceptionComp->OnTargetPerceptionUpdated.AddDynamic(this,&AEnemy_AIController::OnTargetPerceived);
+		}
+		if (RunBehaviorTree(BT_BaseEnemy))
+		{
+			UE_LOG(LogTemp,Warning,TEXT("Enemy BehaviorTree Run"));
 		}
 	}
 }
