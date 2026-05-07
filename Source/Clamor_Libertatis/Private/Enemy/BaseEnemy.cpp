@@ -34,6 +34,9 @@ void ABaseEnemy::BeginPlay()
 	{
 		AnimInst = Cast<UBaseEnemyAnimInst>(GetMesh()->GetAnimInstance());
 	}
+	
+	// FTimerHandle TestDeathTimer;
+	// GetWorldTimerManager().SetTimer(TestDeathTimer, this, &ABaseEnemy::OnDead,10.f,false);
 }
 
 void ABaseEnemy::Tick(float DeltaTime)
@@ -88,4 +91,22 @@ void ABaseEnemy::OnDead()
 	{
 		AIC->GetBrainComponent()->StopLogic(TEXT("Because Owner Was Dead"));
 	}
+	
+	UAnimMontage* AM_Dead = Enemy_CombatComp->DA_EnemyAnim->AM_Dead;
+	if (AnimInst && AM_Dead)
+	{
+		AnimInst->Montage_Play(AM_Dead);
+	}
+	
+	SetLifeSpan(4.f);
+}
+
+void ABaseEnemy::Destroyed()
+{
+	if (Enemy_WeaponInst)
+	{
+		Enemy_WeaponInst->Destroy();
+	}
+	
+	Super::Destroyed();
 }
