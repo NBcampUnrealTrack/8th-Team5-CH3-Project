@@ -15,15 +15,19 @@ void ABossEnemy::BeginPlay()
 	Super::BeginPlay();
 }
 
+void ABossEnemy::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
 void ABossEnemy::OnDead()
 {
 	Super::OnDead();
 }
 
-
-void ABossEnemy::Tick(float DeltaTime)
+void ABossEnemy::AttackHitCheck()
 {
-	Super::Tick(DeltaTime);
+	Super::AttackHitCheck();
 }
 
 void ABossEnemy::AttackToPlayer()

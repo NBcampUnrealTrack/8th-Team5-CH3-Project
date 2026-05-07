@@ -82,6 +82,11 @@ void ABaseEnemy::AttackToPlayer()
 	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
 }
 
+void ABaseEnemy::AttackHitCheck()
+{
+	
+}
+
 void ABaseEnemy::OnDead()
 {
 	UE_LOG(LogTemp,Warning,TEXT("%s Was Dead"),*GetName());

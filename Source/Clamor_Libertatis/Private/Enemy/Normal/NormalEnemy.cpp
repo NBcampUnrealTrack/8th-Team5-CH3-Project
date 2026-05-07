@@ -16,16 +16,21 @@ void ANormalEnemy::BeginPlay()
 	
 }
 
+void ANormalEnemy::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+}
+
 void ANormalEnemy::OnDead()
 {
 	Super::OnDead();
 }
 
-
-void ANormalEnemy::Tick(float DeltaTime)
+void ANormalEnemy::AttackHitCheck()
 {
-	Super::Tick(DeltaTime);
+	Super::AttackHitCheck();
 }
+
 
 void ANormalEnemy::AttackToPlayer()
 {

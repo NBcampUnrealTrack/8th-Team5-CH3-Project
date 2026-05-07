@@ -27,6 +27,9 @@ protected:
 	virtual void Destroyed() override;
 	virtual void OnDead();
 	
+	UFUNCTION(BlueprintCallable)
+	virtual void AttackHitCheck();
+	
 	void EquipWeapon();
 	
 	
