@@ -35,6 +35,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool ConsumeStamina(float Amount);
 
+	UFUNCTION(BlueprintPure)
+	float GetMaxHealth();
+
 	
 	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHealth = 100.f;
@@ -57,8 +60,11 @@ public:
 
 	FTimerHandle StaminaRegenLockHandle;
 
+	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
+	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
+	UPROPERTY(BlueprintAssignable)
 	FOnStaminaChanged OnStaminaChanged;
 protected:
 	virtual void BeginPlay() override;

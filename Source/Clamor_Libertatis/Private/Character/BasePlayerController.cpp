@@ -10,6 +10,9 @@ ABasePlayerController::ABasePlayerController()
 	, JumpAction(nullptr)
 	, LookAction(nullptr)
 	, SprintAction(nullptr)
+	, HUDWidgetRef(nullptr)
+	, DeathWidgetRef(nullptr)
+	, VictoryWidgetRef(nullptr)
 {
 }
 
@@ -71,7 +74,6 @@ void ABasePlayerController::ShowGameStartUI()
 	
 	bShowMouseCursor = true;
 	FInputModeUIOnly Mode;
-	Mode.SetWidgetToFocus(GameStartWidgetRef->TakeWidget());
 	SetInputMode(Mode);
 }
 
@@ -170,7 +172,6 @@ void ABasePlayerController::ShowMainMenu()
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 
 	FInputModeUIOnly Mode;
-	Mode.SetWidgetToFocus(MainMenuWidgetRef->TakeWidget());
 	SetInputMode(Mode);
 
 	bShowMouseCursor = true;

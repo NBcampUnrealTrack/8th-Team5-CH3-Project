@@ -2,6 +2,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "Components/WidgetComponent.h"
+#include "Combat/HealthComponent.h"
 #include "BaseEnemy.generated.h"
 
 class UBaseEnemyAnimInst;
@@ -32,6 +34,20 @@ protected:
 	TObjectPtr<UEnemy_StatComponent> Enemy_StatComp;
 	UPROPERTY()
 	TObjectPtr<UBaseEnemyAnimInst> AnimInst;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ActorComponent")
+	TObjectPtr<UHealthComponent> HealthComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
+	TObjectPtr<UWidgetComponent> HPWidgetComp;
+
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<AActor> DamageTextActorClass;
+
 public:
 	virtual void Tick(float DeltaTime) override;
+
+
+	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
+		AController* EventInstigator, AActor* DamageCauser) override;
 };
