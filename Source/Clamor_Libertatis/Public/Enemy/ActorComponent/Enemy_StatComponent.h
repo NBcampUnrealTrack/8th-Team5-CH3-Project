@@ -40,11 +40,12 @@ public:
 	UEnemy_StatComponent();
 	
 	void InitializeStat();
-	FORCEINLINE FEnemyStat GetEnemyStat() const {return EnemyStat;}
+	FORCEINLINE FEnemyStat& GetEnemyStat() {return EnemyStat;}
 protected:
 	virtual void BeginPlay() override;
 	
 #pragma region EnemyStat
+	UPROPERTY()
 	FEnemyStat EnemyStat;
 #pragma endregion 
 #pragma region DataTable
