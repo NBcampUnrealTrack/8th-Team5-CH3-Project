@@ -28,6 +28,8 @@ void ABossEnemy::OnDead()
 void ABossEnemy::AttackHitCheck()
 {
 	Super::AttackHitCheck();
+	
+	
 }
 
 void ABossEnemy::AttackToPlayer()
