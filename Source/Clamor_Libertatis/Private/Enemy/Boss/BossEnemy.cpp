@@ -1,9 +1,11 @@
 #include "Enemy/Boss/BossEnemy.h"
 
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
+#include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
 #include "Enemy/DataTable/DA_BaseEnemyAnim.h"
 #include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ABossEnemy::ABossEnemy()
@@ -37,6 +39,7 @@ void ABossEnemy::AttackHitCheck()
 		FQuat Rotation = GetActorRotation().Quaternion();
 		
 		TArray<FOverlapResult> OverlapResults;
+		//TODO::Need to Custom TraceChannel
 		GetWorld()->OverlapMultiByChannel(OverlapResults,StartPos, Rotation, ECC_Visibility, AttackCollision);
 		DrawDebugBox(GetWorld(),StartPos,AttackCollision.GetExtent(),FColor::Red,false,2.f,0,1.f);
 		
@@ -45,8 +48,8 @@ void ABossEnemy::AttackHitCheck()
 		{
 			if (!AlreadyHitActors.Contains(OverlapResult.GetActor()) && OverlapResult.GetActor()->ActorHasTag(TEXT("Player")))
 			{
-				UE_LOG(LogTemp,Warning,TEXT("Enemy Hit Player"));
-				// 데미지 로직
+				UGameplayStatics::ApplyDamage(OverlapResult.GetActor(), Enemy_StatComp->GetEnemyStat().Attack_Damage,GetController(),this,UDamageType::StaticClass());
+				UE_LOG(LogTemp,Warning,TEXT("Enemy Hit Player %s"),*OverlapResult.GetActor()->GetName());
 				AlreadyHitActors.Add(OverlapResult.GetActor());
 			}
 		}
