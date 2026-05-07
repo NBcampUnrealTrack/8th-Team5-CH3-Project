@@ -12,6 +12,8 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 
+#include "UI/PlayerHUDWidget.h"
+
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -69,6 +71,9 @@ void APlayerCharacter::BeginPlay()
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
     }
+
+    ABasePlayerController* PC =
+        Cast<ABasePlayerController>(GetController());
 }
 
 void APlayerCharacter::OnConstruction(const FTransform& Transform)

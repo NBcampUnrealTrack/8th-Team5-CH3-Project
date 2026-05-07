@@ -7,6 +7,7 @@
 
 class UInputMappingContext;
 class UInputAction;
+class UPlayerHUDWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -64,6 +65,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
 
+	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const{return HUDWidgetRef;}
+
 protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> GameStartWidgetClass;
@@ -79,9 +82,10 @@ protected:
 	TSubclassOf<UUserWidget> VictoryWidgetClass;
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-private:
+
 	UPROPERTY()
-	TObjectPtr<UUserWidget> HUDWidgetRef;
+	TObjectPtr<UPlayerHUDWidget> HUDWidgetRef;
+private:
 
 	UPROPERTY()
 	TObjectPtr<UUserWidget> LobbyWidgetRef;

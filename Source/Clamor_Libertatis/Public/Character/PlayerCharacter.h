@@ -46,6 +46,9 @@ public:
     UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
 
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const{return HealthComp;}
+
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
