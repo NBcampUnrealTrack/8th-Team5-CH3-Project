@@ -12,6 +12,7 @@ class UCombatComponent;
 class UHealthComponent;
 class AWeaponBase;
 struct FInputActionValue;
+class UHealthComponent;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
@@ -45,6 +46,13 @@ public:
 
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     AWeaponBase* SpawnedWeapon;
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UHealthComponent* HealthComp;
+
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const{return HealthComp;}
+
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
@@ -66,6 +74,8 @@ public:
 	void StartDodge(const FInputActionValue& value);
 	UFUNCTION()
 	void StopDodge(const FInputActionValue& value);
+	UFUNCTION()
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
