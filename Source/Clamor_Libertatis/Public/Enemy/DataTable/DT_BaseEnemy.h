@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DA_BaseEnemyAnim.h"
 #include "DT_BaseEnemy.generated.h"
 
 USTRUCT(BlueprintType)
@@ -21,5 +22,5 @@ struct FBaseEnemyStat : public FTableRowBase
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="BaseEnemyStat")
 	float Enemy_SightConfig_MaxAge = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataAsset")
-	TObjectPtr<UPrimaryDataAsset> DA_EnemyAnim;
+	TObjectPtr<UDA_BaseEnemyAnim> DA_EnemyAnim = nullptr;
 };
