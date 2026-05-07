@@ -1,6 +1,7 @@
 #include "Enemy/BaseEnemy.h"
 
 #include "BrainComponent.h"
+#include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/AIController/Enemy_AIController.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
@@ -12,6 +13,7 @@ ABaseEnemy::ABaseEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	Enemy_StatComp = CreateDefaultSubobject<UEnemy_StatComponent>(TEXT("StatComponent"));
+	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
 }
 
 void ABaseEnemy::BeginPlay()
