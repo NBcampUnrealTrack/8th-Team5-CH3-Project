@@ -15,6 +15,7 @@ public:
 	virtual void AttackToPlayer() override;
 protected:
 	virtual void BeginPlay() override;
+	virtual void OnDead() override;
 public:
 	virtual void Tick(float DeltaTime) override;
 };

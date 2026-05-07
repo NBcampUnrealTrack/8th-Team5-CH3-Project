@@ -14,6 +14,11 @@ void ABossEnemy::BeginPlay()
 	
 }
 
+void ABossEnemy::OnDead()
+{
+	Super::OnDead();
+}
+
 
 void ABossEnemy::Tick(float DeltaTime)
 {
@@ -24,6 +29,7 @@ void ABossEnemy::AttackToPlayer()
 {
 	Super::AttackToPlayer();
 	
+	//TODO:: 리팩토링 고민중
 	int32 RandomNum = FMath::RandRange(0,10);
 	if (AnimInst)
 	{

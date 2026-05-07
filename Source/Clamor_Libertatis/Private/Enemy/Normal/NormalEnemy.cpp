@@ -14,6 +14,11 @@ void ANormalEnemy::BeginPlay()
 	
 }
 
+void ANormalEnemy::OnDead()
+{
+	Super::OnDead();
+}
+
 
 void ANormalEnemy::Tick(float DeltaTime)
 {
@@ -24,6 +29,7 @@ void ANormalEnemy::AttackToPlayer()
 {
 	Super::AttackToPlayer();
 	
+	//TODO:: 리팩토링 고민중
 	// For Test Random Play AM
 	int32 RandomNum = FMath::RandRange(0,10);
 	if (AnimInst)
