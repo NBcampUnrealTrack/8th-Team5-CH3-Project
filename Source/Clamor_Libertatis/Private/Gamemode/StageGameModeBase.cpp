@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "GameFramework/GameStateBase.h"
 #include "Gamemode/StageManagerSubsystem.h"
+#include "Gamemode/CLGameInstance.h"
 
 
 // 게임 승리
@@ -12,8 +13,12 @@
 void AStageGameModeBase::OnStageClear()
 {
     CurrentStatus = ECheckStageResult::Win;
-    UE_LOG(LogTemp, Warning, TEXT("Monster Died"));
 
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    {
+        GI->AddWonBattle();
+        UE_LOG(LogTemp, Warning, TEXT("[Stage Clear] WonBattleCount: %d"), GI->GetWonBattleCount());
+    }
 }
 
 // 플레이어 한명, 사망 가정
@@ -29,6 +34,11 @@ void AStageGameModeBase::BeginPlay()
     Super::BeginPlay();
 
     CurrentStatus = ECheckStageResult::NotEnd;
+
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[GameStage] WonBattleCount: %d"), GI->GetWonBattleCount());
+    }
 
     if (UStageManagerSubsystem* StageSub = GetWorld()->GetSubsystem<UStageManagerSubsystem>())
     {

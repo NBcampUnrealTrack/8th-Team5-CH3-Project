@@ -3,6 +3,7 @@
 
 #include "Gamemode/LobbyGameModeBase.h"
 #include "Gamemode/LoreManagerComponent.h"
+#include "Gamemode/CLGameInstance.h"
 #include "GameFramework/PlayerController.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -18,6 +19,15 @@ ALobbyGameModeBase::ALobbyGameModeBase()
 void ALobbyGameModeBase::BeginPlay()
 {
     Super::BeginPlay();
+
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Lobby] WonBattleCount: %d"), GI->GetWonBattleCount());
+    } 
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("[Lobby] Failed to get GameInstance"));
+    }
 
     APlayerController* PC = GetWorld()->GetFirstPlayerController();
 
@@ -79,7 +89,5 @@ void ALobbyGameModeBase::GotoBattle()
     // Battle 장소로 이동할 때, 연출과 동작 방식 등을 아직 결정하지 못함.
     // 지연 로딩을 통해 느낌만 부여함.
 
-
-
-    FTimerHandle BattleTimerHandle;
+    UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_MainStage"));
 }
