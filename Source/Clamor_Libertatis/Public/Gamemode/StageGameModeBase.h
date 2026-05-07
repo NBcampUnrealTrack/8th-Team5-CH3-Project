@@ -7,7 +7,6 @@
 #include "StageGameModeBase.generated.h"
 
 class AGameStateBase;
-class ABaseEnemy;
 
 
 
@@ -38,10 +37,10 @@ private:
 	void HandleStageResult();
 
 	UFUNCTION()
-	void OnEnemyDeath();
+	void OnStageClear();
 
 	UFUNCTION()
-	void OnPlayerDeath();
+	void OnGameOver();
 
 	UPROPERTY()
 	TObjectPtr<class AGameStateBase> CachedGameState;
