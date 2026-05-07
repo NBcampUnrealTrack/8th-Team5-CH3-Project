@@ -27,7 +27,6 @@ FText ULoreManagerComponent::GetRandomLoreText(int32 Phase)
     {
         FName TableID = ST->GetStringTableId();
 
-        // 2. 레지스트리에서 이 ID로 실제 데이터를 찾습니다.
         FStringTablePtr TablePtr = FStringTableRegistry::Get().FindMutableStringTable(TableID);
 
 
