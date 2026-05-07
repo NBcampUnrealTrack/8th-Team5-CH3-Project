@@ -252,7 +252,7 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (IsHurt && IsDead) return;
+    if (IsHurt || IsDead) return;
 
     if (!CombatComp) return;
     CombatComp->BasicAttack();
