@@ -13,6 +13,8 @@ ABasePlayerController::ABasePlayerController()
 	, HUDWidgetRef(nullptr)
 	, DeathWidgetRef(nullptr)
 	, VictoryWidgetRef(nullptr)
+	, AttackAction(nullptr)
+	, DodgeAction(nullptr)
 {
 }
 

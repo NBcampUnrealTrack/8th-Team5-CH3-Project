@@ -8,6 +8,8 @@
 
 class UCameraComponent;
 class USpringArmComponent;
+class UCombatComponent;
+class AWeaponBase;
 struct FInputActionValue;
 
 UCLASS()
@@ -27,11 +29,19 @@ public:
 
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// 카메라, 스프링암 컴포넌트 추가
+	// 컴포넌트 추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	USpringArmComponent* SpringArmComp;
+
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UCombatComponent* CombatComp;
+	UPROPERTY(EditAnywhere, Category = "Combat")
+    TSubclassOf<AWeaponBase> WeaponClass; 
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+    AWeaponBase* SpawnedWeapon;
 
 	// 캐릭터 행동 입력
 	UFUNCTION()
@@ -46,6 +56,15 @@ public:
 	void StartSprint(const FInputActionValue& value);
 	UFUNCTION()
 	void StopSprint(const FInputActionValue& value);
+	UFUNCTION()
+	void StartBasicAttack(const FInputActionValue& value);
+	UFUNCTION()
+	void StopBasicAttack(const FInputActionValue& value);
+	UFUNCTION()
+	void StartDodge(const FInputActionValue& value);
+	UFUNCTION()
+	void StopDodge(const FInputActionValue& value);
+
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -54,4 +73,5 @@ public:
 	float SprintSpeedMultiplier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
+
 };
