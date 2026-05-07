@@ -22,6 +22,8 @@ ABaseEnemy::ABaseEnemy()
 	HPWidgetComp->SetWidgetSpace(EWidgetSpace::World);
 	
 	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
+	
+	bIsDead = false;
 }
 
 void ABaseEnemy::BeginPlay()
@@ -101,6 +103,8 @@ void ABaseEnemy::EquipWeapon()
 float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent,
 	AController* EventInstigator, AActor* DamageCauser)
 {
+	if (bIsDead) return 0.f;
+	
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
 	if (Enemy_StatComp)
 	{
@@ -110,6 +114,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		}
 		else
 		{
+			bIsDead = true;
 			OnDead();
 		}
 	}

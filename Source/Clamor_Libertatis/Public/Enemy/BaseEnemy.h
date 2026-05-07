@@ -34,28 +34,33 @@ protected:
 	virtual void OnDead();
 	
 	void EquipWeapon();
-	
+#pragma region Weapon
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;
 	UPROPERTY()
 	TObjectPtr<AEnemy_BaseWeapon> Enemy_WeaponInst;
+#pragma endregion 
+#pragma region ActorComp
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="ActorComponent")
 	TObjectPtr<UEnemy_StatComponent> Enemy_StatComp;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="ActorComponent")
 	TObjectPtr<UEnemy_CombatComponent> Enemy_CombatComp;
+#pragma endregion 
+#pragma region Animations
 	UPROPERTY()
 	TObjectPtr<UBaseEnemyAnimInst> AnimInst;
+#pragma endregion
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ActorComponent")
 	TObjectPtr<UHealthComponent> HealthComp;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
 	TObjectPtr<UWidgetComponent> HPWidgetComp;
-
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<AActor> DamageTextActorClass;
 	
 	EAnimMontage CurrentMontage;
+private:
+	bool bIsDead;
 public:
 	virtual void Tick(float DeltaTime) override;
 };
