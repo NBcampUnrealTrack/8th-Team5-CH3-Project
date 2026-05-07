@@ -1,6 +1,8 @@
 #include "Enemy/Normal/NormalEnemy.h"
 
+#include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
+#include "Enemy/DataTable/DA_BaseEnemyAnim.h"
 
 
 ANormalEnemy::ANormalEnemy()
@@ -29,18 +31,17 @@ void ANormalEnemy::AttackToPlayer()
 {
 	Super::AttackToPlayer();
 	
-	//TODO:: 리팩토링 고민중
-	// For Test Random Play AM
-	int32 RandomNum = FMath::RandRange(0,10);
-	if (AnimInst)
+	
+	int64 RandomNum = FMath::RandRange(1,10);
+	UE_LOG(LogTemp,Warning,TEXT("RandomNum %lld"),RandomNum);
+	if (RandomNum % 2 == 0)
 	{
-		if (RandomNum % 2 == 0)
-		{
-			AnimInst->PlayAM_Attack_Sweep();
-		}
-		else
-		{
-			AnimInst->PlayAM_JumpAttack();
-		}
+		AnimInst->Montage_Play(Enemy_CombatComp->GetAnimMontage(EAnimMontage::AM_SweepAttack));
 	}
+	else
+	{
+		AnimInst->Montage_Play(Enemy_CombatComp->GetAnimMontage(EAnimMontage::AM_SweepAttack));
+	}
+	
+	
 }
