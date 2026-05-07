@@ -6,6 +6,7 @@
 #include "Enemy_CombatComponent.generated.h"
 
 
+class UDA_EnemyAttackCollision;
 class UDA_BaseEnemyAnim;
 struct FBaseEnemyStat;
 
@@ -19,9 +20,14 @@ public:
 	
 	FORCEINLINE int64 GetCurrentAMCount() const {return DA_EnemyAnim->Map_AM_Battle.Num();}
 	FORCEINLINE UAnimMontage* GetAnimMontage(EAnimMontage AnimMontage) const {return DA_EnemyAnim->Map_AM_Battle.FindRef(AnimMontage);}
+	FORCEINLINE float GetAttackDistance(EAnimMontage CurrentAnimMontage) const;
+	
+	FCollisionShape MakeAttackCollision(EAnimMontage CurrentMontage);
 	
 	UPROPERTY()
 	TObjectPtr<UDA_BaseEnemyAnim> DA_EnemyAnim;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataAsset|AttackCollision")
+	TObjectPtr<UDA_EnemyAttackCollision> DA_AttackCollision;
 protected:
 	virtual void BeginPlay() override;
 	
