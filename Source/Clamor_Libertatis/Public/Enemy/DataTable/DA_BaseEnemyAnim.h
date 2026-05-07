@@ -8,7 +8,9 @@ UENUM()
 enum class EAnimMontage : uint8
 {
 	AM_SweepAttack,
-	AM_JumpAttack
+	AM_JumpAttack,
+	AM_SingleAttack,
+	AM_3ComboAttack
 };
 
 
