@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "DataTable/DA_BaseEnemyAnim.h"
 #include "GameFramework/Character.h"
 #include "BaseEnemy.generated.h"
 
@@ -42,6 +43,8 @@ protected:
 	TObjectPtr<UEnemy_CombatComponent> Enemy_CombatComp;
 	UPROPERTY()
 	TObjectPtr<UBaseEnemyAnimInst> AnimInst;
+	
+	EAnimMontage CurrentMontage;
 public:
 	virtual void Tick(float DeltaTime) override;
 };
