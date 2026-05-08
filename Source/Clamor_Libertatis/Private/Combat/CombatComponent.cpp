@@ -5,7 +5,6 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 #include "GameFramework/Character.h"
-#include "PlayMontageCallbackProxy.h"
 #include "Combat/BaseThrowMagic.h"
 
 DEFINE_LOG_CATEGORY(LogCombat)
@@ -41,7 +40,7 @@ void UCombatComponent::BasicAttack()
 		return;
 	if (IsAttacking()) 
 	{
-		if (bIsComboEnabled and ComboIndex < GetMaxComboCount()) 
+		if (bIsComboEnabled && ComboIndex < GetMaxComboCount()) 
 		{
 			bComboInputBuffered = true;
 			UE_LOG(LogCombat, Warning, TEXT("Combo Input Buffered"));
@@ -61,7 +60,7 @@ void UCombatComponent::BasicAttack()
 
 void UCombatComponent::StartAttack()
 {
-	if (!OwnerCharacter)
+	if (!OwnerCharacter || !CurrentWeapon)
 		return;
 
 	UAnimMontage* AttackMontage = GetCurrentAttackMontage();
@@ -72,6 +71,17 @@ void UCombatComponent::StartAttack()
 	if (!AnimInstance)
 		return;
 
+	const int32 FirstComboIndex = 1;
+	if (!CurrentWeapon->GetAttackData(FirstComboIndex))
+	{
+		return;
+	}
+
+	if (!TryConsumeAttackStamina(FirstComboIndex))
+	{
+		return;
+	}
+
 	//입력받을 세팅 초기화
 	SetCombatState(ECombatEnumState::Attacking);
 	bIsComboEnabled = false;//노티받고 진행
@@ -79,29 +89,15 @@ void UCombatComponent::StartAttack()
 	bIsAttackEnding = false;
 	bAttackInputBufferedDuringRecovery = false;
 
-	ComboIndex = 1;
-	if (HealthComponent)
-	{
-		const FWeaponAttackData* AttackData = CurrentWeapon->GetAttackData(ComboIndex);
+	ComboIndex = FirstComboIndex;
 
-		if (AttackData)
-		{
-			//스테미나 없으면 
-			if (!HealthComponent->ConsumeStamina(AttackData->StaminaCost))
-			{
-				EndAttack();
-				return;
-			}
-			AnimInstance->Montage_Play(AttackMontage);
-			//애님 종료시 안전장치
-			FOnMontageEnded EndDelegate;
-			EndDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
-			AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+	AnimInstance->Montage_Play(AttackMontage);
+	//애님 종료시 안전장치
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
 
-			JumpToComboSection(ComboIndex);
-		}
-	}
-
+	JumpToComboSection(ComboIndex);
 }
 
 void UCombatComponent::EndAttack()
@@ -151,25 +147,25 @@ void UCombatComponent::CheckCombo()
 		return;
 	bIsComboEnabled = false;
 
-	if (bComboInputBuffered and ComboIndex < GetMaxComboCount()) {
+	if (bComboInputBuffered && ComboIndex < GetMaxComboCount()) {
+		const int32 NextComboIndex = ComboIndex + 1;
 
-		if (HealthComponent)
+		if (!CurrentWeapon || !CurrentWeapon->GetAttackData(NextComboIndex))
 		{
-			const FWeaponAttackData* AttackData = CurrentWeapon->GetAttackData(ComboIndex);
-
-			if (AttackData)
-			{
-				if (!HealthComponent->ConsumeStamina(AttackData->StaminaCost))
-				{
-					EndAttack();
-					return;
-				}
-				ComboIndex++;
-				bComboInputBuffered = false;
-				bIsAttackEnding = false;
-				JumpToComboSection(ComboIndex);
-			}
+			EndAttack();
+			return;
 		}
+
+		if (!TryConsumeAttackStamina(NextComboIndex))
+		{
+			EndAttack();
+			return;
+		}
+
+		ComboIndex = NextComboIndex;
+		bComboInputBuffered = false;
+		bIsAttackEnding = false;
+		JumpToComboSection(ComboIndex);
 		return;
 	}
 	UE_LOG(LogCombat, Warning, TEXT("CheckCombo-EndAttack"));
@@ -235,11 +231,15 @@ void UCombatComponent::EndDodge()
 	}
 
 	bIsInvincible = false;
-	SetCombatState(ECombatEnumState::Idle);
 }
 
 void UCombatComponent::ActiveSkill()
 {
+	if (!OwnerCharacter)
+	{
+		return;
+	}
+
 	if (!MagicProjectileClass)
 	{
 		return;
@@ -322,7 +322,6 @@ void UCombatComponent::ActiveSkill()
 		SpawnRotation,
 		SpawnParams
 	);
-
 }
 
 void UCombatComponent::EnableCombo()
@@ -401,6 +400,27 @@ void UCombatComponent::JumpToComboSection(int32 InComboIndex)
 		return;
 
 	AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+}
+
+bool UCombatComponent::TryConsumeAttackStamina(int32 InComboIndex) const
+{
+	if (!CurrentWeapon)
+	{
+		return false;
+	}
+
+	if (!HealthComponent)
+	{
+		return true;
+	}
+
+	const FWeaponAttackData* AttackData = CurrentWeapon->GetAttackData(InComboIndex);
+	if (!AttackData)
+	{
+		return false;
+	}
+
+	return HealthComponent->ConsumeStamina(AttackData->StaminaCost);
 }
 
 UAnimMontage* UCombatComponent::GetCurrentAttackMontage() const

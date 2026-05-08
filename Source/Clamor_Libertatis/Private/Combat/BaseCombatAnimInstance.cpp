@@ -76,7 +76,9 @@ void UBaseCombatAnimInstance::AnimNotify_DisableWeaponHitbox()
 
 void UBaseCombatAnimInstance::AnimNotify_UseSkill()
 {
-
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->ActiveSkill();
+    }
 }
 
 

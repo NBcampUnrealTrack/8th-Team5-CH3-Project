@@ -114,7 +114,10 @@ float ATestCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 	{
 		HealthComponent->TakeDamageValue(ActualDamage);
 		//히트 리액션 등 추가.
-		CombatComponent->HitReact();
+		if (CombatComponent)
+		{
+			CombatComponent->HitReact();
+		}
 	}
 
 	return ActualDamage;
@@ -142,5 +145,8 @@ void ATestCharacter::Look(const FInputActionValue& value) {
 
 void ATestCharacter::BasicAttack(const FInputActionValue& value)
 {
-	CombatComponent->BasicAttack();
+	if (CombatComponent)
+	{
+		CombatComponent->BasicAttack();
+	}
 }

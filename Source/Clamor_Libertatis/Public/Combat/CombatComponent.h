@@ -98,11 +98,11 @@ private:
 	UPROPERTY()
     AWeaponBase* CurrentWeapon;
 
-
-	//
+	
 	void StartAttack();
 
 	void JumpToComboSection(int32 InComboIndex);
+	bool TryConsumeAttackStamina(int32 InComboIndex) const;
 	UAnimMontage* GetCurrentAttackMontage() const;
 	int32 GetMaxComboCount() const;
 	FName GetComboSectionName(int32 InComboIndex) const;
@@ -114,7 +114,7 @@ private:
 	bool bIsComboEnabled = false;//콤보입력가능한지
 	bool bComboInputBuffered = false;//콤보입력했는지
 	bool bIsAttackEnding = false;//종료중인지
-	bool bAttackInputBufferedDuringRecovery = false;//종료 딜레이 중 입력
+	bool bAttackInputBufferedDuringRecovery = false;//종료 후딜레이 중 입력
 	bool bIsInvincible = false;//회피무적
 	int32 ComboIndex = 0;
 #pragma endregion States
