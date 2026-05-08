@@ -8,18 +8,13 @@
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
 #include "Enemy/E_Weapon/Enemy_BaseWeapon.h"
 
+#include "Character/BasePlayerController.h"
 
 ABaseEnemy::ABaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	
 	Enemy_StatComp = CreateDefaultSubobject<UEnemy_StatComponent>(TEXT("StatComponent"));
-	
-	HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
-
-	HPWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("HPWidget"));
-	HPWidgetComp->SetupAttachment(GetRootComponent());
-	HPWidgetComp->SetWidgetSpace(EWidgetSpace::World);
 	
 	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
 	
@@ -36,11 +31,6 @@ void ABaseEnemy::BeginPlay()
 		UE_LOG(LogTemp,Warning,TEXT("Initialized Stat"));
 		Enemy_StatComp->InitializeStat();
 
-		if (HealthComp)
-		{
-			HealthComp->SetMaxHealth(Enemy_StatComp->GetEnemyStat().HP);
-		}
-
 	}
 	if (AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController()))
 	{
@@ -49,29 +39,6 @@ void ABaseEnemy::BeginPlay()
 	if (GetMesh()->GetAnimInstance())
 	{
 		AnimInst = Cast<UBaseEnemyAnimInst>(GetMesh()->GetAnimInstance());
-	}
-
-	if (HPWidgetComp)
-	{
-		UUserWidget* HPWidget = HPWidgetComp->GetUserWidgetObject();
-
-		if (HPWidget)
-		{
-			FString FunctionName = TEXT("InitWidget");
-			UFunction* Func = HPWidget->FindFunction(*FunctionName);
-			if (Func)
-			{
-				struct FInitWidgetParams
-				{
-					UHealthComponent* InHealthComp;
-				};
-				FInitWidgetParams Params;
-				Params.InHealthComp = HealthComp;
-
-				HPWidget->ProcessEvent(Func, &Params);
-				UE_LOG(LogTemp, Warning, TEXT("HP Widget Initialized Successfully"));
-			}
-		}
 	}
 }
 
@@ -117,13 +84,15 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			bIsDead = true;
 			OnDead();
 		}
+		Enemy_StatComp->OnHPChanged.Broadcast(
+			Enemy_StatComp->GetEnemyStat().HP,
+			Enemy_StatComp->GetEnemyStat().MaxHP);
 	}
-
-	if (HealthComp)
+	if (ABasePlayerController* PC = Cast<ABasePlayerController>(
+		GetWorld()->GetFirstPlayerController()))
 	{
-		HealthComp->TakeDamageValue(DamageAmount);
+		PC->ShowEnemyHPBar(this);
 	}
-
 	if (DamageTextActorClass)
 	{
 		FVector SpawnLocation = GetActorLocation()

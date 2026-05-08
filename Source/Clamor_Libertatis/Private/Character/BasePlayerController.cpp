@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/PlayerHUDWidget.h"
+#include "UI/EnemyHPBarWidget.h"
+#include "Enemy/BaseEnemy.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -261,4 +263,18 @@ void ABasePlayerController::QuitGame()
 		EQuitPreference::Quit,
 		false
 	);
+}
+
+void ABasePlayerController::ShowEnemyHPBar(ABaseEnemy* Enemy)
+{
+	if (!EnemyHPBarWidgetClass) return;
+
+	if (!EnemyHPBarWidget)
+	{
+		EnemyHPBarWidget = CreateWidget<UEnemyHPBarWidget>(this, EnemyHPBarWidgetClass);
+		EnemyHPBarWidget->AddToViewport(0);
+	}
+
+	EnemyHPBarWidget->SetTargetEnemy(Enemy);
+	EnemyHPBarWidget->SetVisibility(ESlateVisibility::Visible);
 }
