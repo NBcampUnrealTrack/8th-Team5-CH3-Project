@@ -34,7 +34,7 @@ public:
 	bool ConsumeStamina(float Amount);
 
 	UFUNCTION(BlueprintPure)
-	float GetMaxHealth();
+	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintPure)
 	float GetCurrentHealth() const;
@@ -45,22 +45,22 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetMaxStamina() const;
 
-	UPROPERTY(EditAnywhere, Category="Health")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
 	float MaxHealth = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	float CurrentHealth = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	bool bDead = false;
 	
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float MaxStamina = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Stamina")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
 	float CurrentStamina = 100.f;
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float RegenerateStaminaPerSecond = 45.f;
-	UPROPERTY(VisibleAnywhere, Category="Stamina")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
 	bool bIsStaminaRegenLocked = false;
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float StaminaRegenLockTime = 1.5f;
 
 

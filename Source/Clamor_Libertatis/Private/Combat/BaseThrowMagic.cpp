@@ -4,12 +4,11 @@
 #include "Combat/BaseThrowMagic.h"
 #include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
-#include "Character/PlayerCharacter.h"
-#include "Combat/Weapon/WeaponBase.h"
+#include "DrawDebugHelpers.h"
 #include "NiagaraComponent.h"
 #include "NiagaraFunctionLibrary.h"
 #include "NiagaraSystem.h"
-#include "kismet/GameplayStatics.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values
 ABaseThrowMagic::ABaseThrowMagic()
@@ -57,6 +56,12 @@ void ABaseThrowMagic::BeginPlay()
 
 
     //생성후 CollisionEnableDelay초동안 충돌X
+    if (CollisionEnableDelay <= 0.0f)
+    {
+        EnableCollision();
+        return;
+    }
+
     GetWorldTimerManager().SetTimer(
         CollisionEnableTimerHandle,
         this,
@@ -104,10 +109,10 @@ void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
 
     TArray<AActor*> IgnoreActors;
     IgnoreActors.Add(this);
-    APlayerCharacter* Player = Cast<APlayerCharacter>(GetOwner());
-    if (Player)
+
+    if (AActor* OwnerActor = GetOwner())
     {
-        IgnoreActors.Add(Player);
+        IgnoreActors.Add(OwnerActor);
     }
 
     if (GetInstigator())
@@ -133,7 +138,7 @@ void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
         CollisionShape,
         QueryParams
     );
-    //디버그 그리기
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
     DrawDebugSphere(
         World,
         ExplosionLocation,
@@ -143,6 +148,7 @@ void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
         false,
         1.0f
     );
+#endif
 
     if (!bHit)
     {
@@ -181,5 +187,8 @@ void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
 
 void ABaseThrowMagic::EnableCollision()
 {
-    SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    if (SphereComponent)
+    {
+        SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+    }
 }
