@@ -14,7 +14,6 @@ class AWeaponBase;
 struct FInputActionValue;
 
 class UHealthComponent;
-class UPlayerHUDWidget;
 
 
 UCLASS()
@@ -92,12 +91,6 @@ public:
 	float SprintSpeed;
 	bool IsDead;
 	bool IsHurt;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	TSubclassOf<UPlayerHUDWidget> PlayerHUDWidgetClass;
-
-	UPROPERTY()
-	UPlayerHUDWidget* PlayerHUDWidget;
 
 	// 피격 애니메이션 실행
 	void HitAnimMontage();

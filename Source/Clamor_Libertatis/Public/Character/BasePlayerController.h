@@ -8,6 +8,8 @@
 class UInputMappingContext;
 class UInputAction;
 class UPlayerHUDWidget;
+class UEnemyHPBarWidget;
+class ABaseEnemy;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -64,7 +66,8 @@ public:
 	void RestartGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
-
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowEnemyHPBar(ABaseEnemy* Enemy);
 	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const{return HUDWidgetRef;}
 
 protected:
@@ -82,7 +85,10 @@ protected:
 	TSubclassOf<UUserWidget> VictoryWidgetClass;
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
-
+	UPROPERTY(EditAnywhere, Category = "UI")
+	TSubclassOf<UEnemyHPBarWidget> EnemyHPBarWidgetClass;
+	UPROPERTY()
+	TObjectPtr<UEnemyHPBarWidget> EnemyHPBarWidget;
 	UPROPERTY()
 	TObjectPtr<UPlayerHUDWidget> HUDWidgetRef;
 private:

@@ -13,7 +13,6 @@
 #include "Combat/HealthComponent.h"
 
 #include "Blueprint/UserWidget.h"
-#include "UI/PlayerHUDWidget.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -74,23 +73,7 @@ void APlayerCharacter::BeginPlay()
     {
         HealthComp->SetMaxHealth(100.f);
     }
-    if (PlayerHUDWidgetClass)
-    {
-        PlayerHUDWidget = CreateWidget<UPlayerHUDWidget>(
-            GetWorld(),
-            PlayerHUDWidgetClass
-        );
-
-        if (PlayerHUDWidget)
-        {
-            PlayerHUDWidget->AddToViewport();
-
-            if (HealthComp)
-            {
-                PlayerHUDWidget->InitWidget(HealthComp);
-            }
-        }
-    }
+   
     if (CombatComp && SpawnedWeapon)
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
