@@ -77,6 +77,8 @@ public:
 	UFUNCTION()
 	void StopDodge(const FInputActionValue& value);
 	UFUNCTION()
+	void StartActiveSkill(const FInputActionValue& value);
+	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
