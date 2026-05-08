@@ -86,6 +86,11 @@ bool UHealthComponent::ConsumeStamina(float Amount)
 	return bCanConsume;
 }
 
+float UHealthComponent::GetMaxHealth()
+{
+	return MaxHealth;
+}
+
 
 // Called when the game starts
 void UHealthComponent::BeginPlay()

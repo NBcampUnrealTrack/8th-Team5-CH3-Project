@@ -1,5 +1,7 @@
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 
+#include "Enemy/BaseEnemy.h"
+#include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/DataTable/DT_BaseEnemy.h"
 
 
@@ -27,11 +29,18 @@ void UEnemy_StatComponent::InitializeStat()
 		if (FBaseEnemyStat* EnemyStats = DT_EnemyRowHandle.GetRow<FBaseEnemyStat>(ContextString))
 		{
 			EnemyStat.HP = EnemyStats->Enemy_HP;
+			EnemyStat.MaxHP = EnemyStats->Enemy_HP;
 			EnemyStat.Attack_Damage = EnemyStats->Enemy_AttackDamage;
 			EnemyStat.SightRadius = EnemyStats->Enemy_SightRadius;
 			EnemyStat.LoseSightRadius = EnemyStats->Enemy_LoseSightRadius;
 			EnemyStat.PeripheralVisionAngleDegrees = EnemyStats->Enemy_PeripheralVisionAngleDegrees;
 			EnemyStat.SightConfig_MaxAge = EnemyStats->Enemy_SightConfig_MaxAge;
+			
+			if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(GetOwner()))
+			{
+				MyOwner->GetEnemyCombatComp()->DA_EnemyAnim = EnemyStats->DA_EnemyAnim;
+			}
+			
 			UE_LOG(LogTemp,Warning,TEXT("HP: %f, Attack Damage : %f"),EnemyStat.HP, EnemyStat.Attack_Damage);
 		}
 	}

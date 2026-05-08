@@ -27,7 +27,6 @@ protected:
 
 public:
 	virtual void Tick(float DeltaTime) override;
-
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// 카메라, 스프링암 컴포넌트 추가
@@ -38,13 +37,19 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UCombatComponent* CombatComp;
-	UPROPERTY(VisibleAnywhere, Category = "Combat")
-	UHealthComponent* HealthComp;
 	UPROPERTY(EditAnywhere, Category = "Combat")
     TSubclassOf<AWeaponBase> WeaponClass; 
-
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     AWeaponBase* SpawnedWeapon;
+
+    UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UHealthComponent* HealthComp;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* HitReactMontage;
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const{return HealthComp;}
+
+
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
@@ -66,6 +71,12 @@ public:
 	void StartDodge(const FInputActionValue& value);
 	UFUNCTION()
 	void StopDodge(const FInputActionValue& value);
+	UFUNCTION()
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+	UFUNCTION()
+	void OnDead();
+	UFUNCTION()
+	void HitMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -74,5 +85,9 @@ public:
 	float SprintSpeedMultiplier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
+	bool IsDead;
+	bool IsHurt;
 
+	// 피격 애니메이션 실행
+	void HitAnimMontage();
 };

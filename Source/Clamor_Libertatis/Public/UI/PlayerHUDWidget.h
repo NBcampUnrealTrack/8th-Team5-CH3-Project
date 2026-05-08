@@ -1,0 +1,25 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "Blueprint/UserWidget.h"
+#include "PlayerHUDWidget.generated.h"
+
+UCLASS()
+class CLAMOR_LIBERTATIS_API UPlayerHUDWidget : public UUserWidget
+{
+    GENERATED_BODY()
+
+public:
+
+    UFUNCTION()
+    void OnHealthChanged(float CurrentHealth, float MaxHealth);
+
+    UFUNCTION()
+    void OnStaminaChanged(float CurrentStamina, float MaxStamina);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void UpdateHP(float CurrentHealth, float MaxHealth);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void UpdateStamina(float CurrentStamina, float MaxStamina);
+};
