@@ -17,6 +17,8 @@
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
+    IsDead = false;
+    IsHurt = false;
 
 	// 스프링암, 카메라 컴포넌트 추가 및 설정
 	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
@@ -35,6 +37,7 @@ APlayerCharacter::APlayerCharacter()
 
     // 체력 컴포넌트 추가
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
 
     // 캐릭터 이동 속도 설정
     NormalSpeed = 500.0f;
@@ -191,6 +194,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
     if (!Controller) return;
+    if (IsHurt) return ;
+    //if (IsDead) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -212,6 +217,9 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
+    if (IsHurt) return;
+    //if (IsDead) return;
+
     if (value.Get<bool>())
     {
         Jump();
@@ -252,6 +260,9 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
+    if (IsHurt) return;
+    //if (IsDead) return;
+
     if (!CombatComp) return;
     CombatComp->BasicAttack();
 }
@@ -283,9 +294,47 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
     if (HealthComp)
     {
+        
         HealthComp->TakeDamageValue(ActualDamage);
 
+        if (HealthComp->CurrentHealth <= 0.0f)
+        {
+            OnDead();
+        }
+        //else
+        {
+            HitAnimMontage();
+        }
     }
 
     return ActualDamage;
+}
+
+void APlayerCharacter::OnDead()
+{
+    if (IsDead) return;
+    IsDead = true;
+    // 사망 애니메이션 추가 예정
+}
+
+void APlayerCharacter::HitAnimMontage()
+{
+    if (!HitReactMontage) return;
+
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->Montage_Play(HitReactMontage);
+
+        IsHurt = true; // 피격 애니메이션 끝나기 전까지 입력 차단
+
+        FOnMontageEnded EndDelegate;
+        EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
+        AnimInstance->Montage_SetEndDelegate(EndDelegate, HitReactMontage);
+    }
+}
+
+void APlayerCharacter::HitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+    IsHurt = false;
 }
