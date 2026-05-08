@@ -195,7 +195,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 {
     if (!Controller) return;
     if (IsHurt) return ;
-    //if (IsDead) return;
+    if (IsDead) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -218,7 +218,7 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
     if (IsHurt) return;
-    //if (IsDead) return;
+    if (IsDead) return;
 
     if (value.Get<bool>())
     {
@@ -261,7 +261,7 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
     if (IsHurt) return;
-    //if (IsDead) return;
+    if (IsDead) return;
 
     if (!CombatComp) return;
     CombatComp->BasicAttack();
@@ -294,29 +294,41 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
     if (HealthComp)
     {
-        
         HealthComp->TakeDamageValue(ActualDamage);
 
         if (HealthComp->CurrentHealth <= 0.0f)
         {
             OnDead();
         }
-        //else
+        else
         {
             HitAnimMontage();
         }
     }
-
     return ActualDamage;
 }
 
+// 사망 시 호출되는 함수
 void APlayerCharacter::OnDead()
 {
     if (IsDead) return;
-    IsDead = true;
-    // 사망 애니메이션 추가 예정
+    IsDead = true; // 캐릭터 입력 차단
+    
+    DeathAnimMontage();
 }
 
+// 사망 시 애니메이션 몽타주 실행
+void APlayerCharacter::DeathAnimMontage()
+{
+    if (!DeathReactMontage) return;
+
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    {
+        AnimInstance->Montage_Play(DeathReactMontage);
+    }
+}
+
+// 피격 시 애니메이션 몽타주 실행
 void APlayerCharacter::HitAnimMontage()
 {
     if (!HitReactMontage) return;
@@ -334,7 +346,10 @@ void APlayerCharacter::HitAnimMontage()
     }
 }
 
+
+// 피격 애니메이션이 끝나면 입력 허용
 void APlayerCharacter::HitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
     IsHurt = false;
 }
+

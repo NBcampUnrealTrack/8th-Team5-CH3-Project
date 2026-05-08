@@ -46,6 +46,8 @@ public:
 	UHealthComponent* HealthComp;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* HitReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* DeathReactMontage;
 	UFUNCTION(BlueprintCallable)
 	UHealthComponent* GetHealthComponent() const{return HealthComp;}
 
@@ -88,6 +90,7 @@ public:
 	bool IsDead;
 	bool IsHurt;
 
-	// 피격 애니메이션 실행
+	// 애니메이션 실행
 	void HitAnimMontage();
+	void DeathAnimMontage();
 };
