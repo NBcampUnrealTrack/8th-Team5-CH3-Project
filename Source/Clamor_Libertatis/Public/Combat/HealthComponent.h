@@ -19,6 +19,9 @@ public:
 	UHealthComponent();
 
 
+	
+	UFUNCTION(BlueprintCallable)
+	float GetMaxHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
@@ -31,6 +34,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	float GetHealthRatio() const;
+
+
 
 	UFUNCTION(BlueprintCallable)
 	bool ConsumeStamina(float Amount);

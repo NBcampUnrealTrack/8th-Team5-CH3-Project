@@ -86,7 +86,7 @@ bool UHealthComponent::ConsumeStamina(float Amount)
 	return bCanConsume;
 }
 
-float UHealthComponent::GetMaxHealth()
+float UHealthComponent::GetMaxHealth() const
 {
 	return MaxHealth;
 }

@@ -114,21 +114,18 @@ void UCombatComponent::EndAttack()
 	//몽타주에서 섹션 연결을 끊어야함
 	//OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.2f, BasicAttackAnimMontage);
 }
-void UCombatComponent::HitReact()
+void UCombatComponent::HitReact(bool bActive)
 {
 	if (!OwnerCharacter)
 		return;
-
-	if (!HitReactMontage)
+	if (IsDead())
 		return;
-
-	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
-	if (!AnimInstance)
-		return;
-
-	//데미지, 경직도, 상태 등에 대한 검증추가필
-	AnimInstance->StopAllMontages(0.1f);
-	AnimInstance->Montage_Play(HitReactMontage);
+	if (bActive) {
+		SetCombatState(ECombatEnumState::HitReact);
+	}
+	else {
+		SetCombatState(ECombatEnumState::Idle);
+	}
 }
 void UCombatComponent::CheckCombo()
 {

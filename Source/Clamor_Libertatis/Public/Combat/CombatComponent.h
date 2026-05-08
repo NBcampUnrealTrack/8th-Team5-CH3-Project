@@ -22,15 +22,12 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
-	
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|Hit")
-    UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
     TSubclassOf<ABaseThrowMagic> MagicProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
-	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");
+	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");//소켓 차후 변경
 
 protected:
 	virtual void BeginPlay() override;
@@ -67,7 +64,7 @@ public:
 #pragma endregion Attack
 
 
-	void HitReact();
+	void HitReact(bool bActive);
 
 	void SetCurrentWeapon(AWeaponBase* NewWeapon);
 	AWeaponBase* GetCurrentWeapon() const;

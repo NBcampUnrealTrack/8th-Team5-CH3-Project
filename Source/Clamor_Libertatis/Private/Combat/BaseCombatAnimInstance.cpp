@@ -107,8 +107,14 @@ void UBaseCombatAnimInstance::AnimNotify_DodgeEnd()
 
 void UBaseCombatAnimInstance::AnimNotify_StartHitReact()
 {
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->HitReact(true);
+    }
 }
 
 void UBaseCombatAnimInstance::AnimNotify_EndHitReact()
 {
+    if (UCombatComponent* Comp = GetCombatComponent()) {
+        Comp->HitReact(false);
+    }
 }

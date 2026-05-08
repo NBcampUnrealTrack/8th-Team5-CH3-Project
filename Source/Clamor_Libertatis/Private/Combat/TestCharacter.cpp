@@ -109,16 +109,16 @@ float ATestCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageE
 		DamageCauser
 	);
 	//여기에 적 공격에 대한 검증 등 추가.
-
-	if (HealthComponent)
-	{
-		HealthComponent->TakeDamageValue(ActualDamage);
-		//히트 리액션 등 추가.
-		if (CombatComponent)
-		{
-			CombatComponent->HitReact();
-		}
-	}
+// 
+// 	if (HealthComponent)
+// 	{
+// 		HealthComponent->TakeDamageValue(ActualDamage);
+// 		//히트 리액션 등 추가.
+// 		if (CombatComponent)
+// 		{
+// 			CombatComponent->HitReact();
+// 		}
+// 	}
 
 	return ActualDamage;
 }
