@@ -85,7 +85,18 @@ float UHealthComponent::GetMaxHealth()
 {
 	return MaxHealth;
 }
-
+float UHealthComponent::GetCurrentHealth() const
+{
+	return CurrentHealth;
+}
+float UHealthComponent::GetCurrentStamina() const
+{
+	return CurrentStamina;
+}
+float UHealthComponent::GetMaxStamina() const
+{ 
+	return MaxStamina; 
+}
 
 // Called when the game starts
 void UHealthComponent::BeginPlay()

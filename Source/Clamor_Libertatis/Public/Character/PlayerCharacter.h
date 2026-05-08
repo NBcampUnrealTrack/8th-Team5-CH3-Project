@@ -13,6 +13,7 @@ class UHealthComponent;
 class AWeaponBase;
 struct FInputActionValue;
 class UHealthComponent;
+class UPlayerHUDWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
@@ -72,7 +73,7 @@ public:
 	UFUNCTION()
 	void StopDodge(const FInputActionValue& value);
 	UFUNCTION()
-	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser);
+	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -81,5 +82,11 @@ public:
 	float SprintSpeedMultiplier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	TSubclassOf<UPlayerHUDWidget> PlayerHUDWidgetClass;
+
+	UPROPERTY()
+	UPlayerHUDWidget* PlayerHUDWidget;
 
 };
