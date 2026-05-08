@@ -155,16 +155,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                 );
             }
 
-            if (PlayerController->AttackAction)
+            if (PlayerController->BasicAttackAction)
             {
                 EnhancedInput->BindAction(
-                    PlayerController->AttackAction,
+                    PlayerController->BasicAttackAction,
                     ETriggerEvent::Started,
                     this,
                     &APlayerCharacter::StartBasicAttack
                 );
                 EnhancedInput->BindAction(
-                    PlayerController->AttackAction,
+                    PlayerController->BasicAttackAction,
                     ETriggerEvent::Completed,
                     this,
                     &APlayerCharacter::StopBasicAttack
@@ -184,6 +184,15 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                     ETriggerEvent::Completed,
                     this,
                     &APlayerCharacter::StopDodge
+                );
+            }
+            if (PlayerController->ActiveSkillAction)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->ActiveSkillAction,
+                    ETriggerEvent::Started,
+                    this,
+                    &APlayerCharacter::StartActiveSkill
                 );
             }
         }
@@ -279,6 +288,11 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
 void APlayerCharacter::StopDodge(const FInputActionValue& value)
 {
 
+}
+
+void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
+{
+    CombatComp->ActiveSkill();
 }
 
 

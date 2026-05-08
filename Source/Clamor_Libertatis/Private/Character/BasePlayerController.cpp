@@ -19,8 +19,9 @@ ABasePlayerController::ABasePlayerController()
 	, HUDWidgetRef(nullptr)
 	, DeathWidgetRef(nullptr)
 	, VictoryWidgetRef(nullptr)
-	, AttackAction(nullptr)
+	, BasicAttackAction(nullptr)
 	, DodgeAction(nullptr)
+	, ActiveSkillAction(nullptr)
 	, EnemyHPBarWidget(nullptr)
 {
 }
