@@ -16,6 +16,13 @@ void UEnemyHPBarWidget::UpdateHP(float CurrentHP, float MaxHP)
 
 void UEnemyHPBarWidget::SetTargetEnemy(ABaseEnemy* Enemy)
 {
+    if (TargetEnemy.IsValid() && TargetEnemy->GetEnemyStatComp())
+    {
+        TargetEnemy->GetEnemyStatComp()->OnHPChanged.RemoveDynamic(
+            this, &UEnemyHPBarWidget::UpdateHP
+        );
+    }
+
     TargetEnemy = Enemy;
 
     if (Enemy && Enemy->GetEnemyStatComp())
