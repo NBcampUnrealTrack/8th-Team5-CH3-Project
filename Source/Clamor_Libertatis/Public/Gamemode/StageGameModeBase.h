@@ -47,5 +47,5 @@ private:
 
 	ECheckStageResult CurrentStatus;
 
-
+	FTimerHandle ReturnToLobbyHandle;
 };
