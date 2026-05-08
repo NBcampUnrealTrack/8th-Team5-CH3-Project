@@ -18,8 +18,6 @@ class CLAMOR_LIBERTATIS_API UHealthComponent : public UActorComponent
 public:	
 	UHealthComponent();
 
-
-
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
 
@@ -36,25 +34,33 @@ public:
 	bool ConsumeStamina(float Amount);
 
 	UFUNCTION(BlueprintPure)
-	float GetMaxHealth();
+	float GetMaxHealth() const;
 
-	
-	UPROPERTY(EditAnywhere, Category="Health")
+	UFUNCTION(BlueprintPure)
+	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetCurrentStamina() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetMaxStamina() const;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
 	float MaxHealth = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	float CurrentHealth = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Health")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	bool bDead = false;
 	
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float MaxStamina = 100.f;
-	UPROPERTY(VisibleAnywhere, Category="Stamina")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
 	float CurrentStamina = 100.f;
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float RegenerateStaminaPerSecond = 45.f;
-	UPROPERTY(VisibleAnywhere, Category="Stamina")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
 	bool bIsStaminaRegenLocked = false;
-	UPROPERTY(EditAnywhere, Category="Stamina")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float StaminaRegenLockTime = 1.5f;
 
 
@@ -66,6 +72,7 @@ public:
 	FOnHealthChanged OnHealthChanged;
 	UPROPERTY(BlueprintAssignable)
 	FOnStaminaChanged OnStaminaChanged;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;

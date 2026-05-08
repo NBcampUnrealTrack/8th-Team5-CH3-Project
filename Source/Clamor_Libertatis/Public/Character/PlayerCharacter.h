@@ -13,6 +13,9 @@ class UHealthComponent;
 class AWeaponBase;
 struct FInputActionValue;
 
+class UHealthComponent;
+
+
 UCLASS()
 class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
 {
@@ -75,6 +78,7 @@ public:
 	void StopDodge(const FInputActionValue& value);
 	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
+
 	UFUNCTION()
 	void OnDead();
 	UFUNCTION()
@@ -93,4 +97,5 @@ public:
 	// 애니메이션 실행
 	void HitAnimMontage();
 	void DeathAnimMontage();
+
 };

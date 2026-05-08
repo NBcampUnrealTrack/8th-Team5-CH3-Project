@@ -22,15 +22,12 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
-	
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|Hit")
-    UAnimMontage* HitReactMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
     TSubclassOf<ABaseThrowMagic> MagicProjectileClass;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
-	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");
+	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");//소켓 차후 변경
 
 protected:
 	virtual void BeginPlay() override;
@@ -67,7 +64,7 @@ public:
 #pragma endregion Attack
 
 
-	void HitReact();
+	void HitReact(bool bActive);
 
 	void SetCurrentWeapon(AWeaponBase* NewWeapon);
 	AWeaponBase* GetCurrentWeapon() const;
@@ -98,11 +95,11 @@ private:
 	UPROPERTY()
     AWeaponBase* CurrentWeapon;
 
-
-	//
+	
 	void StartAttack();
 
 	void JumpToComboSection(int32 InComboIndex);
+	bool TryConsumeAttackStamina(int32 InComboIndex) const;
 	UAnimMontage* GetCurrentAttackMontage() const;
 	int32 GetMaxComboCount() const;
 	FName GetComboSectionName(int32 InComboIndex) const;
@@ -114,7 +111,7 @@ private:
 	bool bIsComboEnabled = false;//콤보입력가능한지
 	bool bComboInputBuffered = false;//콤보입력했는지
 	bool bIsAttackEnding = false;//종료중인지
-	bool bAttackInputBufferedDuringRecovery = false;//종료 딜레이 중 입력
+	bool bAttackInputBufferedDuringRecovery = false;//종료 후딜레이 중 입력
 	bool bIsInvincible = false;//회피무적
 	int32 ComboIndex = 0;
 #pragma endregion States

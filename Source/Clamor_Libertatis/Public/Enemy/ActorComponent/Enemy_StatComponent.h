@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Enemy_StatComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHPChanged, float, CurrentHP, float, MaxHP);
 
 USTRUCT()
 struct FEnemyStat
@@ -41,6 +42,10 @@ public:
 	
 	void InitializeStat();
 	FORCEINLINE FEnemyStat& GetEnemyStat() {return EnemyStat;}
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHPChanged OnHPChanged;
+
 protected:
 	virtual void BeginPlay() override;
 	

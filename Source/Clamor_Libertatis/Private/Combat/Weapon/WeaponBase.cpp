@@ -22,6 +22,8 @@ AWeaponBase::AWeaponBase()
 
 	Hitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Hitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
+	Hitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
@@ -132,12 +134,8 @@ void AWeaponBase::AttachToCharacterHand(ACharacter* TargetCharacter)
 	}
 
 	static const FName WeaponSocketName = TEXT("Hand_R_Weapon");
-
-	AttachToComponent(
-		CharacterMesh,
-		FAttachmentTransformRules::SnapToTargetNotIncludingScale,
-		WeaponSocketName
-	);
+	const FName SocketName = CharacterMesh->DoesSocketExist(WeaponSocketName) ? WeaponSocketName : NAME_None;
+	AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 
 	SetOwner(TargetCharacter);
 }
@@ -151,14 +149,14 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	const FHitResult& SweepResult
 )
 {
-	if (HitActors.Contains(OtherActor))
+	AActor* OwnerActor = GetOwner();
+
+	if (!OwnerActor || !OtherActor || OtherActor == OwnerActor || OtherActor == this)
 	{
 		return;
 	}
 
-	AActor* OwnerActor = GetOwner();
-
-	if (!OwnerActor || !OtherActor || OtherActor == OwnerActor || OtherActor == this)
+	if (HitActors.Contains(OtherActor))
 	{
 		return;
 	}
@@ -174,6 +172,10 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	HitActors.Add(OtherActor);
 
 	const float Damage = OwnerCombatComponent->GetCurrentAttackDamage();
+	if (Damage <= 0.0f)
+	{
+		return;
+	}
 
 	APawn* OwnerPawn = Cast<APawn>(OwnerActor);
 	AController* InstigatorController = OwnerPawn ? OwnerPawn->GetController() : nullptr;

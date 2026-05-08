@@ -3,8 +3,7 @@
 #include "CoreMinimal.h"
 #include "DataTable/DA_BaseEnemyAnim.h"
 #include "GameFramework/Character.h"
-#include "Components/WidgetComponent.h"
-#include "Combat/HealthComponent.h"
+
 #include "BaseEnemy.generated.h"
 
 class UEnemy_CombatComponent;
@@ -22,7 +21,8 @@ public:
 	
 	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
 	FORCEINLINE UEnemy_CombatComponent* GetEnemyCombatComp() const {return Enemy_CombatComp;}
-	
+	FORCEINLINE bool IsDead() const { return bIsDead; }
+
 	virtual void AttackToPlayer();
 	
 	UFUNCTION(BlueprintCallable)
@@ -51,10 +51,6 @@ protected:
 	TObjectPtr<UBaseEnemyAnimInst> AnimInst;
 #pragma endregion
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "ActorComponent")
-	TObjectPtr<UHealthComponent> HealthComp;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "UI")
-	TObjectPtr<UWidgetComponent> HPWidgetComp;
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<AActor> DamageTextActorClass;
 	
