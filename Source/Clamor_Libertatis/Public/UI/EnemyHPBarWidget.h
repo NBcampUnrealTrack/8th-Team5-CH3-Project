@@ -18,7 +18,7 @@ public:
     void UpdateHP(float CurrentHP, float MaxHP);
 
     void SetTargetEnemy(ABaseEnemy* Enemy);
-
+    FORCEINLINE ABaseEnemy* GetTargetEnemy() const { return TargetEnemy.Get(); }
 private:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UProgressBar> HPBar;

@@ -88,11 +88,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			Enemy_StatComp->GetEnemyStat().HP,
 			Enemy_StatComp->GetEnemyStat().MaxHP);
 	}
-	if (ABasePlayerController* PC = Cast<ABasePlayerController>(
-		GetWorld()->GetFirstPlayerController()))
-	{
-		PC->ShowEnemyHPBar(this);
-	}
+	
 	if (DamageTextActorClass)
 	{
 		FVector SpawnLocation = GetActorLocation()
