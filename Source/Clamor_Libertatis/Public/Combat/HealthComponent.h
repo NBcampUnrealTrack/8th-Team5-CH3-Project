@@ -46,16 +46,16 @@ public:
 	float GetMaxStamina() const;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
-	float MaxHealth = 100.f;
+	float MaxHealth = 5000.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
-	float CurrentHealth = 100.f;
+	float CurrentHealth;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	bool bDead = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float MaxStamina = 100.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
-	float CurrentStamina = 100.f;
+	float CurrentStamina;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float RegenerateStaminaPerSecond = 45.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")

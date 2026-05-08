@@ -69,11 +69,6 @@ void APlayerCharacter::BeginPlay()
             SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Hand_R_Weapon"));
         }
     }
-    if (HealthComp)
-    {
-        HealthComp->SetMaxHealth(100.f);
-    }
-   
     if (CombatComp && SpawnedWeapon)
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
