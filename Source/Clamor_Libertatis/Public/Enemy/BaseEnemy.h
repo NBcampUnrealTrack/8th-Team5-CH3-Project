@@ -21,7 +21,8 @@ public:
 	
 	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
 	FORCEINLINE UEnemy_CombatComponent* GetEnemyCombatComp() const {return Enemy_CombatComp;}
-	
+	FORCEINLINE bool IsDead() const { return bIsDead; }
+
 	virtual void AttackToPlayer();
 	
 	UFUNCTION(BlueprintCallable)

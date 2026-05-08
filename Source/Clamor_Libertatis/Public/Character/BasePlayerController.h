@@ -10,6 +10,34 @@ class UInputAction;
 class UPlayerHUDWidget;
 class UEnemyHPBarWidget;
 class ABaseEnemy;
+class UUserWidget;
+
+UENUM(BlueprintType)
+enum class EUIType : uint8
+{
+	GameStart,
+	HUD,
+	Lobby,
+	Death,
+	Victory,
+	MainMenu,
+	EnemyHPBar
+};
+
+USTRUCT(BlueprintType)
+struct FWidgetEntry
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSubclassOf<UUserWidget> WidgetClass;
+
+	UPROPERTY()
+	TObjectPtr<UUserWidget> WidgetInstance = nullptr;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	int32 ZOrder = 0;
+};
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -36,10 +64,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* DodgeAction;
 
-
-
 	//UI
-
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void SetStageState(ECheckStageResult NewState);
 	UFUNCTION(BlueprintCallable, Category = "UI")
@@ -67,14 +92,11 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowEnemyHPBar(ABaseEnemy* Enemy);
 	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const{return HUDWidgetRef;}
 
 protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> GameStartWidgetClass;
-	UPROPERTY()
-	TObjectPtr<UUserWidget> GameStartWidgetRef;
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UUserWidget> HUDWidgetClass;
 	UPROPERTY(EditAnywhere, Category = "UI")
@@ -87,23 +109,53 @@ protected:
 	TSubclassOf<UUserWidget> MainMenuWidgetClass;
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<UEnemyHPBarWidget> EnemyHPBarWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "UI")
+	float EnemyHPBarShowDistance = 700.f;
+
+
 	UPROPERTY()
 	TObjectPtr<UEnemyHPBarWidget> EnemyHPBarWidget;
 	UPROPERTY()
 	TObjectPtr<UPlayerHUDWidget> HUDWidgetRef;
-private:
 
+	UPROPERTY(EditAnywhere, Category = "UI")
+	float HPBarUpdateInterval = 0.15f;
+
+	FTimerHandle HPBarUpdateTimerHandle;
+
+	void UpdateEnemyHPBar();
+
+private:
+	static constexpr int32 ZOrder_HUD = 0;
+	static constexpr int32 ZOrder_Victory = 10;
+	static constexpr int32 ZOrder_Death = 20;
+	static constexpr int32 ZOrder_MainMenu = 30;
+
+	UPROPERTY() 
+	TObjectPtr<UUserWidget> GameStartWidgetRef;
 	UPROPERTY()
 	TObjectPtr<UUserWidget> LobbyWidgetRef;
-
 	UPROPERTY()
 	TObjectPtr<UUserWidget> DeathWidgetRef;
-
 	UPROPERTY()
 	TObjectPtr<UUserWidget> VictoryWidgetRef;
-
 	UPROPERTY()
 	TObjectPtr<UUserWidget> MainMenuWidgetRef;
 
-	
+	template<typename T>
+	T* GetOrCreateWidget(TObjectPtr<T>& WidgetRef, TSubclassOf<T> WidgetClass, int32 ZOrder = 0)
+	{
+		if (!WidgetRef && WidgetClass)
+		{
+			WidgetRef = CreateWidget<T>(this, WidgetClass);
+			if (WidgetRef) WidgetRef->AddToViewport(ZOrder);
+		}
+		return WidgetRef.Get();
+	}
+
+	void ShowWidgetInternal(TObjectPtr<UUserWidget>& WidgetRef, TSubclassOf<UUserWidget> WidgetClass, int32 ZOrder = 0);
+	void HideWidgetInternal(TObjectPtr<UUserWidget>& WidgetRef);
+
+	void InitHUDWidget();
+	ABaseEnemy* FindClosestEnemy() const;
 };
