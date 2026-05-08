@@ -12,7 +12,7 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 
-#include "UI/PlayerHUDWidget.h"
+#include "Blueprint/UserWidget.h"
 
 APlayerCharacter::APlayerCharacter()
 {
@@ -69,7 +69,11 @@ void APlayerCharacter::BeginPlay()
             SpawnedWeapon->AttachToComponent(GetMesh(), FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("Hand_R_Weapon"));
         }
     }
-
+    if (HealthComp)
+    {
+        HealthComp->SetMaxHealth(100.f);
+    }
+   
     if (CombatComp && SpawnedWeapon)
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
@@ -291,11 +295,15 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         EventInstigator,
         DamageCauser
     );
+    UE_LOG(LogTemp, Warning, TEXT("Player Took Damage: %f"), ActualDamage);
 
     if (HealthComp)
     {
         
         HealthComp->TakeDamageValue(ActualDamage);
+
+        UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
+            HealthComp->CurrentHealth);
 
         if (HealthComp->CurrentHealth <= 0.0f)
         {
@@ -305,7 +313,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         {
             HitAnimMontage();
         }
-    }
+}
 
     return ActualDamage;
 }

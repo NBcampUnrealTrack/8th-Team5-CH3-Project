@@ -18,8 +18,6 @@ class CLAMOR_LIBERTATIS_API UHealthComponent : public UActorComponent
 public:	
 	UHealthComponent();
 
-
-
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
 
@@ -38,7 +36,15 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetMaxHealth();
 
-	
+	UFUNCTION(BlueprintPure)
+	float GetCurrentHealth() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetCurrentStamina() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetMaxStamina() const;
+
 	UPROPERTY(EditAnywhere, Category="Health")
 	float MaxHealth = 100.f;
 	UPROPERTY(VisibleAnywhere, Category="Health")
@@ -66,6 +72,7 @@ public:
 	FOnHealthChanged OnHealthChanged;
 	UPROPERTY(BlueprintAssignable)
 	FOnStaminaChanged OnStaminaChanged;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
