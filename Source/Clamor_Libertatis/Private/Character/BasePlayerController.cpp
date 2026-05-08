@@ -1,8 +1,11 @@
 ﻿#include "Character/BasePlayerController.h"
+#include "Character/PlayerCharacter.h"
+#include "Combat/HealthComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
+#include "UI/PlayerHUDWidget.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -10,6 +13,9 @@ ABasePlayerController::ABasePlayerController()
 	, JumpAction(nullptr)
 	, LookAction(nullptr)
 	, SprintAction(nullptr)
+	, HUDWidgetRef(nullptr)
+	, DeathWidgetRef(nullptr)
+	, VictoryWidgetRef(nullptr)
 	, AttackAction(nullptr)
 	, DodgeAction(nullptr)
 {
@@ -42,14 +48,61 @@ void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 	switch (NewState)
 	{
 	case ECheckStageResult::NotEnd:
+	{
 		if (!HUDWidgetRef && HUDWidgetClass)
 		{
-			HUDWidgetRef = CreateWidget<UUserWidget>(this, HUDWidgetClass);
-			if (HUDWidgetRef) HUDWidgetRef->AddToViewport(0);
+			HUDWidgetRef = CreateWidget<UPlayerHUDWidget>(
+				this,
+				HUDWidgetClass
+			);
+
+			if (HUDWidgetRef)
+			{
+				HUDWidgetRef->AddToViewport(0);
+
+				APlayerCharacter* PlayerCharacter =
+					Cast<APlayerCharacter>(GetPawn());
+
+				if (PlayerCharacter)
+				{
+					UHealthComponent* HealthComp =
+						PlayerCharacter->GetHealthComponent();
+
+					if (HealthComp)
+					{
+						HUDWidgetRef->OnHealthChanged(
+							HealthComp->CurrentHealth,
+							HealthComp->MaxHealth
+						);
+
+						HUDWidgetRef->OnStaminaChanged(
+							HealthComp->CurrentStamina,
+							HealthComp->MaxStamina
+						);
+
+						HealthComp->OnHealthChanged.AddDynamic(
+							HUDWidgetRef,
+							&UPlayerHUDWidget::OnHealthChanged
+						);
+
+						HealthComp->OnStaminaChanged.AddDynamic(
+							HUDWidgetRef,
+							&UPlayerHUDWidget::OnStaminaChanged
+						);
+					}
+				}
+			}
 		}
+
 		if (HUDWidgetRef)
-			HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
+		{
+			HUDWidgetRef->SetVisibility(
+				ESlateVisibility::Visible
+			);
+		}
+
 		break;
+	}
 
 	case ECheckStageResult::Win:
 		ShowVictoryUI();
@@ -73,7 +126,6 @@ void ABasePlayerController::ShowGameStartUI()
 	
 	bShowMouseCursor = true;
 	FInputModeUIOnly Mode;
-	Mode.SetWidgetToFocus(GameStartWidgetRef->TakeWidget());
 	SetInputMode(Mode);
 }
 
@@ -172,7 +224,6 @@ void ABasePlayerController::ShowMainMenu()
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 
 	FInputModeUIOnly Mode;
-	Mode.SetWidgetToFocus(MainMenuWidgetRef->TakeWidget());
 	SetInputMode(Mode);
 
 	bShowMouseCursor = true;

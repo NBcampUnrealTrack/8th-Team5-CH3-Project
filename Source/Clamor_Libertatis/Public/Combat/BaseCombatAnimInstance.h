@@ -26,6 +26,8 @@ protected:
     UCombatComponent* CombatComponent;
 
 public:
+
+#pragma region Attack
     UFUNCTION()
     void AnimNotify_EnableCombo();
 
@@ -43,4 +45,38 @@ public:
 
     UFUNCTION()
     void AnimNotify_DisableWeaponHitbox();
+#pragma endregion Attack
+
+    UFUNCTION()
+    void AnimNotify_UseSkill();
+
+    
+#pragma region Dodge
+    UFUNCTION()
+    void AnimNotify_EnableInvincible();
+    
+    UFUNCTION()
+    void AnimNotify_DisableInvincible();
+
+    UFUNCTION()
+    void AnimNotify_DodgeEnd();
+#pragma endregion Dodge
+
+#pragma region HitReact
+    
+    UFUNCTION()
+    void AnimNotify_StartHitReact();
+    
+    UFUNCTION()
+    void AnimNotify_EndHitReact();
+
+
+#pragma endregion GHitReactuard
+
+#pragma region Guard
+
+
+
+#pragma endregion Guard
+
 };

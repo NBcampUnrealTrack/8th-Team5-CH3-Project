@@ -4,13 +4,16 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Combat/CombatEnumTypes.h"
 #include "CombatComponent.generated.h"
 
 class ACharacter;
 class AWeaponBase;
 class UHealthComponent;
 class UAnimMontage;
+class ABaseThrowMagic;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogCombat, Log, All)
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
@@ -19,6 +22,15 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
+	
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|Hit")
+    UAnimMontage* HitReactMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
+    TSubclassOf<ABaseThrowMagic> MagicProjectileClass;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
+	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");
 
 protected:
 	virtual void BeginPlay() override;
@@ -26,9 +38,17 @@ protected:
 
 public:
 
+
+#pragma region Dodge
+	bool IsInvincible() { return bIsInvincible; }
+	void SetInvincible(bool bEnable);
+	void EndDodge();
+#pragma endregion Dodge
+
+
+#pragma region Attack
 	UFUNCTION()
 	void BasicAttack();//플레이어입력받아 공격시작/콤보이행
-
 	UFUNCTION()
 	void EnableCombo();//콤보 입력 가능
 	UFUNCTION()
@@ -42,12 +62,30 @@ public:
 	UFUNCTION()
 	void EndAttack();
 
+
+	void ActiveSkill();//스킬 발동(특수공격?)
+#pragma endregion Attack
+
+
+	void HitReact();
+
 	void SetCurrentWeapon(AWeaponBase* NewWeapon);
 	AWeaponBase* GetCurrentWeapon() const;
 
 	int32 GetCurrentComboIndex() const;
 	float GetCurrentAttackDamage() const;
 	float GetCurrentAttackStaminaCost() const;
+
+
+#pragma region CombatState
+
+	void SetCombatState(ECombatEnumState NewState);
+	bool IsIdle() const { return CombatState == ECombatEnumState::Idle; }
+	bool IsAttacking() const { return CombatState == ECombatEnumState::Attacking; }
+	bool IsDodging() const { return CombatState == ECombatEnumState::Dodging; }
+	bool IsDead() const { return CombatState == ECombatEnumState::Dead; }
+
+#pragma endregion CombatState
 
 
 private:
@@ -60,6 +98,8 @@ private:
 	UPROPERTY()
     AWeaponBase* CurrentWeapon;
 
+
+	//
 	void StartAttack();
 
 	void JumpToComboSection(int32 InComboIndex);
@@ -69,12 +109,13 @@ private:
 	
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
-
-	bool bIsAttacking = false;//공격 재생중
+#pragma region States
+	ECombatEnumState CombatState = ECombatEnumState::Idle;//현재 입력 상태
 	bool bIsComboEnabled = false;//콤보입력가능한지
 	bool bComboInputBuffered = false;//콤보입력했는지
 	bool bIsAttackEnding = false;//종료중인지
 	bool bAttackInputBufferedDuringRecovery = false;//종료 딜레이 중 입력
+	bool bIsInvincible = false;//회피무적
 	int32 ComboIndex = 0;
-
+#pragma endregion States
 };

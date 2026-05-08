@@ -12,6 +12,8 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 
+#include "UI/PlayerHUDWidget.h"
+
 APlayerCharacter::APlayerCharacter()
 {
 	PrimaryActorTick.bCanEverTick = false;
@@ -35,6 +37,7 @@ APlayerCharacter::APlayerCharacter()
 
     // 체력 컴포넌트 추가
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
 
     // 캐릭터 이동 속도 설정
     NormalSpeed = 500.0f;
@@ -71,6 +74,9 @@ void APlayerCharacter::BeginPlay()
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
     }
+
+    ABasePlayerController* PC =
+        Cast<ABasePlayerController>(GetController());
 }
 
 void APlayerCharacter::OnConstruction(const FTransform& Transform)
@@ -188,7 +194,8 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
     if (!Controller) return;
-    if (IsHurt || IsDead) return ;
+    if (IsHurt) return ;
+    //if (IsDead) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -211,8 +218,9 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
     if (IsHurt) return;
+    //if (IsDead) return;
 
-    if (value.Get<bool>() && IsDead == false)
+    if (value.Get<bool>())
     {
         Jump();
     }
@@ -252,7 +260,8 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (IsHurt || IsDead) return;
+    if (IsHurt) return;
+    //if (IsDead) return;
 
     if (!CombatComp) return;
     CombatComp->BasicAttack();
@@ -282,16 +291,17 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         EventInstigator,
         DamageCauser
     );
-
+    HealthComp->GetMaxHealth();
     if (HealthComp)
     {
+        
         HealthComp->TakeDamageValue(ActualDamage);
 
         if (HealthComp->CurrentHealth <= 0.0f)
         {
             OnDead();
         }
-        else
+        //else
         {
             HitAnimMontage();
         }

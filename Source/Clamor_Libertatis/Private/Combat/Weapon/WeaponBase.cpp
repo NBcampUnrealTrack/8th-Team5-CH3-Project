@@ -25,6 +25,10 @@ AWeaponBase::AWeaponBase()
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
+	//디버그용
+	//Hitbox->ShapeColor = FColor::Green;
+	//Hitbox->SetLineThickness(3.f);
+	//Hitbox->SetHiddenInGame(true);
 
 
 }
@@ -97,6 +101,8 @@ void AWeaponBase::EnableHitbox()
 
 	Hitbox->SetGenerateOverlapEvents(true);
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+	Hitbox->SetHiddenInGame(false);
+	
 }
 
 void AWeaponBase::DisableHitbox()
@@ -108,6 +114,7 @@ void AWeaponBase::DisableHitbox()
 
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	Hitbox->SetHiddenInGame(true);
 }
 
 void AWeaponBase::AttachToCharacterHand(ACharacter* TargetCharacter)
@@ -144,6 +151,11 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	const FHitResult& SweepResult
 )
 {
+	if (HitActors.Contains(OtherActor))
+	{
+		return;
+	}
+
 	AActor* OwnerActor = GetOwner();
 
 	if (!OwnerActor || !OtherActor || OtherActor == OwnerActor || OtherActor == this)
@@ -151,12 +163,7 @@ void AWeaponBase::OnHitboxBeginOverlap(
 		return;
 	}
 
-	if (HitActors.Contains(OtherActor))
-	{
-		return;
-	}
 
-	HitActors.Add(OtherActor);
 
 	UCombatComponent* OwnerCombatComponent = OwnerActor->FindComponentByClass<UCombatComponent>();
 
@@ -164,6 +171,7 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	{
 		return;
 	}
+	HitActors.Add(OtherActor);
 
 	const float Damage = OwnerCombatComponent->GetCurrentAttackDamage();
 

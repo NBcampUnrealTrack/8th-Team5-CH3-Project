@@ -9,9 +9,9 @@
 class UCameraComponent;
 class USpringArmComponent;
 class UCombatComponent;
+class UHealthComponent;
 class AWeaponBase;
 struct FInputActionValue;
-class UHealthComponent;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
@@ -29,7 +29,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// 컴포넌트 추가
+	// 카메라, 스프링암 컴포넌트 추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -39,14 +39,16 @@ public:
 	UCombatComponent* CombatComp;
 	UPROPERTY(EditAnywhere, Category = "Combat")
     TSubclassOf<AWeaponBase> WeaponClass; 
-
     UPROPERTY(VisibleAnywhere, Category = "Combat")
     AWeaponBase* SpawnedWeapon;
+
     UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* HitReactMontage;
-	
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const{return HealthComp;}
+
 
 	// 캐릭터 행동 입력
 	UFUNCTION()

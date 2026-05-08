@@ -6,6 +6,9 @@
 #include "Combat/HealthComponent.h"
 #include "GameFramework/Character.h"
 #include "PlayMontageCallbackProxy.h"
+#include "Combat/BaseThrowMagic.h"
+
+DEFINE_LOG_CATEGORY(LogCombat)
 
 UCombatComponent::UCombatComponent()
 {
@@ -31,24 +34,24 @@ void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActo
 
 }
 
+
 void UCombatComponent::BasicAttack()
 {
 	if (!OwnerCharacter || !CurrentWeapon)
 		return;
-
-	if (bIsAttacking) 
+	if (IsAttacking()) 
 	{
 		if (bIsComboEnabled and ComboIndex < GetMaxComboCount()) 
 		{
 			bComboInputBuffered = true;
-			UE_LOG(LogTemp, Warning, TEXT("Combo Input Buffered"));
+			UE_LOG(LogCombat, Warning, TEXT("Combo Input Buffered"));
 			return;
 		}
 		if (bIsAttackEnding)
 		{
 			bAttackInputBufferedDuringRecovery = true;
 
-			UE_LOG(LogTemp, Warning, TEXT("Recovery Attack Input Buffered"));
+			UE_LOG(LogCombat, Warning, TEXT("Recovery Attack Input Buffered"));
 			return;
 		}
 		return;
@@ -70,7 +73,7 @@ void UCombatComponent::StartAttack()
 		return;
 
 	//입력받을 세팅 초기화
-	bIsAttacking = true;
+	SetCombatState(ECombatEnumState::Attacking);
 	bIsComboEnabled = false;//노티받고 진행
 	bComboInputBuffered = false;
 	bIsAttackEnding = false;
@@ -105,30 +108,46 @@ void UCombatComponent::EndAttack()
 {
 	DisableWeaponHitbox();
 	ComboIndex = 0;
-	bIsAttacking = false;
+	SetCombatState(ECombatEnumState::Idle);
 	bComboInputBuffered = false;
 	bIsComboEnabled = false;
 	bIsAttackEnding = false;
 	bAttackInputBufferedDuringRecovery = false;
 
-	UE_LOG(LogTemp, Warning, TEXT("EndAttack-process"));
+	UE_LOG(LogCombat, Warning, TEXT("EndAttack-process"));
 	//몽타주에서 섹션 연결을 끊어야함
 	//OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.2f, BasicAttackAnimMontage);
+}
+void UCombatComponent::HitReact()
+{
+	if (!OwnerCharacter)
+		return;
+
+	if (!HitReactMontage)
+		return;
+
+	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+	if (!AnimInstance)
+		return;
+
+	//데미지, 경직도, 상태 등에 대한 검증추가필
+	AnimInstance->StopAllMontages(0.1f);
+	AnimInstance->Montage_Play(HitReactMontage);
 }
 void UCombatComponent::CheckCombo()
 {
 	UE_LOG(
-		LogTemp,
+		LogCombat,
 		Warning,
 		TEXT("CheckCombo / IsAttacking=%d, ComboEnabled=%d, ComboBuffered=%d, ComboIndex=%d, MaxCombo=%d"),
-		bIsAttacking,
+		IsAttacking(),
 		bIsComboEnabled,
 		bComboInputBuffered,
 		ComboIndex,
 		GetMaxComboCount()
 	);
 
-	if (bIsAttacking == false)
+	if (IsAttacking() == false)
 		return;
 	bIsComboEnabled = false;
 
@@ -153,7 +172,7 @@ void UCombatComponent::CheckCombo()
 		}
 		return;
 	}
-	UE_LOG(LogTemp, Warning, TEXT("CheckCombo-EndAttack"));
+	UE_LOG(LogCombat, Warning, TEXT("CheckCombo-EndAttack"));
 	bIsAttackEnding = true;
 	//EndAttack();
 }
@@ -188,9 +207,127 @@ float UCombatComponent::GetCurrentAttackStaminaCost() const
 	return CurrentWeapon->GetAttackStaminaCost(ComboIndex);
 }
 
+void UCombatComponent::SetCombatState(ECombatEnumState NewState)
+{
+	if (CombatState == ECombatEnumState::Dead && NewState != ECombatEnumState::Dead)
+		return;
+
+	CombatState = NewState;
+}
+
+void UCombatComponent::SetInvincible(bool bEnable)
+{
+	if (CombatState == ECombatEnumState::Dead)
+	{
+		bIsInvincible = false;
+		return;
+	}
+
+	bIsInvincible = bEnable;
+
+}
+
+void UCombatComponent::EndDodge()
+{
+	if (CombatState == ECombatEnumState::Dodging)
+	{
+		SetCombatState(ECombatEnumState::Idle);
+	}
+
+	bIsInvincible = false;
+	SetCombatState(ECombatEnumState::Idle);
+}
+
+void UCombatComponent::ActiveSkill()
+{
+	if (!MagicProjectileClass)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	AController* MyController = OwnerCharacter->GetController();
+	if (!MyController)
+	{
+		return;
+	}
+
+	FVector ViewLocation;
+	FRotator ViewRotation;
+
+	MyController->GetPlayerViewPoint(ViewLocation, ViewRotation);
+	float AimTraceDistance = 10000.f;//
+	const FVector TraceStart = ViewLocation;//카메라지점
+	const FVector TraceEnd = TraceStart + ViewRotation.Vector() * AimTraceDistance;//카메라가 바라보는 지점 10000거리까지
+
+	FHitResult HitResult;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(OwnerCharacter);
+	QueryParams.bTraceComplex = true;
+
+	const bool bHit = World->LineTraceSingleByChannel(
+		HitResult,
+		TraceStart,
+		TraceEnd,
+		ECC_Visibility,
+		QueryParams
+	);
+
+	FVector TargetLocation;
+
+	if (bHit)
+	{
+		TargetLocation = HitResult.ImpactPoint;
+	}
+	else
+	{
+		TargetLocation = TraceEnd;
+	}
+
+	FVector SpawnLocation;
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	if (OwnerMesh && OwnerMesh->DoesSocketExist(SkillSpawnSocketName))
+	{
+		SpawnLocation = OwnerMesh->GetSocketLocation(SkillSpawnSocketName);
+	}
+	else
+	{
+		SpawnLocation = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * 50.0f;
+	}
+
+	const FVector FireDirection = (TargetLocation - SpawnLocation).GetSafeNormal();
+
+	if (FireDirection.IsNearlyZero())
+	{
+		return;
+	}
+
+	const FRotator SpawnRotation = FireDirection.Rotation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+	SpawnParams.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	World->SpawnActor<ABaseThrowMagic>(
+		MagicProjectileClass,
+		SpawnLocation,
+		SpawnRotation,
+		SpawnParams
+	);
+
+}
+
 void UCombatComponent::EnableCombo()
 {
-	if (!bIsAttacking)
+	if (!IsAttacking())
 		return;
 
 	bIsComboEnabled = true;
@@ -198,7 +335,7 @@ void UCombatComponent::EnableCombo()
 
 void UCombatComponent::DisableCombo()
 {
-	if (!bIsAttacking)
+	if (!IsAttacking())
 		return;
 
 	bIsComboEnabled = false;
@@ -242,7 +379,7 @@ void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 		return;
 	}
 
-	UE_LOG(LogTemp, Warning, TEXT("MontageEnded-EndAttack"));
+	UE_LOG(LogCombat, Warning, TEXT("MontageEnded-EndAttack"));
 	EndAttack();
 }
 
