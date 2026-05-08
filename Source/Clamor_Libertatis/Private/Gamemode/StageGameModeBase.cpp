@@ -6,6 +6,7 @@
 #include "GameFramework/GameStateBase.h"
 #include "Gamemode/StageManagerSubsystem.h"
 #include "Gamemode/CLGameInstance.h"
+#include "Character/BasePlayerController.h"
 
 
 // 게임 승리
@@ -19,6 +20,18 @@ void AStageGameModeBase::OnStageClear()
         GI->AddWonBattle();
         UE_LOG(LogTemp, Warning, TEXT("[Stage Clear] WonBattleCount: %d"), GI->GetWonBattleCount());
     }
+
+    UE_LOG(LogTemp, Warning, TEXT("Stage Win"));
+
+    if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
+    {
+        PC->ShowVictoryUI();
+    }
+
+    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
+    {
+        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+    }, 5.f, false);
 }
 
 // 플레이어 한명, 사망 가정
@@ -27,6 +40,16 @@ void AStageGameModeBase::OnGameOver()
 {
     CurrentStatus = ECheckStageResult::Defeat;
     UE_LOG(LogTemp, Warning, TEXT("Player Died"));
+
+    if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
+    {
+        PC->ShowDeathUI();
+    }
+
+    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
+    {
+        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+    }, 5.f, false);
 }
 
 void AStageGameModeBase::BeginPlay()
@@ -42,20 +65,10 @@ void AStageGameModeBase::BeginPlay()
 
     if (UStageManagerSubsystem* StageSub = GetWorld()->GetSubsystem<UStageManagerSubsystem>())
     {
+        UE_LOG(LogTemp, Warning, TEXT("Subsystem binding completed"));
         StageSub->OnAllEnemiesDead.AddDynamic(this, &AStageGameModeBase::OnStageClear);
         StageSub->OnPlayerDead.AddDynamic(this, &AStageGameModeBase::OnGameOver);
     }
-
-    // TODO:: 플레이어 캐릭터에 UHealthComponent 사용시 반영
-    /** 
-    if (AActor* Player = UGameplayStatics::GetActorOfClass(GetWorld(), ::StaticClass()))
-    {
-        if (UHealthComponent* HC = Player->GetComponentByClass<UHealthComponent>())
-        {
-            HC->OnDeath.AddDynamic(this, &AStageGameModeBase::OnGameOver);
-        }
-    }
-    **/
 }
 
 void AStageGameModeBase::HandleStageResult()

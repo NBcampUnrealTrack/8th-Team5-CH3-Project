@@ -2,6 +2,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Enemy/BaseEnemy.h"
 #include "Combat/HealthComponent.h"
+#include "Character/PlayerCharacter.h"
 
 UStageManagerSubsystem::UStageManagerSubsystem() : RemainingEnemyCount(0)
 {
@@ -22,17 +23,15 @@ void UStageManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 			HC->OnDeath.AddDynamic(this, &UStageManagerSubsystem::OnEnemyDeath);
 		}
 	}
-
-	// TODO:: 플레이어 캐릭터 확정 후 클래스 교체
-	/**
-	if (AActor* Player = UGameplayStatics::GetActorOfClass(&InWorld, ::StaticClass()))
+	
+	if (AActor* Player = UGameplayStatics::GetActorOfClass(&InWorld, APlayerCharacter::StaticClass()))
 	{
 		if (UHealthComponent* HC = Player->GetComponentByClass<UHealthComponent>())
 		{
 			HC->OnDeath.AddDynamic(this, &UStageManagerSubsystem::OnPlayerDeath);
 		}
 	}
-	**/
+	
 }
 
 void UStageManagerSubsystem::OnEnemyDeath()
