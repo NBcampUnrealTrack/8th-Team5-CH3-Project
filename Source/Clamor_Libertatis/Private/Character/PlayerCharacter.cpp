@@ -291,7 +291,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         EventInstigator,
         DamageCauser
     );
-    HealthComp->GetMaxHealth();
+
     if (HealthComp)
     {
         
