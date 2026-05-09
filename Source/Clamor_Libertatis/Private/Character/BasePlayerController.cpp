@@ -6,9 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/PlayerHUDWidget.h"
-#include "UI/EnemyHPBarWidget.h"
-#include "Enemy/BaseEnemy.h"
-#include "EngineUtils.h" 
+#include "UI/UIManager.h"
+#include "UI/EnemyTrackerComponent.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -16,12 +15,12 @@ ABasePlayerController::ABasePlayerController()
 	, JumpAction(nullptr)
 	, LookAction(nullptr)
 	, SprintAction(nullptr)
-	, HUDWidgetRef(nullptr)
-	, DeathWidgetRef(nullptr)
-	, VictoryWidgetRef(nullptr)
-	, AttackAction(nullptr)
+	, BasicAttackAction(nullptr)
 	, DodgeAction(nullptr)
-	, EnemyHPBarWidget(nullptr)
+	, ActiveSkillAction(nullptr)
+	, UIManager(nullptr)
+	, EnemyTracker(nullptr)
+	, HUDWidgetRef(nullptr)
 {
 }
 
@@ -29,28 +28,44 @@ void ABasePlayerController::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (ULocalPlayer* LocalPlayer = GetLocalPlayer())
-	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>())
-		{
-			if (InputMappingContext)
-			{
-				Subsystem->AddMappingContext(InputMappingContext, 0);
-			}
-		}
-	}
-	ShowGameStartUI();
+	InitializeInput();
 
-	GetOrCreateWidget(EnemyHPBarWidget, EnemyHPBarWidgetClass);
-	if (EnemyHPBarWidget)
-		EnemyHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
-	GetWorldTimerManager().SetTimer(HPBarUpdateTimerHandle, this, &ABasePlayerController::UpdateEnemyHPBar, HPBarUpdateInterval, true);
+	if (UIManager)
+	{
+		UIManager->Initialize(this);
+	}
+
+	if (EnemyTracker)
+	{
+		EnemyTracker->Initialize(this);
+		EnemyTracker->StartTracking();
+	}
+
+	ShowGameStartUI();
+}
+
+// ─────────────────────────────────────────────────────────
+// Private
+// ─────────────────────────────────────────────────────────
+
+void ABasePlayerController::InitializeInput()
+{
+	ULocalPlayer* LocalPlayer = GetLocalPlayer();
+	if (!LocalPlayer) return;
+
+	auto* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+	if (Subsystem && InputMappingContext)
+	{
+		Subsystem->AddMappingContext(InputMappingContext, 0);
+	}
 }
 
 void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 {
-	HideWidgetInternal(DeathWidgetRef);
-	HideWidgetInternal(VictoryWidgetRef);
+	if (!UIManager) return;
+
+	UIManager->HideWidget(EUIType::Death);
+	UIManager->HideWidget(EUIType::Victory);
 
 	switch (NewState)
 	{
@@ -58,11 +73,9 @@ void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 		InitHUDWidget();
 		if (HUDWidgetRef) HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
 		break;
-
 	case ECheckStageResult::Win:
 		ShowVictoryUI();
 		break;
-
 	case ECheckStageResult::Defeat:
 		ShowDeathUI();
 		break;
@@ -71,30 +84,51 @@ void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 
 void ABasePlayerController::ShowGameStartUI()
 {
-	ShowWidgetInternal(GameStartWidgetRef, GameStartWidgetClass);
+	if (!UIManager) return;
+	UIManager->ShowWidget(EUIType::GameStart);
+	if (EnemyTracker) EnemyTracker->SetSuppressed(true);
 	SetInputMode(FInputModeUIOnly{});
 	bShowMouseCursor = true;
 }
 
 void ABasePlayerController::HideGameStartUI()
 {
-	HideWidgetInternal(GameStartWidgetRef);
+	if (!UIManager) return;
+	UIManager->HideWidget(EUIType::GameStart);
+	if (EnemyTracker) EnemyTracker->SetSuppressed(false);
 	SetInputMode(FInputModeGameOnly{});
 	bShowMouseCursor = false;
 }
 
-void ABasePlayerController::ShowLobbyUI() { ShowWidgetInternal(LobbyWidgetRef, LobbyWidgetClass); }
-void ABasePlayerController::HideLobbyUI() { HideWidgetInternal(LobbyWidgetRef); }
-
-void ABasePlayerController::ShowDeathUI() { ShowWidgetInternal(DeathWidgetRef, DeathWidgetClass, ZOrder_Death); }
-void ABasePlayerController::HideDeathUI() { HideWidgetInternal(DeathWidgetRef); }
-
-void ABasePlayerController::ShowVictoryUI() { ShowWidgetInternal(VictoryWidgetRef, VictoryWidgetClass, ZOrder_Victory); }
-void ABasePlayerController::HideVictoryUI() { HideWidgetInternal(VictoryWidgetRef); }
+void ABasePlayerController::ShowLobbyUI()
+{
+	if (UIManager) UIManager->ShowWidget(EUIType::Lobby);
+}
+void ABasePlayerController::HideLobbyUI()
+{
+	if (UIManager) UIManager->HideWidget(EUIType::Lobby);
+}
+void ABasePlayerController::ShowDeathUI()
+{
+	if (UIManager) UIManager->ShowWidget(EUIType::Death);
+}
+void ABasePlayerController::HideDeathUI()
+{
+	if (UIManager) UIManager->HideWidget(EUIType::Death);
+}
+void ABasePlayerController::ShowVictoryUI()
+{
+	if (UIManager) UIManager->ShowWidget(EUIType::Victory);
+}
+void ABasePlayerController::HideVictoryUI()
+{
+	if (UIManager) UIManager->HideWidget(EUIType::Victory);
+}
 
 void ABasePlayerController::ShowMainMenu()
 {
-	ShowWidgetInternal(MainMenuWidgetRef, MainMenuWidgetClass, ZOrder_MainMenu);
+	if (!UIManager) return;
+	UIManager->ShowWidget(EUIType::MainMenu);
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 	SetInputMode(FInputModeUIOnly{});
 	bShowMouseCursor = true;
@@ -102,11 +136,13 @@ void ABasePlayerController::ShowMainMenu()
 
 void ABasePlayerController::ContinueGame()
 {
-	HideWidgetInternal(MainMenuWidgetRef);
+	if (!UIManager) return;
+	UIManager->HideWidget(EUIType::MainMenu);
 	UGameplayStatics::SetGamePaused(GetWorld(), false);
 	SetInputMode(FInputModeGameOnly{});
 	bShowMouseCursor = false;
 }
+
 void ABasePlayerController::RestartGame()
 {
 	UGameplayStatics::SetGamePaused(GetWorld(), false);
@@ -118,20 +154,6 @@ void ABasePlayerController::RestartGame()
 void ABasePlayerController::QuitGame()
 {
 	UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
-}
-
-void ABasePlayerController::ShowWidgetInternal(TObjectPtr<UUserWidget>& WidgetRef,
-	TSubclassOf<UUserWidget> WidgetClass,
-	int32 ZOrder)
-{
-	if (auto* W = GetOrCreateWidget(WidgetRef, WidgetClass, ZOrder))
-		W->SetVisibility(ESlateVisibility::Visible);
-}
-
-void ABasePlayerController::HideWidgetInternal(TObjectPtr<UUserWidget>& WidgetRef)
-{
-	if (WidgetRef)
-		WidgetRef->SetVisibility(ESlateVisibility::Collapsed);
 }
 
 void ABasePlayerController::InitHUDWidget()
@@ -154,55 +176,4 @@ void ABasePlayerController::InitHUDWidget()
 
 	HealthComp->OnHealthChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnHealthChanged);
 	HealthComp->OnStaminaChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnStaminaChanged);
-}
-
-ABaseEnemy* ABasePlayerController::FindClosestEnemy() const
-{
-	APawn* MyPawn = GetPawn();
-	if (!MyPawn) return nullptr;
-
-	ABaseEnemy* ClosestEnemy = nullptr;
-	float ClosestDistSq = FMath::Square(EnemyHPBarShowDistance);
-	FVector MyLoc = MyPawn->GetActorLocation();
-
-	for (TActorIterator<ABaseEnemy> It(GetWorld()); It; ++It)
-	{
-		ABaseEnemy* Enemy = *It;
-		if (!Enemy || Enemy->IsDead()) continue;
-
-		const float DistSq = FVector::DistSquared(MyLoc, Enemy->GetActorLocation());
-		if (DistSq < ClosestDistSq)
-		{
-			ClosestDistSq = DistSq;
-			ClosestEnemy = Enemy;
-		}
-	}
-	return ClosestEnemy;
-}
-
-void ABasePlayerController::UpdateEnemyHPBar()
-{
-	if (GameStartWidgetRef && GameStartWidgetRef->IsVisible())
-	{
-		if (EnemyHPBarWidget) EnemyHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
-		return;
-	}
-	ABaseEnemy* ClosestEnemy = FindClosestEnemy();
-	if (!ClosestEnemy)
-	{
-		if (EnemyHPBarWidget) EnemyHPBarWidget->SetVisibility(ESlateVisibility::Hidden);
-		return;
-	}
-	GetOrCreateWidget(EnemyHPBarWidget, EnemyHPBarWidgetClass);
-	if (EnemyHPBarWidget)
-	{
-		if (EnemyHPBarWidget->GetTargetEnemy() != ClosestEnemy)
-		{
-			EnemyHPBarWidget->SetTargetEnemy(ClosestEnemy);
-		}
-		if (!EnemyHPBarWidget->IsVisible())
-		{
-			EnemyHPBarWidget->SetVisibility(ESlateVisibility::Visible);
-		}
-	}
 }
