@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UCombatComponent;
 class UHealthComponent;
+class USkillComponent;
 class AWeaponBase;
 struct FInputActionValue;
 
@@ -40,12 +41,14 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UCombatComponent* CombatComp;
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	USkillComponent* SkillComp;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-    TSubclassOf<AWeaponBase> WeaponClass; 
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
-    AWeaponBase* SpawnedWeapon;
+	TSubclassOf<AWeaponBase> WeaponClass; 
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	AWeaponBase* SpawnedWeapon;
 
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* HitReactMontage;

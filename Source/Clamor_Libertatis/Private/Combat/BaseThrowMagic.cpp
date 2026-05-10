@@ -13,21 +13,21 @@
 // Sets default values
 ABaseThrowMagic::ABaseThrowMagic()
 {
-    PrimaryActorTick.bCanEverTick = false;
+	PrimaryActorTick.bCanEverTick = false;
 
-    SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
-    SetRootComponent(SphereComponent);
+	SphereComponent = CreateDefaultSubobject<USphereComponent>(TEXT("CollisionSphere"));
+	SetRootComponent(SphereComponent);
 
-    SphereComponent->InitSphereRadius(20.0f);
-    SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    SphereComponent->SetCollisionObjectType(ECC_WorldDynamic);
+	SphereComponent->InitSphereRadius(20.0f);
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	SphereComponent->SetCollisionObjectType(ECC_WorldDynamic);
 
-    SphereComponent->SetCollisionResponseToAllChannels(ECR_Block);
-    SphereComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+	SphereComponent->SetCollisionResponseToAllChannels(ECR_Block);
+	SphereComponent->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
-    SphereComponent->SetNotifyRigidBodyCollision(true);
-    SphereComponent->SetGenerateOverlapEvents(false);
-    SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SphereComponent->SetNotifyRigidBodyCollision(true);
+	SphereComponent->SetGenerateOverlapEvents(false);
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
 	NiagaraComponent = CreateDefaultSubobject<UNiagaraComponent>(TEXT("ProjectileEffect"));
 	NiagaraComponent->SetupAttachment(SphereComponent);
@@ -42,7 +42,7 @@ ABaseThrowMagic::ABaseThrowMagic()
 	ProjectileMovementComponent->bShouldBounce = false;
 	ProjectileMovementComponent->ProjectileGravityScale = 0.0f;
 
-    InitialLifeSpan = LifeTime;
+	InitialLifeSpan = LifeTime;
 }
 
 // Called when the game starts or when spawned
@@ -55,20 +55,20 @@ void ABaseThrowMagic::BeginPlay()
 	ProjectileMovementComponent->MaxSpeed = MaxSpeed;
 
 
-    //생성후 CollisionEnableDelay초동안 충돌X
-    if (CollisionEnableDelay <= 0.0f)
-    {
-        EnableCollision();
-        return;
-    }
+	//생성후 CollisionEnableDelay초동안 충돌X
+	if (CollisionEnableDelay <= 0.0f)
+	{
+		EnableCollision();
+		return;
+	}
 
-    GetWorldTimerManager().SetTimer(
-        CollisionEnableTimerHandle,
-        this,
-        &ABaseThrowMagic::EnableCollision,
-        CollisionEnableDelay,
-        false
-    );
+	GetWorldTimerManager().SetTimer(
+		CollisionEnableTimerHandle,
+		this,
+		&ABaseThrowMagic::EnableCollision,
+		CollisionEnableDelay,
+		false
+	);
 }
 
 void ABaseThrowMagic::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
@@ -78,117 +78,117 @@ void ABaseThrowMagic::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor*
 		return;
 	}
 
-    const FVector ExplosionLocation = Hit.ImpactPoint;
+	const FVector ExplosionLocation = Hit.ImpactPoint;
 
-    if (MagicHitEffect)
-    {
-        UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-            GetWorld(),
-            MagicHitEffect,
-            ExplosionLocation,
-            Hit.ImpactNormal.Rotation(),
-            FVector(EffectScale)
-        );
-        if (NiagaraComp)
-        {
-            //크기 파라미터 즉시수정.
-            NiagaraComp->SetVariableFloat(TEXT("Scale_All"), EffectScale);
-        }
-    }
+	if (MagicHitEffect)
+	{
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			MagicHitEffect,
+			ExplosionLocation,
+			Hit.ImpactNormal.Rotation(),
+			FVector(EffectScale)
+		);
+		if (NiagaraComp)
+		{
+			//크기 파라미터 즉시수정.
+			NiagaraComp->SetVariableFloat(TEXT("Scale_All"), EffectScale);
+		}
+	}
 
-    ApplyExplosionDamage(ExplosionLocation);
+	ApplyExplosionDamage(ExplosionLocation);
 	Destroy();
 }
 void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
 {
-    UWorld* World = GetWorld();
-    if (!World)
-    {
-        return;
-    }
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
 
-    TArray<AActor*> IgnoreActors;
-    IgnoreActors.Add(this);
+	TArray<AActor*> IgnoreActors;
+	IgnoreActors.Add(this);
 
-    if (AActor* OwnerActor = GetOwner())
-    {
-        IgnoreActors.Add(OwnerActor);
-    }
+	if (AActor* OwnerActor = GetOwner())
+	{
+		IgnoreActors.Add(OwnerActor);
+	}
 
-    if (GetInstigator())
-    {
-        IgnoreActors.Add(GetInstigator());
-    }
+	if (GetInstigator())
+	{
+		IgnoreActors.Add(GetInstigator());
+	}
 
-    TArray<FHitResult> HitResults;
+	TArray<FHitResult> HitResults;
 
-    FCollisionShape CollisionShape;
-    CollisionShape.SetSphere(ExplosionRadius);
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(ExplosionRadius);
 
-    FCollisionQueryParams QueryParams;
-    QueryParams.AddIgnoredActors(IgnoreActors);
-    QueryParams.bTraceComplex = false;
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActors(IgnoreActors);
+	QueryParams.bTraceComplex = false;
 
-    const bool bHit = World->SweepMultiByChannel(
-        HitResults,
-        ExplosionLocation,
-        ExplosionLocation,
-        FQuat::Identity,
-        ECC_Pawn,//<-Pawn 만 체크하는거임
-        CollisionShape,
-        QueryParams
-    );
+	const bool bHit = World->SweepMultiByChannel(
+		HitResults,
+		ExplosionLocation,
+		ExplosionLocation,
+		FQuat::Identity,
+		ECC_Pawn,//<-Pawn 만 체크하는거임
+		CollisionShape,
+		QueryParams
+	);
 #if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-    DrawDebugSphere(
-        World,
-        ExplosionLocation,
-        ExplosionRadius,
-        32,
-        FColor::Red,
-        false,
-        1.0f
-    );
+	DrawDebugSphere(
+		World,
+		ExplosionLocation,
+		ExplosionRadius,
+		32,
+		FColor::Red,
+		false,
+		1.0f
+	);
 #endif
 
-    if (!bHit)
-    {
-        return;
-    }
+	if (!bHit)
+	{
+		return;
+	}
 
-    TSet<AActor*> DamagedActors;
+	TSet<AActor*> DamagedActors;
 
-    AController* InstigatorController = GetInstigatorController();
+	AController* InstigatorController = GetInstigatorController();
 
-    for (const FHitResult& HitResult : HitResults)
-    {
-        AActor* HitActor = HitResult.GetActor();
+	for (const FHitResult& HitResult : HitResults)
+	{
+		AActor* HitActor = HitResult.GetActor();
 
-        if (!HitActor)
-        {
-            continue;
-        }
+		if (!HitActor)
+		{
+			continue;
+		}
 
-        if (DamagedActors.Contains(HitActor))
-        {
-            continue;
-        }
+		if (DamagedActors.Contains(HitActor))
+		{
+			continue;
+		}
 
-        DamagedActors.Add(HitActor);
+		DamagedActors.Add(HitActor);
 
-        UGameplayStatics::ApplyDamage(
-            HitActor,
-            DamageAmount,
-            InstigatorController,
-            this,
-            UDamageType::StaticClass()
-        );
-    }
+		UGameplayStatics::ApplyDamage(
+			HitActor,
+			DamageAmount,
+			InstigatorController,
+			this,
+			UDamageType::StaticClass()
+		);
+	}
 }
 
 void ABaseThrowMagic::EnableCollision()
 {
-    if (SphereComponent)
-    {
-        SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
-    }
+	if (SphereComponent)
+	{
+		SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
+	}
 }

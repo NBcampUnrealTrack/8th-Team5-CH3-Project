@@ -45,6 +45,19 @@ public:
 	UFUNCTION(BlueprintPure)
 	float GetMaxStamina() const;
 
+	UPROPERTY(BlueprintAssignable)
+	FOnDeath OnDeath;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnHealthChanged OnHealthChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnStaminaChanged OnStaminaChanged;
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
 	float MaxHealth = 5000.f;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
@@ -64,24 +77,11 @@ public:
 	float StaminaRegenLockTime = 1.5f;
 
 
-	FTimerHandle StaminaRegenLockHandle;
-
-	UPROPERTY(BlueprintAssignable)
-	FOnDeath OnDeath;
-	UPROPERTY(BlueprintAssignable)
-	FOnHealthChanged OnHealthChanged;
-	UPROPERTY(BlueprintAssignable)
-	FOnStaminaChanged OnStaminaChanged;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
 private:
 	void StartStaminaLock();
 	void UnlockStaminaRegen();
 	void RegenStamina(float DeltaTime);
 
-
+	FTimerHandle StaminaRegenLockHandle;
 		
 };
