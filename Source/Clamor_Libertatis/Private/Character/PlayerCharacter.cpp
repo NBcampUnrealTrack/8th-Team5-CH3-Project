@@ -290,6 +290,7 @@ void APlayerCharacter::StopDodge(const FInputActionValue& value)
 
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 {
+    //스킬 애니메이션 재생으로 변경으로 바꾸고 실제 스킬 발동은 AnimNotify로 제어하도록 수정해야함.
     CombatComp->ActiveSkill();
 }
 
