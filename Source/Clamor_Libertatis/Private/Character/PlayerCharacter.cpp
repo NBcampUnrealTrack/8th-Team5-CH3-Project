@@ -302,7 +302,6 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
     if (CombatComp->IsInvincible()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
-    CombatComp->SetInvincible(true);
 
     //뱡향키와 회피키 동시 입력했을 경우 해당 방향으로 덤블링
     if (CurrentMoveInput.X || CurrentMoveInput.Y)
@@ -318,7 +317,6 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
 
 void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 {
-    CombatComp->EndDodge();
 }
 
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
@@ -386,9 +384,6 @@ void APlayerCharacter::BackDodgeAnimMontage()
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->Montage_Play(BackDodgeReactMontage);
-        FOnMontageEnded EndDelegate;
-        EndDelegate.BindUObject(this, &APlayerCharacter::StopDodge);
-        AnimInstance->Montage_SetEndDelegate(EndDelegate, BackDodgeReactMontage);
     }
 }
 
@@ -399,9 +394,6 @@ void APlayerCharacter::ForwardDodgeAnimMontage()
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->Montage_Play(ForwardDodgeReactMontage);
-        FOnMontageEnded EndDelegate;
-        EndDelegate.BindUObject(this, &APlayerCharacter::StopDodge);
-        AnimInstance->Montage_SetEndDelegate(EndDelegate, ForwardDodgeReactMontage);
     }
 }
 
