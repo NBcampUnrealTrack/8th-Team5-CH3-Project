@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "DataTable/DA_BaseEnemyAnim.h"
+#include "DataTable/DA_BaseEnemySkill.h"
 #include "GameFramework/Character.h"
 
 #include "BaseEnemy.generated.h"
@@ -54,7 +54,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = "UI")
 	TSubclassOf<AActor> DamageTextActorClass;
 	
-	EAnimMontage CurrentMontage;
+	TPair<EAttackType,int32> CurrentAttackData;
 private:
 	bool bIsDead;
 public:

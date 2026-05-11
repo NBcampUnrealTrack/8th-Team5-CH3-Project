@@ -9,6 +9,8 @@
 #include "Enemy/E_Weapon/Enemy_BaseWeapon.h"
 
 #include "Character/BasePlayerController.h"
+#include "Engine/OverlapResult.h"
+#include "Kismet/GameplayStatics.h"
 
 ABaseEnemy::ABaseEnemy()
 {
@@ -40,11 +42,6 @@ void ABaseEnemy::BeginPlay()
 	{
 		AnimInst = Cast<UBaseEnemyAnimInst>(GetMesh()->GetAnimInstance());
 	}
-}
-
-void ABaseEnemy::AttackToPlayer()
-{
-	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
 }
 
 void ABaseEnemy::Tick(float DeltaTime)
@@ -125,9 +122,47 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	return DamageAmount;
 }
 
+void ABaseEnemy::AttackToPlayer()
+{
+	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
+	
+	int32 SkillCount = Enemy_CombatComp->GetSkillCount(EAttackType::Attack_Normal);
+	int32 RandomNum = FMath::RandRange(0,SkillCount - 1);
+	
+	if (SkillCount > 0)
+	{
+		AnimInst->Montage_Play(Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Normal,RandomNum));
+		CurrentAttackData.Key = EAttackType::Attack_Normal;
+		CurrentAttackData.Value = RandomNum;
+	}
+}
+
 void ABaseEnemy::AttackHitCheck()
 {
 	UE_LOG(LogTemp,Warning,TEXT("AttackHitCheckOn"));
+	
+	if (Enemy_CombatComp)
+	{
+		FVector StartPos = GetActorLocation() + (GetActorForwardVector() * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
+		FCollisionShape AttackCollision = Enemy_CombatComp->MakeAttackCollision(CurrentAttackData.Key,CurrentAttackData.Value);
+		FQuat Rotation = GetActorRotation().Quaternion();
+		
+		TArray<FOverlapResult> OverlapResults;
+		//TODO::Need to Custom TraceChannel
+		GetWorld()->OverlapMultiByChannel(OverlapResults,StartPos, Rotation, ECC_Visibility, AttackCollision);
+		DrawDebugBox(GetWorld(),StartPos,AttackCollision.GetExtent(),FColor::Red,false,2.f,0,1.f);
+		
+		TArray<AActor*> AlreadyHitActors;
+		for (const FOverlapResult& OverlapResult : OverlapResults)
+		{
+			if (!AlreadyHitActors.Contains(OverlapResult.GetActor()) && OverlapResult.GetActor()->ActorHasTag(TEXT("Player")))
+			{
+				UGameplayStatics::ApplyDamage(OverlapResult.GetActor(), Enemy_StatComp->GetEnemyStat().Attack_Damage,GetController(),this,UDamageType::StaticClass());
+				UE_LOG(LogTemp,Warning,TEXT("Enemy Hit Player %s"),*OverlapResult.GetActor()->GetName());
+				AlreadyHitActors.Add(OverlapResult.GetActor());
+			}
+		}
+	}
 }
 
 void ABaseEnemy::OnDead()
@@ -140,7 +175,7 @@ void ABaseEnemy::OnDead()
 		AIC->GetBrainComponent()->StopLogic(TEXT("Because Owner Was Dead"));
 	}
 	
-	UAnimMontage* AM_Dead = Enemy_CombatComp->DA_EnemyAnim->AM_Dead;
+	UAnimMontage* AM_Dead = Enemy_CombatComp->DA_EnemySkill->AM_Dead;
 	if (AnimInst && AM_Dead)
 	{
 		AnimInst->Montage_Play(AM_Dead);
