@@ -10,6 +10,10 @@ class ACharacter;
 class UDA_SkillData;
 class UHealthComponent;
 
+DECLARE_LOG_CATEGORY_EXTERN(LogSkill, Log, All)
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillCooldownStart, float, Cooldown);
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLAMOR_LIBERTATIS_API USkillComponent : public UActorComponent
@@ -28,6 +32,8 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	void ExecutePendingSkill();
 
+	FOnSkillCooldownStart OnSkillCooldownStart;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -36,7 +42,7 @@ protected:
 	TObjectPtr<UDA_SkillData> DefaultSkillData;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
-	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");
+	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");//마법이 나갈 위치 소켓
 
 private:
 	UPROPERTY()

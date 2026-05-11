@@ -26,9 +26,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	TObjectPtr<UNiagaraComponent> NiagaraComponent;
 	
-// 	UPROPERTY(EditAnywhere, Category = "Effects")
-//     UNiagaraComponent* MagicProjectileEffect;
-	
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TObjectPtr<UNiagaraSystem> MagicHitEffect;
 

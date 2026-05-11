@@ -20,10 +20,14 @@ enum class ESkillType : uint8
 };
 
 UCLASS()
-class CLAMOR_LIBERTATIS_API UDA_SkillData : public UDataAsset
+class CLAMOR_LIBERTATIS_API UDA_SkillData : public UPrimaryDataAsset
 {
 	GENERATED_BODY()
 public:
+	virtual FPrimaryAssetId GetPrimaryAssetId() const override
+	{
+		return FPrimaryAssetId(TEXT("SkillData"), GetFName());
+	}
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
 	FName SkillName;
@@ -57,4 +61,6 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Spawn")
 	TSubclassOf<AActor> ProjectileClass;
+
+
 };
