@@ -19,11 +19,11 @@ void UBTService_CheckChaseRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 	
 	if (AAIController* AIC = OwnerComp.GetAIOwner())
 	{
-		UE_LOG(LogTemp,Warning,TEXT("AIC Cashing Success"));
+		// UE_LOG(LogTemp,Warning,TEXT("AIC Cashing Success"));
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(AIC->GetPawn()))
 		{
 			MaxChasingDistance = MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance;
-			UE_LOG(LogTemp,Warning,TEXT("MaxChasingDistance : %f"),MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance);
+			// UE_LOG(LogTemp,Warning,TEXT("MaxChasingDistance : %f"),MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance);
 		}
 	}
 }
