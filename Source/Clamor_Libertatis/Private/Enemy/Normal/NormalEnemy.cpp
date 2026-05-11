@@ -22,6 +22,18 @@ void ANormalEnemy::OnDead()
 	Super::OnDead();
 }
 
+float ANormalEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent,
+	class AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	
+	//TODO:: 경직로직
+	
+	
+	
+	return ActualDamage;
+}
+
 void ANormalEnemy::AttackHitCheck()
 {
 	Super::AttackHitCheck();
