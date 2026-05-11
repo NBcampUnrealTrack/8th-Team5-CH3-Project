@@ -171,8 +171,8 @@ void ABasePlayerController::InitHUDWidget()
 	UHealthComponent* HealthComp = PlayerCharacter->GetHealthComponent();
 	if (!HealthComp) return;
 
-	HUDWidgetRef->OnHealthChanged(HealthComp->CurrentHealth, HealthComp->MaxHealth);
-	HUDWidgetRef->OnStaminaChanged(HealthComp->CurrentStamina, HealthComp->MaxStamina);
+	HUDWidgetRef->OnHealthChanged(HealthComp->GetCurrentHealth(), HealthComp->GetMaxHealth());
+	HUDWidgetRef->OnStaminaChanged(HealthComp->GetCurrentStamina(), HealthComp->GetMaxStamina());
 
 	HealthComp->OnHealthChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnHealthChanged);
 	HealthComp->OnStaminaChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnStaminaChanged);
