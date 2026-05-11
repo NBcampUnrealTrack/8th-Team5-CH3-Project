@@ -1,43 +1,48 @@
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 
-#include "Enemy/DataTable/DA_EnemyAttackCollision.h"
 
 
 UEnemy_CombatComponent::UEnemy_CombatComponent()
 {
-	DA_EnemyAnim = nullptr;
+	DA_EnemySkill = nullptr;
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
-float UEnemy_CombatComponent::GetAttackDistance(EAnimMontage CurrentAnimMontage) const
+float UEnemy_CombatComponent::GetAttackDistance(EAttackType AttackType, int32 AttackIndex) const
 {
-	float AttackDistance = 0.f;
-	if (FEnemyAttackCollision* Data = DA_AttackCollision->AttackCollisionData.Find(CurrentAnimMontage))
+	float Distance = 0.f;
+	
+	if (DA_EnemySkill)
 	{
-		AttackDistance = Data->Distance;
+		if (GetEnemySkillArray(AttackType).IsValidIndex(AttackIndex))
+		{
+			Distance = GetEnemySkillArray(AttackType)[AttackIndex].AttackCollision.Distance;
+		}
 	}
-	return AttackDistance;
+	
+	return Distance;
 }
 
-FCollisionShape UEnemy_CombatComponent::MakeAttackCollision(EAnimMontage CurrentMontage)
+FCollisionShape UEnemy_CombatComponent::MakeAttackCollision(EAttackType AttackType, int32 AttackIndex)
 {
 	FCollisionShape CollisionShape;
 	
-	if (FEnemyAttackCollision* Data = DA_AttackCollision->AttackCollisionData.Find(CurrentMontage))
+	if (DA_EnemySkill)
 	{
-		FVector CollisionSize = Data->CollisionSize;
-		float SphereRadius = Data->SphereRadius;
-		
-		if (Data->CollisionShape == EAttackCollisionShape::Box)
+		if (GetEnemySkillArray(AttackType).IsValidIndex(AttackIndex))
 		{
-			CollisionShape = FCollisionShape::MakeBox(CollisionSize);
-		}
-		else if (Data->CollisionShape == EAttackCollisionShape::Sphere)
-		{
-			CollisionShape = FCollisionShape::MakeSphere(SphereRadius);
+			FEnemySkillInfo SkillInfo = GetEnemySkillArray(AttackType)[AttackIndex];
+			
+			if (SkillInfo.AttackCollision.CollisionShape == EAttackCollisionShape::Box)
+			{
+				CollisionShape = FCollisionShape::MakeBox(SkillInfo.AttackCollision.CollisionSize);
+			}
+			else if (SkillInfo.AttackCollision.CollisionShape == EAttackCollisionShape::Sphere)
+			{
+				CollisionShape = FCollisionShape::MakeSphere(SkillInfo.AttackCollision.SphereRadius);
+			}
 		}
 	}
-	
 	return CollisionShape;
 }
 
@@ -47,6 +52,24 @@ void UEnemy_CombatComponent::BeginPlay()
 	Super::BeginPlay();
 }
 
+const TArray<FEnemySkillInfo>& UEnemy_CombatComponent::GetEnemySkillArray(EAttackType AttackType) const
+{
+	static const TArray<FEnemySkillInfo> Empty_SkillInfo;
+	
+	switch (AttackType)
+	{
+	case EAttackType::Attack_Normal:
+		return DA_EnemySkill->Array_NormalAttack;
+	case EAttackType::Attack_Skill:
+		return DA_EnemySkill->Array_Skill_Attack;
+	case EAttackType::Attack_Skill_Phase:
+		return DA_EnemySkill->Array_Skill_PhaseAttack;
+	case EAttackType::NONE:
+		return Empty_SkillInfo;
+	}
+	
+	return Empty_SkillInfo;
+}
 
 
 void UEnemy_CombatComponent::TickComponent(float DeltaTime, ELevelTick TickType,

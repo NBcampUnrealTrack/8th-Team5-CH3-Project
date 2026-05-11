@@ -38,7 +38,7 @@ void UEnemy_StatComponent::InitializeStat()
 			
 			if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(GetOwner()))
 			{
-				MyOwner->GetEnemyCombatComp()->DA_EnemyAnim = EnemyStats->DA_EnemyAnim;
+				MyOwner->GetEnemyCombatComp()->DA_EnemySkill = EnemyStats->DA_EnemySkill;
 			}
 			
 			UE_LOG(LogTemp,Warning,TEXT("HP: %f, Attack Damage : %f"),EnemyStat.HP, EnemyStat.Attack_Damage);

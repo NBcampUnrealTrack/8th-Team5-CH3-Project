@@ -2,12 +2,12 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "Enemy/DataTable/DA_BaseEnemyAnim.h"
+#include "Enemy/DataTable/DA_BaseEnemySkill.h"
 #include "Enemy_CombatComponent.generated.h"
 
 
 class UDA_EnemyAttackCollision;
-class UDA_BaseEnemyAnim;
+class UDA_BaseEnemySkill;
 struct FBaseEnemyStat;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
@@ -18,18 +18,20 @@ class CLAMOR_LIBERTATIS_API UEnemy_CombatComponent : public UActorComponent
 public:
 	UEnemy_CombatComponent();
 	
-	FORCEINLINE int64 GetCurrentAMCount() const {return DA_EnemyAnim->Map_AM_Battle.Num();}
-	FORCEINLINE UAnimMontage* GetAnimMontage(EAnimMontage AnimMontage) const {return DA_EnemyAnim->Map_AM_Battle.FindRef(AnimMontage);}
-	FORCEINLINE float GetAttackDistance(EAnimMontage CurrentAnimMontage) const;
+	FORCEINLINE int32 GetSkillCount(EAttackType AttackType) const {return GetEnemySkillArray(AttackType).Num();}
+	FORCEINLINE float GetAttackDistance(EAttackType AttackType, int32 AttackIndex) const;
+	FORCEINLINE UAnimMontage* GetAttackMontage(EAttackType AttackType, int32 AttackIndex) const {return GetEnemySkillArray(AttackType)[AttackIndex].AM_TypeMontage;}
 	
-	FCollisionShape MakeAttackCollision(EAnimMontage CurrentMontage);
+	FCollisionShape MakeAttackCollision(EAttackType AttackType,int32 AttackIndex);
 	
 	UPROPERTY()
-	TObjectPtr<UDA_BaseEnemyAnim> DA_EnemyAnim;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataAsset|AttackCollision")
-	TObjectPtr<UDA_EnemyAttackCollision> DA_AttackCollision;
+	TObjectPtr<UDA_BaseEnemySkill> DA_EnemySkill;
+
 protected:
 	virtual void BeginPlay() override;
+	
+private:
+	const TArray<FEnemySkillInfo>& GetEnemySkillArray(EAttackType AttackType) const;
 	
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
