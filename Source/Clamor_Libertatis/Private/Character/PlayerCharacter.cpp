@@ -312,6 +312,8 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
     if (HealthComp)
     {
+        if (CombatComp->IsInvincible())
+            return 0.f;
         HealthComp->TakeDamageValue(ActualDamage);
 
         UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),

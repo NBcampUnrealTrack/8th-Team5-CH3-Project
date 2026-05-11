@@ -18,6 +18,30 @@ class CLAMOR_LIBERTATIS_API UHealthComponent : public UActorComponent
 public:	
 	UHealthComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
+	float MaxHealth = 5000.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
+	float CurrentHealth;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
+	bool bDead = false;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
+	float MaxStamina = 100.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
+	float CurrentStamina;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
+	float RegenerateStaminaPerSecond = 45.f;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
+	bool bIsStaminaRegenLocked = false;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
+	float StaminaRegenLockTime = 1.5f;
+
+
+protected:
+	virtual void BeginPlay() override;
+	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+public:
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
 
@@ -53,28 +77,6 @@ public:
 
 	UPROPERTY(BlueprintAssignable)
 	FOnStaminaChanged OnStaminaChanged;
-
-protected:
-	virtual void BeginPlay() override;
-	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
-	float MaxHealth = 5000.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
-	float CurrentHealth;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
-	bool bDead = false;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
-	float MaxStamina = 100.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
-	float CurrentStamina;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
-	float RegenerateStaminaPerSecond = 45.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
-	bool bIsStaminaRegenLocked = false;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
-	float StaminaRegenLockTime = 1.5f;
 
 
 private:
