@@ -3,23 +3,116 @@
 
 #include "Combat/HealthComponent.h"
 
+void FResourceStat::InitializeToMax()
+{
+	MaxValue = FMath::Max(0.0f, MaxValue);
+	CurrentValue = MaxValue;
+}
+
+void FResourceStat::SetMaxValue(float NewMaxValue, bool bRefill)
+{
+	MaxValue = FMath::Max(0.0f, NewMaxValue);
+	CurrentValue = bRefill ? MaxValue : FMath::Clamp(CurrentValue, 0.0f, MaxValue);
+}
+
+bool FResourceStat::Consume(float Amount, bool bAllowPartialConsume)
+{
+	if (Amount <= 0.0f)
+	{
+		return true;
+	}
+
+	if (bAllowPartialConsume)
+	{
+		if (CurrentValue <= 0.0f)
+		{
+			return false;
+		}
+
+		CurrentValue = FMath::Clamp(CurrentValue - Amount, 0.0f, MaxValue);
+		return true;
+	}
+
+	if (CurrentValue < Amount)
+	{
+		return false;
+	}
+
+	CurrentValue = FMath::Clamp(CurrentValue - Amount, 0.0f, MaxValue);
+	return true;
+}
+
+bool FResourceStat::Recover(float Amount)
+{
+	if (Amount <= 0.0f)
+	{
+		return false;
+	}
+
+	const float PreviousValue = CurrentValue;
+	CurrentValue = FMath::Clamp(CurrentValue + Amount, 0.0f, MaxValue);
+	return !FMath::IsNearlyEqual(CurrentValue, PreviousValue);
+}
+
+float FResourceStat::GetRatio() const
+{
+	return MaxValue > 0.0f ? CurrentValue / MaxValue : 0.0f;
+}
+
+bool FResourceStat::IsEmpty() const
+{
+	return CurrentValue <= 0.0f;
+}
 
 UHealthComponent::UHealthComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
-	CurrentHealth = MaxHealth;
-	CurrentStamina = MaxStamina;
+	Health.MaxValue = 5000.0f;
+	Health.InitializeToMax();
+	Stamina.InitializeToMax();
+	Mana.InitializeToMax();
 	bDead = false;
+}
+
+// Called when the game starts
+void UHealthComponent::BeginPlay()
+{
+	Super::BeginPlay();
+
+	Health.InitializeToMax();
+	Stamina.InitializeToMax();
+	Mana.InitializeToMax();
+	bDead = Health.IsEmpty();
+
+	OnHealthChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
+	OnStaminaChanged.Broadcast(Stamina.CurrentValue, Stamina.MaxValue);
+	OnManaChanged.Broadcast(Mana.CurrentValue, Mana.MaxValue);
+}
+
+void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+	if (bIsStaminaRegenLocked == false)
+	{
+		RegenStamina(DeltaTime);
+	}
 }
 
 void UHealthComponent::SetMaxHealth(float newHealth)
 {
-	MaxHealth = FMath::Max(0.0f, newHealth);
-	CurrentHealth = MaxHealth;
+	Health.SetMaxValue(newHealth, true);
 	bDead = false;
-	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
+	OnHealthChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
 }
 
+float UHealthComponent::GetMaxHealth() const
+{
+	return Health.MaxValue;
+}
+float UHealthComponent::GetCurrentHealth() const
+{
+	return Health.CurrentValue;
+}
 void UHealthComponent::TakeDamageValue(float Damage)
 {
 	if (bDead || Damage <= 0.0f)
@@ -27,10 +120,10 @@ void UHealthComponent::TakeDamageValue(float Damage)
 		return;
 	}
 
-	CurrentHealth = FMath::Clamp(CurrentHealth - Damage, 0.0f, MaxHealth);
+	Health.Consume(Damage, true);
 
-	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
-	if (CurrentHealth <= 0.0f)
+	OnHealthChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
+	if (Health.IsEmpty())
 	{
 		bDead = true;
 		OnDeath.Broadcast();
@@ -41,18 +134,10 @@ void UHealthComponent::Heal(float Amount)
 {
 	if (Amount <= 0 || bDead)
 		return;
-	CurrentHealth = FMath::Clamp(CurrentHealth + Amount, 0.f, MaxHealth);
-	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
-}
-
-float UHealthComponent::GetHealthRatio() const
-{
-	if (MaxHealth <= 0.0f)
+	if (Health.Recover(Amount))
 	{
-		return 0.0f;
+		OnHealthChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
 	}
-
-	return CurrentHealth / MaxHealth;
 }
 
 bool UHealthComponent::ConsumeStamina(float Amount)
@@ -68,9 +153,13 @@ bool UHealthComponent::ConsumeStamina(float Amount)
 	}
 
 	//소울류 게임은 스테미너가 1이라도있으면 사용가능
-	const bool bCanConsume = CurrentStamina > 0.f;
-	CurrentStamina = FMath::Clamp(CurrentStamina - Amount, 0.f, MaxStamina);
-	OnStaminaChanged.Broadcast(CurrentStamina, MaxStamina);
+	const bool bCanConsume = Stamina.Consume(Amount, true);
+	if (!bCanConsume)
+	{
+		return false;
+	}
+
+	OnStaminaChanged.Broadcast(Stamina.CurrentValue, Stamina.MaxValue);
 
 	StartStaminaLock();
 	if (UWorld* World = GetWorld())
@@ -86,48 +175,43 @@ bool UHealthComponent::ConsumeStamina(float Amount)
 	return bCanConsume;
 }
 
-float UHealthComponent::GetMaxHealth() const
-{
-	return MaxHealth;
-}
-float UHealthComponent::GetCurrentHealth() const
-{
-	return CurrentHealth;
-}
-float UHealthComponent::GetCurrentStamina() const
-{
-	return CurrentStamina;
-}
 float UHealthComponent::GetMaxStamina() const
 { 
-	return MaxStamina; 
+	return Stamina.MaxValue; 
 }
 
-// Called when the game starts
-void UHealthComponent::BeginPlay()
+float UHealthComponent::GetCurrentStamina() const
 {
-	Super::BeginPlay();
-
-	MaxHealth = FMath::Max(0.0f, MaxHealth);
-	CurrentHealth = MaxHealth;
-	bDead = CurrentHealth <= 0.0f;
-
-	MaxStamina = FMath::Max(0.0f, MaxStamina);
-	CurrentStamina = MaxStamina;
-
-	OnHealthChanged.Broadcast(CurrentHealth, MaxHealth);
-	OnStaminaChanged.Broadcast(CurrentStamina, MaxStamina);
+	return Stamina.CurrentValue;
 }
-
-void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+bool UHealthComponent::ConsumeMana(float Amount)
 {
-	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	if (bIsStaminaRegenLocked == false)
+	if (bDead)
 	{
-		RegenStamina(DeltaTime);
+		return false;
 	}
-}
 
+	if (Amount <= 0.0f)
+	{
+		return true;
+	}
+
+	const bool bCanConsume = Mana.Consume(Amount, false);
+	if (bCanConsume)
+	{
+		OnManaChanged.Broadcast(Mana.CurrentValue, Mana.MaxValue);
+	}
+
+	return bCanConsume;
+}
+float UHealthComponent::GetMaxMana() const
+{
+	return Mana.MaxValue;
+}
+float UHealthComponent::GetCurrentMana() const
+{
+	return Mana.CurrentValue;
+}
 void UHealthComponent::StartStaminaLock()
 {
 	bIsStaminaRegenLocked = true;
@@ -140,12 +224,8 @@ void UHealthComponent::UnlockStaminaRegen()
 
 void UHealthComponent::RegenStamina(float DeltaTime)
 {
-	const float PreviousStamina = CurrentStamina;
-	CurrentStamina = FMath::Clamp(CurrentStamina + (RegenerateStaminaPerSecond * DeltaTime), 0.f, MaxStamina);
-
-	if (!FMath::IsNearlyEqual(CurrentStamina, PreviousStamina))
+	if (Stamina.Recover(RegenerateStaminaPerSecond * DeltaTime))
 	{
-		OnStaminaChanged.Broadcast(CurrentStamina, MaxStamina);
+		OnStaminaChanged.Broadcast(Stamina.CurrentValue, Stamina.MaxValue);
 	}
 }
-

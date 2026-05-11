@@ -317,9 +317,9 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         HealthComp->TakeDamageValue(ActualDamage);
 
         UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
-            HealthComp->CurrentHealth);
+            HealthComp->GetCurrentHealth());
 
-        if (HealthComp->CurrentHealth <= 0.0f)
+        if (HealthComp->GetCurrentHealth() <= 0.0f)
         {
             OnDead();
         }

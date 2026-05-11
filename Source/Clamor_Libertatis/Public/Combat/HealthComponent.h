@@ -9,6 +9,28 @@
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnDeath);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnHealthChanged, float, CurrentHealth, float, MaxHealth);
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnStaminaChanged, float, CurrentStamina, float, MaxStamina);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnManaChanged, float, CurrentMana, float, MaxMana);
+
+USTRUCT(BlueprintType)
+struct CLAMOR_LIBERTATIS_API FResourceStat
+{
+	GENERATED_BODY()
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Resource")
+	float MaxValue = 100.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Resource")
+	float CurrentValue = 100.f;
+
+	void InitializeToMax();
+	void SetMaxValue(float NewMaxValue, bool bRefill);
+	bool Consume(float Amount, bool bAllowPartialConsume);
+	bool Recover(float Amount);
+	float GetRatio() const;
+	bool IsEmpty() const;
+};
+
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CLAMOR_LIBERTATIS_API UHealthComponent : public UActorComponent
@@ -19,23 +41,25 @@ public:
 	UHealthComponent();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Health")
-	float MaxHealth = 5000.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
-	float CurrentHealth;
+	FResourceStat Health;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Health")
 	bool bDead = false;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
-	float MaxStamina = 100.f;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
-	float CurrentStamina;
+	FResourceStat Stamina;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float RegenerateStaminaPerSecond = 45.f;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Stamina")
 	bool bIsStaminaRegenLocked = false;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Stamina")
 	float StaminaRegenLockTime = 1.5f;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Mana")
+	FResourceStat Mana;
 
 protected:
 	virtual void BeginPlay() override;
@@ -44,6 +68,12 @@ protected:
 public:
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
+	
+	UFUNCTION(BlueprintPure)
+	float GetMaxHealth() const;
+
+	UFUNCTION(BlueprintPure)
+	float GetCurrentHealth() const;
 
 	UFUNCTION(BlueprintCallable)
 	void TakeDamageValue(float Damage);
@@ -52,31 +82,35 @@ public:
 	void Heal(float Amount);
 
 	UFUNCTION(BlueprintCallable)
-	float GetHealthRatio() const;
-
-	UFUNCTION(BlueprintCallable)
 	bool ConsumeStamina(float Amount);
-
+	
 	UFUNCTION(BlueprintPure)
-	float GetMaxHealth() const;
-
-	UFUNCTION(BlueprintPure)
-	float GetCurrentHealth() const;
+	float GetMaxStamina() const;
 
 	UFUNCTION(BlueprintPure)
 	float GetCurrentStamina() const;
-
+	
+	UFUNCTION(BlueprintCallable)
+	bool ConsumeMana(float Amount);
+	
 	UFUNCTION(BlueprintPure)
-	float GetMaxStamina() const;
+	float GetMaxMana() const;
+	
+	UFUNCTION(BlueprintPure)
+	float GetCurrentMana() const;
+
 
 	UPROPERTY(BlueprintAssignable)
 	FOnDeath OnDeath;
 
 	UPROPERTY(BlueprintAssignable)
 	FOnHealthChanged OnHealthChanged;
-
+	
 	UPROPERTY(BlueprintAssignable)
 	FOnStaminaChanged OnStaminaChanged;
+
+	UPROPERTY(BlueprintAssignable)
+	FOnManaChanged OnManaChanged;
 
 
 private:
