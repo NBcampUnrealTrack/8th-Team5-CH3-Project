@@ -26,11 +26,19 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	void ActiveSkill();
 
+	//다른방식으로 스킬 데이터를 가진다면 이걸로 시전 가능
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	bool TryActivateSkill(UDA_SkillData* SkillData);
-
+	
+	//애님노티파이
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	void ExecutePendingSkill();
+	
+	UFUNCTION()
+	void ExecuteAttack();
+	
+	UFUNCTION()
+	void PlayEffect();
 
 	FOnSkillCooldownStart OnSkillCooldownStart;
 
@@ -65,5 +73,8 @@ private:
 
 	FVector GetAimTargetLocation(const UDA_SkillData* SkillData) const;
 	FVector GetSkillSpawnLocation() const;
+
+	UPROPERTY()
+	UDA_SkillData* LastActivatedSkillData = nullptr;
 
 };
