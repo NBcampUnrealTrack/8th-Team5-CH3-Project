@@ -51,6 +51,9 @@ APlayerCharacter::APlayerCharacter()
 
     // 캐릭터 입력, 상태
     CurrentMoveInput = FVector2D::ZeroVector;
+
+    //인벤토리 컴포넌트 추가
+    InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
 }
 
 void APlayerCharacter::BeginPlay()
