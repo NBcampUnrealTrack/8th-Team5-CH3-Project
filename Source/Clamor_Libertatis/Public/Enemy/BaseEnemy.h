@@ -55,8 +55,8 @@ protected:
 	TSubclassOf<AActor> DamageTextActorClass;
 	
 	TPair<EAttackType,int32> CurrentAttackData;
-private:
 	bool bIsDead;
+	
 public:
 	virtual void Tick(float DeltaTime) override;
 };
