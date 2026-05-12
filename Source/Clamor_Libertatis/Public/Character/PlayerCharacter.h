@@ -13,9 +13,17 @@ class UHealthComponent;
 class USkillComponent;
 class AWeaponBase;
 struct FInputActionValue;
-
 class UHealthComponent;
 
+UENUM(BlueprintType)
+enum class EDodgeDirection : uint8
+{
+	None,
+	Forward,
+	Backward,
+	Left,
+	Right
+};
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
@@ -56,9 +64,13 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* DeathReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Animation")
-	UAnimMontage* BackDodgeReactMontage;
+	UAnimMontage* BackwardDodgeReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* ForwardDodgeReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* LeftDodgeReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* RightDodgeReactMontage;
 
 	UPROPERTY(EditAnywhere, Category = "Timer")
 	FTimerHandle DodgeTimerHandle;
@@ -96,8 +108,6 @@ public:
 
 	UFUNCTION()
 	void OnDeath();
-	UFUNCTION()
-	void DodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 
 	// 캐릭터 속도
@@ -111,8 +121,9 @@ public:
 	// 애니메이션 실행
 	void HitAnimMontage();
 	void DeathAnimMontage();
-	void BackDodgeAnimMontage();
-	void ForwardDodgeAnimMontage();
+	void DodgeAnimMontage(EDodgeDirection DodgeDirection);
 
 	bool IsAvailable();
+
+	EDodgeDirection GetDirection() const;
 };
