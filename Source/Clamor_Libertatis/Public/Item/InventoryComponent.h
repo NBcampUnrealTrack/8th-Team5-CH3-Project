@@ -3,6 +3,7 @@
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
 #include "Item/ItemTableRow.h"
+#include "Item/ItemEffectHandler.h"
 #include "InventoryComponent.generated.h"
 
 USTRUCT(BlueprintType)
@@ -52,6 +53,9 @@ public:
 
     UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnInventoryChanged OnInventoryChanged;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory|Effects")
+    TMap<EConsumableEffectType, TSubclassOf<UItemEffectHandler>> EffectHandlerClasses;
 
     UFUNCTION(BlueprintCallable, Category = "Inventory")
     EAddItemResult AddItem(FName ItemID, int32 Quantity = 1);

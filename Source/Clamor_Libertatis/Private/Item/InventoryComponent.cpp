@@ -1,5 +1,4 @@
 ﻿#include "Item/InventoryComponent.h"
-#include "Combat/HealthComponent.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -93,31 +92,23 @@ bool UInventoryComponent::UseItem(FName ItemID, int32 Quantity)
     {
         return false;
     }
+    if (ItemData->ItemType == EItemType::Quest)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("퀘스트 아이템은 사용할 수 없습니다: %s"), *ItemID.ToString());
+        return false;
+    }
 
     if (ItemData->ItemType == EItemType::Consumable)
     {
-        UHealthComponent* HealthComp =
-            GetOwner()->FindComponentByClass<UHealthComponent>();
-
-        if (HealthComp)
+        TSubclassOf<UItemEffectHandler>* HandlerClass = EffectHandlerClasses.Find(ItemData->EffectType);
+        if (HandlerClass && *HandlerClass)
         {
-            switch (ItemData->EffectType)
-            {
-            case EConsumableEffectType::Heal:
-                HealthComp->Heal(ItemData->EffectValue);
-                break;
-
-            //case EConsumableEffectType::Mana:
-                //HealthComp->RecoverMana(ItemData->EffectValue);
-                //break;
-
-            //case EConsumableEffectType::Stamina:
-                //HealthComp->RecoverStamina(ItemData->EffectValue);
-                //break;
-
-            //default:
-                //break;
-            }
+            UItemEffectHandler* Handler = NewObject<UItemEffectHandler>(this, *HandlerClass);
+            Handler->Execute(GetOwner(), *ItemData);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("EffectHandler 없음: %s"), *ItemID.ToString());
         }
     }
 
