@@ -98,6 +98,27 @@ void UBaseCombatAnimInstance::AnimNotify_UseSkill()
 	}
 }
 
+void UBaseCombatAnimInstance::AnimNotify_SkillExecuteAttack()
+{
+	if (USkillComponent* Comp = GetSkillComponent()) {
+		Comp->ExecuteAttack();
+	}
+}
+
+void UBaseCombatAnimInstance::AnimNotify_SkillPlayEffect()
+{
+	if (USkillComponent* Comp = GetSkillComponent()) {
+		Comp->PlayEffect();
+	}
+}
+
+void UBaseCombatAnimInstance::AnimNotify_SkillPlaySound()
+{
+	if (USkillComponent* Comp = GetSkillComponent()) {
+
+	}
+}
+
 
 
 

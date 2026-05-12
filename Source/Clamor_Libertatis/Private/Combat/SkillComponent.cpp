@@ -8,6 +8,9 @@
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
+#include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 DEFINE_LOG_CATEGORY(LogSkill)
 
@@ -100,6 +103,111 @@ void USkillComponent::ExecutePendingSkill()
 	ExecuteSkill(SkillData);
 }
 
+void USkillComponent::ExecuteAttack()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	if (!OwnerCharacter)
+	{
+		return;
+	}
+	if (!PendingSkillData)
+	{
+		return;
+	}
+
+	FVector StartPos = OwnerCharacter->GetActorLocation();
+	FCollisionShape CollisionShape;
+	CollisionShape.SetSphere(PendingSkillData->SphereRadius);
+	FQuat Rotation = OwnerCharacter->GetActorRotation().Quaternion();
+	TArray<FHitResult> HitResults;
+	TArray<AActor*> IgnoreActors;
+
+	IgnoreActors.Add(OwnerCharacter);
+
+
+	if (OwnerCharacter->GetInstigator())
+	{
+		IgnoreActors.Add(OwnerCharacter->GetInstigator());
+	}
+
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActors(IgnoreActors);
+	QueryParams.bTraceComplex = false;
+	//TODO::Need to Custom TraceChannel
+	const bool bHit = World->SweepMultiByChannel(
+		HitResults,
+		StartPos,
+		StartPos,
+		FQuat::Identity,
+		ECC_Pawn,//<-Pawn 만 체크하는거임
+		CollisionShape,
+		QueryParams
+	);
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	DrawDebugSphere(GetWorld(), StartPos, PendingSkillData->SphereRadius, 32, FColor::Red, false, 2.f);
+#endif
+
+	AController* InstigatorController = OwnerCharacter->GetInstigatorController();
+	TArray<AActor*> DamagedActors;
+	for (const FHitResult& HitResult : HitResults)
+	{
+		AActor* HitActor = HitResult.GetActor();
+
+		if (!HitActor)
+		{
+			continue;
+		}
+
+		if (DamagedActors.Contains(HitActor))
+		{
+			continue;
+		}
+		DamagedActors.Add(HitActor);
+
+// 		if (HitActor->ActorHasTag(TEXT("Enemy")))
+// 		{
+// 		}
+		UGameplayStatics::ApplyDamage(
+			HitActor,
+			PendingSkillData->Damage,
+			InstigatorController,
+			OwnerCharacter,
+			UDamageType::StaticClass()
+		);
+	}
+}
+
+void USkillComponent::PlayEffect()
+{
+	if (!OwnerCharacter)
+	{
+		return;
+	}
+	const FVector PlayLocation = OwnerCharacter->GetActorLocation();
+
+	if (PendingSkillData && PendingSkillData->CastingEffects[0])
+	{
+		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			PendingSkillData->CastingEffects[0],
+			PlayLocation,
+			PlayLocation.Rotation(),
+			FVector(2.f)
+		);
+		if (NiagaraComp)
+		{
+			//크기 파라미터 즉시수정.
+			NiagaraComp->SetVariableFloat(TEXT("Scale_All"), 2.f);
+		}
+	}
+}
+
 bool USkillComponent::CanActivateSkill(const UDA_SkillData* SkillData) const
 {
 	if (!OwnerCharacter || !SkillData)
@@ -132,6 +240,11 @@ bool USkillComponent::CommitSkillCost(const UDA_SkillData* SkillData) const
 	{
 		return true;
 	}
+	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost) {
+		HealthComponent->ConsumeStamina(SkillData->StaminaCost);
+		HealthComponent->ConsumeMana(SkillData->ManaCost);
+	}
+
 
 	return HealthComponent->ConsumeStamina(SkillData->StaminaCost);
 }
