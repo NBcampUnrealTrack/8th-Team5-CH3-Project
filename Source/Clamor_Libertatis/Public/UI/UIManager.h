@@ -7,6 +7,8 @@
 
 class APlayerController;
 class UUserWidget;
+class USkillComponent;
+class USkillCooldownWidget;
 
 UENUM(BlueprintType)
 enum class EUIType : uint8
@@ -16,7 +18,6 @@ enum class EUIType : uint8
 	Death,
 	Victory,
 	MainMenu
-
 };
 
 USTRUCT(BlueprintType)
