@@ -97,7 +97,7 @@ public:
 	UFUNCTION()
 	void OnDeath();
 	UFUNCTION()
-	void HitMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	void DodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 
 	// 캐릭터 속도
