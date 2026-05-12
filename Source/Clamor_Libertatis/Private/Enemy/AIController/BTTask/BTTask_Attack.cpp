@@ -8,6 +8,7 @@
 UBTTask_Attack::UBTTask_Attack()
 {
 	NodeName = TEXT("NormalAttack");
+	MaxDeltaYaw = 5.f;
 }
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -47,7 +48,7 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 	
 	float DeltaYaw = FMath::Abs(FMath::FindDeltaAngleDegrees(OwnerPawn->GetActorRotation().Yaw, TargetRotation.Yaw));
 	
-	if (DeltaYaw <= 1.f)
+	if (DeltaYaw <= MaxDeltaYaw)
 	{
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(OwnerPawn))
 		{

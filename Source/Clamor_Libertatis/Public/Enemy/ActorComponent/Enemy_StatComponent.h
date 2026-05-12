@@ -18,6 +18,7 @@ public:
 	float LoseSightRadius;
 	float PeripheralVisionAngleDegrees;
 	float SightConfig_MaxAge;
+	float MaxChasingDistance;
 	
 	bool SetHP(float DamageAmount)
 	{
