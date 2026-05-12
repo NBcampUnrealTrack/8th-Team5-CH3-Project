@@ -41,7 +41,7 @@ void ABasePlayerController::BeginPlay()
 		EnemyTracker->StartTracking();
 	}
 
-	ShowGameStartUI();
+	//ShowGameStartUI();
 }
 
 // ─────────────────────────────────────────────────────────
