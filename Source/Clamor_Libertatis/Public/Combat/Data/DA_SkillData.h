@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Combat/DamageType/CustomDamageType.h"
 #include "DA_SkillData.generated.h"
 
 class AActor;
@@ -38,6 +39,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
 	ESkillType SkillType = ESkillType::Projectile;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<UDamageType> DamageTypeClass = UMagicDamageType::StaticClass();;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Cost")
 	float StaminaCost = 0.f;

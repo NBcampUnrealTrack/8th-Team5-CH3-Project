@@ -3,8 +3,8 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Combat/DamageType/CustomDamageType.h"
 #include "WeaponAttackData.generated.h"
-
 USTRUCT(BlueprintType)
 struct FWeaponAttackData
 {
@@ -19,4 +19,7 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Attack")
     float StaminaCost = 10.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Attack")
+	TSubclassOf<UDamageType> DamageTypeClass = UPhysicalDamageType::StaticClass();
 };
