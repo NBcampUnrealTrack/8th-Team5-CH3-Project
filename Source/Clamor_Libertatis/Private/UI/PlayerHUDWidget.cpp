@@ -1,6 +1,9 @@
 #include "UI/PlayerHUDWidget.h"
 #include "Combat/HealthComponent.h"
 
+#include "UI/SkillCooldownWidget.h"
+#include "Combat/SkillComponent.h"
+
 void UPlayerHUDWidget::InitWidget(UHealthComponent* InHealthComp)
 {
     if (!InHealthComp) return;
@@ -24,6 +27,11 @@ void UPlayerHUDWidget::InitWidget(UHealthComponent* InHealthComp)
         InHealthComp->GetCurrentStamina(),
         InHealthComp->GetMaxStamina()
     );
+}
+void UPlayerHUDWidget::InitSkillCooldown(USkillComponent* InSkillComp)
+{
+    if (!InSkillComp || !SkillCooldownWidget) return;
+    SkillCooldownWidget->InitWithSkillComponent(InSkillComp);
 }
 
 void UPlayerHUDWidget::OnHealthChanged(

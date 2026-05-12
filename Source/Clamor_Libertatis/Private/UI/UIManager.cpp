@@ -1,4 +1,6 @@
 #include "UI/UIManager.h"
+#include "UI/SkillCooldownWidget.h" 
+#include "Combat/SkillComponent.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
 

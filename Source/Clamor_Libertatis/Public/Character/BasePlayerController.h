@@ -10,6 +10,7 @@ class UInputAction;
 class UPlayerHUDWidget;
 class UUIManager;
 class UEnemyTrackerComponent;
+class USkillComponent;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
