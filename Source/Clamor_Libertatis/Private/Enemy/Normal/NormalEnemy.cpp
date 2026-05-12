@@ -1,5 +1,7 @@
 #include "Enemy/Normal/NormalEnemy.h"
 
+#include "AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
 
@@ -29,7 +31,8 @@ float ANormalEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	HitReaction();
+	
+	if (!bIsDead) HitReaction();
 	
 	return ActualDamage;
 }
@@ -38,11 +41,34 @@ void ANormalEnemy::HitReaction()
 {
 	UE_LOG(LogTemp,Warning,TEXT("HitReaction"));
 	
+	if (AAIController* AIC = Cast<AAIController>(GetController()))
+	{
+		if (AIC->GetBlackboardComponent())
+		{
+			AIC->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanMove"),false);
+		}
+	}
+	
 	if (AnimInst)
 	{
 		if (UAnimMontage* AM_Hit = Enemy_CombatComp->DA_EnemySkill->AM_HitReaction)
 		{
+			FOnMontageEnded EndHitMontage;
+			EndHitMontage.BindUObject(this, &ANormalEnemy::OnHitMontageEnded);
 			AnimInst->Montage_Play(AM_Hit);
+			AnimInst->Montage_SetEndDelegate(EndHitMontage, AM_Hit);
+		}
+	}
+}
+
+void ANormalEnemy::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (AAIController* AIC = Cast<AAIController>(GetController()))
+	{
+		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
+		{
+			BB->SetValueAsBool(TEXT("bCanMove"), true);
+			UE_LOG(LogTemp,Warning,TEXT("bCanMove true"));
 		}
 	}
 }
