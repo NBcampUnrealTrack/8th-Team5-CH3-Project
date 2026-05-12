@@ -67,9 +67,13 @@ EAddItemResult UInventoryComponent::AddItem(FName ItemID, int32 Quantity)
 
 bool UInventoryComponent::UseItem(FName ItemID, int32 Quantity)
 {
-    if (ItemID.IsNone() || Quantity <= 0) return false;
+    if (ItemID.IsNone() || Quantity <= 0)
+    {
+        return false;
+    }
 
     int32 Idx = FindSlotByID(ItemID);
+
     if (Idx == INDEX_NONE)
     {
         UE_LOG(LogTemp, Warning, TEXT("보유하지 않은 아이템: %s"), *ItemID.ToString());
@@ -78,19 +82,45 @@ bool UInventoryComponent::UseItem(FName ItemID, int32 Quantity)
 
     if (Slots[Idx].Quantity < Quantity)
     {
-        UE_LOG(LogTemp, Warning, TEXT("수량 부족 — 보유: %d, 사용 시도: %d"),
-            Slots[Idx].Quantity, Quantity);
+        UE_LOG(LogTemp, Warning, TEXT("수량 부족"));
         return false;
+    }
+
+    FItemTableRow* ItemData = GetItemData(ItemID);
+
+    if (!ItemData)
+    {
+        return false;
+    }
+    if (ItemData->ItemType == EItemType::Quest)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("퀘스트 아이템은 사용할 수 없습니다: %s"), *ItemID.ToString());
+        return false;
+    }
+
+    if (ItemData->ItemType == EItemType::Consumable)
+    {
+        TSubclassOf<UItemEffectHandler>* HandlerClass = EffectHandlerClasses.Find(ItemData->EffectType);
+        if (HandlerClass && *HandlerClass)
+        {
+            UItemEffectHandler* Handler = NewObject<UItemEffectHandler>(this, *HandlerClass);
+            Handler->Execute(GetOwner(), *ItemData);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("EffectHandler 없음: %s"), *ItemID.ToString());
+        }
     }
 
     Slots[Idx].Quantity -= Quantity;
 
-    if (Slots[Idx].Quantity == 0)
+    if (Slots[Idx].Quantity <= 0)
     {
         Slots[Idx] = FInventorySlot();
     }
 
     OnInventoryChanged.Broadcast();
+
     return true;
 }
 
