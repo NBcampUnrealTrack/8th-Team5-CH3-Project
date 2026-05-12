@@ -4,6 +4,7 @@
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 
 ANormalEnemy::ANormalEnemy()
@@ -40,6 +41,21 @@ float ANormalEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 void ANormalEnemy::HitReaction()
 {
 	UE_LOG(LogTemp,Warning,TEXT("HitReaction"));
+	
+	if (AnimInst)
+	{
+		AnimInst->StopAllMontages(0.1f);
+		
+		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
+		{
+			MoveComp->StopMovementImmediately();
+			MoveComp->ClearAccumulatedForces();
+			
+			FRotator OriginRot = GetActorRotation();
+			FRotator NewRot = FRotator(0.f,OriginRot.Yaw,0.f);
+			SetActorRotation(NewRot);
+		}
+	}
 	
 	if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
