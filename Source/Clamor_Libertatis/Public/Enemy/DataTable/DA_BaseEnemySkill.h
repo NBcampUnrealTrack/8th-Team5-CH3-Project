@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "NiagaraSystem.h"
 #include "DA_BaseEnemySkill.generated.h"
 
 UENUM()
@@ -46,6 +47,10 @@ public:
 	TObjectPtr<UAnimMontage> AM_TypeMontage = nullptr;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Collision|Attack")
 	FEnemyAttackCollision AttackCollision;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Damage")
+	float DamageMultiplier = 1.0f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="VFX")
+	TObjectPtr<UNiagaraSystem> SkillVFX = nullptr;
 };
 
 

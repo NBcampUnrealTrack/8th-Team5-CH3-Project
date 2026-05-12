@@ -23,6 +23,11 @@ float UEnemy_CombatComponent::GetAttackDistance(EAttackType AttackType, int32 At
 	return Distance;
 }
 
+const FEnemySkillInfo& UEnemy_CombatComponent::GetSkillInfo(EAttackType AttackType, int32 AttackIndex) const
+{
+	return GetEnemySkillArray(AttackType)[AttackIndex];
+}
+
 FCollisionShape UEnemy_CombatComponent::MakeAttackCollision(EAttackType AttackType, int32 AttackIndex)
 {
 	FCollisionShape CollisionShape;
