@@ -11,7 +11,6 @@ class ACharacter;
 class AWeaponBase;
 class UHealthComponent;
 class UAnimMontage;
-class ABaseThrowMagic;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogCombat, Log, All)
 
@@ -22,12 +21,6 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 
 public:	
 	UCombatComponent();
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
-    TSubclassOf<ABaseThrowMagic> MagicProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "SKill")
-	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");//소켓 차후 변경
 
 protected:
 	virtual void BeginPlay() override;
@@ -58,9 +51,6 @@ public:
 	void DisableWeaponHitbox();
 	UFUNCTION()
 	void EndAttack();
-
-
-	void ActiveSkill();//스킬 발동(특수공격?)
 #pragma endregion Attack
 
 
@@ -93,7 +83,7 @@ private:
 	UHealthComponent* HealthComponent;
 
 	UPROPERTY()
-    AWeaponBase* CurrentWeapon;
+	AWeaponBase* CurrentWeapon;
 
 	
 	void StartAttack();

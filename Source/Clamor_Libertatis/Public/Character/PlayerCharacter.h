@@ -10,6 +10,7 @@ class UCameraComponent;
 class USpringArmComponent;
 class UCombatComponent;
 class UHealthComponent;
+class USkillComponent;
 class AWeaponBase;
 struct FInputActionValue;
 
@@ -40,24 +41,36 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UCombatComponent* CombatComp;
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	USkillComponent* SkillComp;
 	UPROPERTY(EditAnywhere, Category = "Combat")
-    TSubclassOf<AWeaponBase> WeaponClass; 
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
-    AWeaponBase* SpawnedWeapon;
+	TSubclassOf<AWeaponBase> WeaponClass; 
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	AWeaponBase* SpawnedWeapon;
 
-    UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
+
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* HitReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* DeathReactMontage;
-	UFUNCTION(BlueprintCallable)
-	UHealthComponent* GetHealthComponent() const{return HealthComp;}
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* BackDodgeReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* ForwardDodgeReactMontage;
 
+	UPROPERTY(EditAnywhere, Category = "Timer")
+	FTimerHandle DodgeTimerHandle;
+	UFUNCTION(BlueprintCallable)
+	UHealthComponent* GetHealthComponent() const { return HealthComp; }
+	FVector2D CurrentMoveInput;
 
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
+	UFUNCTION()
+	void StopMove(const FInputActionValue& value);
 	UFUNCTION()
 	void StartJump(const FInputActionValue& value);
 	UFUNCTION()
@@ -75,16 +88,17 @@ public:
 	UFUNCTION()
 	void StartDodge(const FInputActionValue& value);
 	UFUNCTION()
-	void StopDodge(const FInputActionValue& value);
+	void StopDodge(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void StartActiveSkill(const FInputActionValue& value);
 	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION()
-	void OnDead();
+	void OnDeath();
 	UFUNCTION()
 	void HitMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+
 
 	// 캐릭터 속도
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
@@ -93,11 +107,11 @@ public:
 	float SprintSpeedMultiplier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
-	bool IsDead;
-	bool IsHurt;
 
 	// 애니메이션 실행
 	void HitAnimMontage();
 	void DeathAnimMontage();
+	void BackDodgeAnimMontage();
+	void ForwardDodgeAnimMontage();
 
 };

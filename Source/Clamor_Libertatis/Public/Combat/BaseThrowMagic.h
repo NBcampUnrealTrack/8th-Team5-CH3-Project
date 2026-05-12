@@ -26,9 +26,6 @@ public:
 	UPROPERTY(VisibleAnywhere, Category = "Effects")
 	TObjectPtr<UNiagaraComponent> NiagaraComponent;
 	
-// 	UPROPERTY(EditAnywhere, Category = "Effects")
-//     UNiagaraComponent* MagicProjectileEffect;
-	
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TObjectPtr<UNiagaraSystem> MagicHitEffect;
 
@@ -44,13 +41,13 @@ public:
 
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
-    float InitialSpeed = 1500.0f;
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
-    float MaxSpeed = 1500.0f;
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
-    float LifeTime = 5.0f;
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
-    float CollisionEnableDelay = 0.05f;
+	float InitialSpeed = 1500.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
+	float MaxSpeed = 1500.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
+	float LifeTime = 5.0f;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Magic|Projectile")
+	float CollisionEnableDelay = 0.05f;
 
 
 protected:

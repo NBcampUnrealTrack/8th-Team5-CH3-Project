@@ -5,7 +5,6 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 #include "GameFramework/Character.h"
-#include "Combat/BaseThrowMagic.h"
 
 DEFINE_LOG_CATEGORY(LogCombat)
 
@@ -228,97 +227,6 @@ void UCombatComponent::EndDodge()
 	}
 
 	bIsInvincible = false;
-}
-
-void UCombatComponent::ActiveSkill()
-{
-	if (!OwnerCharacter)
-	{
-		return;
-	}
-
-	if (!MagicProjectileClass)
-	{
-		return;
-	}
-
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	AController* MyController = OwnerCharacter->GetController();
-	if (!MyController)
-	{
-		return;
-	}
-
-	FVector ViewLocation;
-	FRotator ViewRotation;
-
-	MyController->GetPlayerViewPoint(ViewLocation, ViewRotation);
-	float AimTraceDistance = 10000.f;//
-	const FVector TraceStart = ViewLocation;//카메라지점
-	const FVector TraceEnd = TraceStart + ViewRotation.Vector() * AimTraceDistance;//카메라가 바라보는 지점 10000거리까지
-
-	FHitResult HitResult;
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActor(OwnerCharacter);
-	QueryParams.bTraceComplex = true;
-
-	const bool bHit = World->LineTraceSingleByChannel(
-		HitResult,
-		TraceStart,
-		TraceEnd,
-		ECC_Visibility,
-		QueryParams
-	);
-
-	FVector TargetLocation;
-
-	if (bHit)
-	{
-		TargetLocation = HitResult.ImpactPoint;
-	}
-	else
-	{
-		TargetLocation = TraceEnd;
-	}
-
-	FVector SpawnLocation;
-	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
-	if (OwnerMesh && OwnerMesh->DoesSocketExist(SkillSpawnSocketName))
-	{
-		SpawnLocation = OwnerMesh->GetSocketLocation(SkillSpawnSocketName);
-	}
-	else
-	{
-		SpawnLocation = OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * 50.0f;
-	}
-
-	const FVector FireDirection = (TargetLocation - SpawnLocation).GetSafeNormal();
-
-	if (FireDirection.IsNearlyZero())
-	{
-		return;
-	}
-
-	const FRotator SpawnRotation = FireDirection.Rotation();
-
-	FActorSpawnParameters SpawnParams;
-	SpawnParams.Owner = OwnerCharacter;
-	SpawnParams.Instigator = OwnerCharacter;
-	SpawnParams.SpawnCollisionHandlingOverride =
-		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
-
-	World->SpawnActor<ABaseThrowMagic>(
-		MagicProjectileClass,
-		SpawnLocation,
-		SpawnRotation,
-		SpawnParams
-	);
 }
 
 void UCombatComponent::EnableCombo()

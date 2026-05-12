@@ -6,7 +6,9 @@
 #include "EnhancedInputComponent.h"
 #include "Character/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+
 #include "Combat/CombatComponent.h"
+#include "Combat/SkillComponent.h"
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 
@@ -14,27 +16,27 @@
 
 APlayerCharacter::APlayerCharacter()
 {
-	PrimaryActorTick.bCanEverTick = false;
-    IsDead = false;
-    IsHurt = false;
+    PrimaryActorTick.bCanEverTick = false;
 
-	// 스프링암, 카메라 컴포넌트 추가 및 설정
-	SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
-	CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
+    // 스프링암, 카메라 컴포넌트 추가 및 설정
+    SpringArmComp = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArmComp"));
+    CameraComp = CreateDefaultSubobject<UCameraComponent>(TEXT("CameraComp"));
 
-	SpringArmComp->SetupAttachment(RootComponent);
-	CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
+    SpringArmComp->SetupAttachment(RootComponent);
+    CameraComp->SetupAttachment(SpringArmComp, USpringArmComponent::SocketName);
 
-	SpringArmComp->TargetArmLength = 300.0f;
+    SpringArmComp->TargetArmLength = 300.0f;
 
-	SpringArmComp->bUsePawnControlRotation = true;
-	CameraComp->bUsePawnControlRotation = false;
+    SpringArmComp->bUsePawnControlRotation = true;
+    CameraComp->bUsePawnControlRotation = false;
 
     // 전투 컴포넌트 추가
     CombatComp = CreateDefaultSubobject<UCombatComponent>(TEXT("CombatComp"));
+    SkillComp = CreateDefaultSubobject<USkillComponent>(TEXT("SkillComp"));
 
     // 체력 컴포넌트 추가
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
+
 
 
     // 캐릭터 이동 속도 설정
@@ -49,6 +51,8 @@ APlayerCharacter::APlayerCharacter()
     SpringArmComp->bUsePawnControlRotation = true;
     CameraComp->bUsePawnControlRotation = false;
 
+    // 캐릭터 입력, 상태
+    CurrentMoveInput = FVector2D::ZeroVector;
 }
 
 void APlayerCharacter::BeginPlay()
@@ -74,6 +78,8 @@ void APlayerCharacter::BeginPlay()
 
     ABasePlayerController* PC =
         Cast<ABasePlayerController>(GetController());
+
+    HealthComp->OnDeath.AddDynamic(this, &APlayerCharacter::OnDeath);
 }
 
 void APlayerCharacter::OnConstruction(const FTransform& Transform)
@@ -88,13 +94,13 @@ void APlayerCharacter::OnConstruction(const FTransform& Transform)
 
 void APlayerCharacter::Tick(float DeltaTime)
 {
-	Super::Tick(DeltaTime);
+    Super::Tick(DeltaTime);
 
 }
 
 void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
-	Super::SetupPlayerInputComponent(PlayerInputComponent);
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
 
     if (UEnhancedInputComponent* EnhancedInput = Cast<UEnhancedInputComponent>(PlayerInputComponent))
     {
@@ -107,6 +113,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                     ETriggerEvent::Triggered,
                     this,
                     &APlayerCharacter::Move
+                );
+                EnhancedInput->BindAction(
+                    PlayerController->MoveAction,
+                    ETriggerEvent::Completed,
+                    this,
+                    &APlayerCharacter::StopMove
                 );
             }
 
@@ -177,12 +189,12 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                     this,
                     &APlayerCharacter::StartDodge
                 );
-                EnhancedInput->BindAction(
-                    PlayerController->DodgeAction,
-                    ETriggerEvent::Completed,
-                    this,
-                    &APlayerCharacter::StopDodge
-                );
+                //EnhancedInput->BindAction(
+                //    PlayerController->DodgeAction,
+                //    ETriggerEvent::Completed,
+                //    this,
+                //    &APlayerCharacter::StopDodge
+                //);
             }
             if (PlayerController->ActiveSkillAction)
             {
@@ -200,8 +212,9 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
     if (!Controller) return;
-    if (IsHurt) return ;
-    if (IsDead) return;
+    //if (IsHurt) return;
+    //if (IsDead) return;
+    if (!CombatComp->IsIdle()) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -219,12 +232,17 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
     {
         AddMovementInput(RightDirection, MoveInput.Y);
     }
+    CurrentMoveInput = MoveInput;
+}
+
+void APlayerCharacter::StopMove(const FInputActionValue& value)
+{
+    CurrentMoveInput = FVector2D::ZeroVector;
 }
 
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
-    if (IsHurt) return;
-    if (IsDead) return;
+    if (!CombatComp->IsIdle()) return;
 
     if (value.Get<bool>())
     {
@@ -241,7 +259,7 @@ void APlayerCharacter::StopJump(const FInputActionValue& value)
 }
 
 void APlayerCharacter::Look(const FInputActionValue& value)
-{ 
+{
     FVector2D LookInput = value.Get<FVector2D>();
 
     AddControllerYawInput(LookInput.X);
@@ -266,10 +284,9 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (IsHurt) return;
-    if (IsDead) return;
-
     if (!CombatComp) return;
+    if (GetCharacterMovement()->IsFalling()) return;
+
     CombatComp->BasicAttack();
 }
 
@@ -280,23 +297,41 @@ void APlayerCharacter::StopBasicAttack(const FInputActionValue& value)
 
 void APlayerCharacter::StartDodge(const FInputActionValue& value)
 {
+    if (!CombatComp->IsIdle()) return;
+    if (GetCharacterMovement()->IsFalling()) return;
+    if (CombatComp->IsInvincible()) return;
 
+    CombatComp->SetCombatState(ECombatEnumState::Dodging);
+
+    //뱡향키와 회피키 동시 입력했을 경우 해당 방향으로 덤블링
+    if (CurrentMoveInput.X || CurrentMoveInput.Y)
+    {
+        ForwardDodgeAnimMontage();
+    }
+    // 회피키만 입력했을 경우 백덤블링
+    else
+    {
+        BackDodgeAnimMontage();
+    }
 }
 
-void APlayerCharacter::StopDodge(const FInputActionValue& value)
+void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 {
-
 }
 
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 {
-    //스킬 애니메이션 재생으로 변경으로 바꾸고 실제 스킬 발동은 AnimNotify로 제어하도록 수정해야함.
-    CombatComp->ActiveSkill();
+    if (!CombatComp->IsIdle()) return;
+    if (GetCharacterMovement()->IsFalling()) return;
+
+    SkillComp->ActiveSkill();
 }
 
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    if (!CombatComp->IsInvincible()) return 0.f; // 무적상태일 경우 반환
+
     const float ActualDamage = Super::TakeDamage(
         DamageAmount,
         DamageEvent,
@@ -307,29 +342,29 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
     if (HealthComp)
     {
+        if (CombatComp->IsInvincible())
+            return 0.f;
         HealthComp->TakeDamageValue(ActualDamage);
 
         UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
-            HealthComp->CurrentHealth);
+            HealthComp->GetCurrentHealth());
 
-        if (HealthComp->CurrentHealth <= 0.0f)
-        {
-            OnDead();
-        }
-        else
+        if (HealthComp->GetCurrentHealth() > 0.0f)
         {
             HitAnimMontage();
+            CombatComp->HitReact(true);
         }
     }
     return ActualDamage;
 }
 
 // 사망 시 호출되는 함수
-void APlayerCharacter::OnDead()
+void APlayerCharacter::OnDeath()
 {
-    if (IsDead) return;
-    IsDead = true; // 캐릭터 입력 차단
-    
+    if (!CombatComp) return;
+    if (CombatComp->IsDead()) return;
+
+    CombatComp->SetCombatState(ECombatEnumState::Dead);
     DeathAnimMontage();
 }
 
@@ -344,6 +379,26 @@ void APlayerCharacter::DeathAnimMontage()
     }
 }
 
+void APlayerCharacter::BackDodgeAnimMontage()
+{
+    if (!BackDodgeReactMontage) return;
+
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    {
+        AnimInstance->Montage_Play(BackDodgeReactMontage);
+    }
+}
+
+void APlayerCharacter::ForwardDodgeAnimMontage()
+{
+    if (!ForwardDodgeReactMontage) return;
+
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    {
+        AnimInstance->Montage_Play(ForwardDodgeReactMontage);
+    }
+}
+
 // 피격 시 애니메이션 몽타주 실행
 void APlayerCharacter::HitAnimMontage()
 {
@@ -353,8 +408,6 @@ void APlayerCharacter::HitAnimMontage()
     if (AnimInstance)
     {
         AnimInstance->Montage_Play(HitReactMontage);
-
-        IsHurt = true; // 피격 애니메이션 끝나기 전까지 입력 차단
 
         FOnMontageEnded EndDelegate;
         EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
@@ -366,6 +419,5 @@ void APlayerCharacter::HitAnimMontage()
 // 피격 애니메이션이 끝나면 입력 허용
 void APlayerCharacter::HitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    IsHurt = false;
+    CombatComp->HitReact(false);
 }
-
