@@ -13,6 +13,15 @@ enum class EItemType : uint8
     Quest       UMETA(DisplayName = "퀘스트 아이템")
 };
 
+UENUM(BlueprintType)
+enum class EConsumableEffectType : uint8
+{
+    None        UMETA(DisplayName = "없음"),
+    Heal        UMETA(DisplayName = "체력 회복"),
+    Mana        UMETA(DisplayName = "마나 회복"),
+    Stamina     UMETA(DisplayName = "스태미너 회복")
+};
+
 USTRUCT(BlueprintType)
 struct CLAMOR_LIBERTATIS_API FItemTableRow : public FTableRowBase
 {
@@ -29,4 +38,10 @@ struct CLAMOR_LIBERTATIS_API FItemTableRow : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Item")
     TSoftObjectPtr<UTexture2D> Icon;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consumable")
+    EConsumableEffectType EffectType = EConsumableEffectType::None;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consumable")
+    float EffectValue = 0.f;
 };

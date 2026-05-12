@@ -1,4 +1,5 @@
 ﻿#include "Item/InventoryComponent.h"
+#include "Combat/HealthComponent.h"
 
 UInventoryComponent::UInventoryComponent()
 {
@@ -67,9 +68,13 @@ EAddItemResult UInventoryComponent::AddItem(FName ItemID, int32 Quantity)
 
 bool UInventoryComponent::UseItem(FName ItemID, int32 Quantity)
 {
-    if (ItemID.IsNone() || Quantity <= 0) return false;
+    if (ItemID.IsNone() || Quantity <= 0)
+    {
+        return false;
+    }
 
     int32 Idx = FindSlotByID(ItemID);
+
     if (Idx == INDEX_NONE)
     {
         UE_LOG(LogTemp, Warning, TEXT("보유하지 않은 아이템: %s"), *ItemID.ToString());
@@ -78,19 +83,53 @@ bool UInventoryComponent::UseItem(FName ItemID, int32 Quantity)
 
     if (Slots[Idx].Quantity < Quantity)
     {
-        UE_LOG(LogTemp, Warning, TEXT("수량 부족 — 보유: %d, 사용 시도: %d"),
-            Slots[Idx].Quantity, Quantity);
+        UE_LOG(LogTemp, Warning, TEXT("수량 부족"));
         return false;
+    }
+
+    FItemTableRow* ItemData = GetItemData(ItemID);
+
+    if (!ItemData)
+    {
+        return false;
+    }
+
+    if (ItemData->ItemType == EItemType::Consumable)
+    {
+        UHealthComponent* HealthComp =
+            GetOwner()->FindComponentByClass<UHealthComponent>();
+
+        if (HealthComp)
+        {
+            switch (ItemData->EffectType)
+            {
+            case EConsumableEffectType::Heal:
+                HealthComp->Heal(ItemData->EffectValue);
+                break;
+
+            //case EConsumableEffectType::Mana:
+                //HealthComp->RecoverMana(ItemData->EffectValue);
+                //break;
+
+            //case EConsumableEffectType::Stamina:
+                //HealthComp->RecoverStamina(ItemData->EffectValue);
+                //break;
+
+            //default:
+                //break;
+            }
+        }
     }
 
     Slots[Idx].Quantity -= Quantity;
 
-    if (Slots[Idx].Quantity == 0)
+    if (Slots[Idx].Quantity <= 0)
     {
         Slots[Idx] = FInventorySlot();
     }
 
     OnInventoryChanged.Broadcast();
+
     return true;
 }
 
