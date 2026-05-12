@@ -330,6 +330,8 @@ void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
+    if (!CombatComp->IsInvincible()) return 0.f; // 무적상태일 경우 반환
+
     const float ActualDamage = Super::TakeDamage(
         DamageAmount,
         DamageEvent,
