@@ -86,18 +86,52 @@ ABaseEnemy* UEnemyTrackerComponent::FindClosestEnemy() const
 	if (!MyPawn) return nullptr;
 
 	ABaseEnemy* Closest = nullptr;
-	float       ClosestDistSq = FMath::Square(ShowDistance);
-	FVector     MyLoc = MyPawn->GetActorLocation();
+
+	float ClosestDistSq = FMath::Square(ShowDistance);
+	float BestDot = -1.f;
+
+	const FVector MyLoc = MyPawn->GetActorLocation();
+	const FVector Forward = MyPawn->GetActorForwardVector();
 
 	for (TActorIterator<ABaseEnemy> It(OwnerController->GetWorld()); It; ++It)
 	{
 		ABaseEnemy* Enemy = *It;
-		if (!Enemy || Enemy->IsDead()) continue;
 
-		const float DistSq = FVector::DistSquared(MyLoc, Enemy->GetActorLocation());
+		if (!Enemy || Enemy->IsDead())
+		{
+			continue;
+		}
+
+		const FVector EnemyLoc = Enemy->GetActorLocation();
+		const float DistSq = FVector::DistSquared(MyLoc, EnemyLoc);
+
+		if (DistSq > FMath::Square(ShowDistance))
+		{
+			continue;
+		}
+
+		const FVector Dir = (EnemyLoc - MyLoc).GetSafeNormal();
+		const float Dot = FVector::DotProduct(Forward, Dir);
+
+		bool bShouldReplace = false;
+
 		if (DistSq < ClosestDistSq)
 		{
+			bShouldReplace = true;
+		}
+		
+		else if (FMath::IsNearlyEqual(DistSq, ClosestDistSq, 1.f))
+		{
+			if (Dot > BestDot)
+			{
+				bShouldReplace = true;
+			}
+		}
+
+		if (bShouldReplace)
+		{
 			ClosestDistSq = DistSq;
+			BestDot = Dot;
 			Closest = Enemy;
 		}
 	}

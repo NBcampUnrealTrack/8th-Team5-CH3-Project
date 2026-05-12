@@ -21,6 +21,8 @@ struct FBaseEnemyStat : public FTableRowBase
 	float Enemy_PeripheralVisionAngleDegrees = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="BaseEnemyStat")
 	float Enemy_SightConfig_MaxAge = 0.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="BaseEnemyStat")
+	float MaxChasingDistance = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataAsset")
 	TObjectPtr<UDA_BaseEnemySkill> DA_EnemySkill = nullptr;
 };
