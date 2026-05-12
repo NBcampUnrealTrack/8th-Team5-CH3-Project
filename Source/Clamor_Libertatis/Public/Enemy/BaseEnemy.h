@@ -24,9 +24,11 @@ public:
 	FORCEINLINE bool IsDead() const { return bIsDead; }
 
 	virtual void AttackToPlayer();
-	
+
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackHitCheck();
+
+	const FEnemySkillInfo* GetCurrentSkillInfo() const;
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
@@ -34,6 +36,7 @@ protected:
 	virtual void OnDead();
 	
 	void EquipWeapon();
+	virtual float GetCurrentAttackDamage() const;
 #pragma region Weapon
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;

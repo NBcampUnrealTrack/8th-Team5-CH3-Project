@@ -158,12 +158,23 @@ void ABaseEnemy::AttackHitCheck()
 		{
 			if (!AlreadyHitActors.Contains(OverlapResult.GetActor()) && OverlapResult.GetActor()->ActorHasTag(TEXT("Player")))
 			{
-				UGameplayStatics::ApplyDamage(OverlapResult.GetActor(), Enemy_StatComp->GetEnemyStat().Attack_Damage,GetController(),this,UDamageType::StaticClass());
+				UGameplayStatics::ApplyDamage(OverlapResult.GetActor(), GetCurrentAttackDamage(),GetController(),this,UDamageType::StaticClass());
 				UE_LOG(LogTemp,Warning,TEXT("Enemy Hit Player %s"),*OverlapResult.GetActor()->GetName());
 				AlreadyHitActors.Add(OverlapResult.GetActor());
 			}
 		}
 	}
+}
+
+float ABaseEnemy::GetCurrentAttackDamage() const
+{
+	return Enemy_StatComp->GetEnemyStat().Attack_Damage;
+}
+
+const FEnemySkillInfo* ABaseEnemy::GetCurrentSkillInfo() const
+{
+	if (!Enemy_CombatComp) return nullptr;
+	return &Enemy_CombatComp->GetSkillInfo(CurrentAttackData.Key, CurrentAttackData.Value);
 }
 
 void ABaseEnemy::OnDead()

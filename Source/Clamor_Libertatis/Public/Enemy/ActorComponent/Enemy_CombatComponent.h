@@ -21,7 +21,8 @@ public:
 	FORCEINLINE int32 GetSkillCount(EAttackType AttackType) const {return GetEnemySkillArray(AttackType).Num();}
 	FORCEINLINE float GetAttackDistance(EAttackType AttackType, int32 AttackIndex) const;
 	FORCEINLINE UAnimMontage* GetAttackMontage(EAttackType AttackType, int32 AttackIndex) const {return GetEnemySkillArray(AttackType)[AttackIndex].AM_TypeMontage;}
-	
+
+	const FEnemySkillInfo& GetSkillInfo(EAttackType AttackType, int32 AttackIndex) const;
 	FCollisionShape MakeAttackCollision(EAttackType AttackType,int32 AttackIndex);
 	
 	UPROPERTY()
