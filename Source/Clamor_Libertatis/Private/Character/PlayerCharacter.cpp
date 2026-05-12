@@ -48,8 +48,6 @@ APlayerCharacter::APlayerCharacter()
     // 캐릭터 회전 설정
     bUseControllerRotationYaw = false;
     GetCharacterMovement()->bOrientRotationToMovement = true;
-    SpringArmComp->bUsePawnControlRotation = true;
-    CameraComp->bUsePawnControlRotation = false;
 
     // 캐릭터 입력, 상태
     CurrentMoveInput = FVector2D::ZeroVector;
@@ -211,10 +209,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-    if (!Controller) return;
-    //if (IsHurt) return;
-    //if (IsDead) return;
-    if (!CombatComp->IsIdle()) return;
+    if (!IsAvailable()) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -242,7 +237,7 @@ void APlayerCharacter::StopMove(const FInputActionValue& value)
 
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
+    if (!IsAvailable()) return;
 
     if (value.Get<bool>())
     {
@@ -284,8 +279,10 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (!CombatComp) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable())
+    {
+        if (!CombatComp->IsAttacking()) return;
+    }
 
     CombatComp->BasicAttack();
 }
@@ -297,8 +294,7 @@ void APlayerCharacter::StopBasicAttack(const FInputActionValue& value)
 
 void APlayerCharacter::StartDodge(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable()) return;
     if (CombatComp->IsInvincible()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
@@ -321,8 +317,7 @@ void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable()) return;
 
     SkillComp->ActiveSkill();
 }
@@ -330,8 +325,6 @@ void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 
 float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
-    if (!CombatComp->IsInvincible()) return 0.f; // 무적상태일 경우 반환
-
     const float ActualDamage = Super::TakeDamage(
         DamageAmount,
         DamageEvent,
@@ -344,6 +337,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
     {
         if (CombatComp->IsInvincible())
             return 0.f;
+
         HealthComp->TakeDamageValue(ActualDamage);
 
         UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
@@ -386,6 +380,10 @@ void APlayerCharacter::BackDodgeAnimMontage()
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->Montage_Play(BackDodgeReactMontage);
+
+        FOnMontageEnded EndDelegate;
+        EndDelegate.BindUObject(this, &APlayerCharacter::DodgeMontageEnded);
+        AnimInstance->Montage_SetEndDelegate(EndDelegate, BackDodgeReactMontage);
     }
 }
 
@@ -396,6 +394,10 @@ void APlayerCharacter::ForwardDodgeAnimMontage()
     if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
     {
         AnimInstance->Montage_Play(ForwardDodgeReactMontage);
+
+        FOnMontageEnded EndDelegate;
+        EndDelegate.BindUObject(this, &APlayerCharacter::DodgeMontageEnded);
+        AnimInstance->Montage_SetEndDelegate(EndDelegate, ForwardDodgeReactMontage);
     }
 }
 
@@ -409,15 +411,28 @@ void APlayerCharacter::HitAnimMontage()
     {
         AnimInstance->Montage_Play(HitReactMontage);
 
-        FOnMontageEnded EndDelegate;
-        EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
-        AnimInstance->Montage_SetEndDelegate(EndDelegate, HitReactMontage);
+        //FOnMontageEnded EndDelegate;
+        //EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
+        //AnimInstance->Montage_SetEndDelegate(EndDelegate, HitReactMontage);
     }
 }
 
-
-// 피격 애니메이션이 끝나면 입력 허용
-void APlayerCharacter::HitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+//회피 애니메이션 비정상 종료 시 EndDodge 호출
+void APlayerCharacter::DodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
-    CombatComp->HitReact(false);
+    if (bInterrupted)
+    {
+        CombatComp->EndDodge();
+        return;
+    }
+}
+
+bool APlayerCharacter::IsAvailable()
+{
+    if (!CombatComp) return false;
+    if (!HealthComp) return false;
+    if (GetCharacterMovement()->IsFalling()) return false;
+    if (!CombatComp->IsIdle()) return false;
+
+    return true;
 }

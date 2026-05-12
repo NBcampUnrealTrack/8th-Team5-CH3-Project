@@ -27,12 +27,6 @@ AWeaponBase::AWeaponBase()
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
-	//디버그용
-	//Hitbox->ShapeColor = FColor::Green;
-	//Hitbox->SetLineThickness(3.f);
-	//Hitbox->SetHiddenInGame(true);
-
-
 }
 
 UAnimMontage* AWeaponBase::GetAttackMontage() const
@@ -103,7 +97,6 @@ void AWeaponBase::EnableHitbox()
 
 	Hitbox->SetGenerateOverlapEvents(true);
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
-	Hitbox->SetHiddenInGame(false);
 	
 }
 
@@ -116,7 +109,7 @@ void AWeaponBase::DisableHitbox()
 
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	Hitbox->SetHiddenInGame(true);
+
 }
 
 void AWeaponBase::AttachToCharacterHand(ACharacter* TargetCharacter)
@@ -138,6 +131,11 @@ void AWeaponBase::AttachToCharacterHand(ACharacter* TargetCharacter)
 	AttachToComponent(CharacterMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale, SocketName);
 
 	SetOwner(TargetCharacter);
+}
+
+void AWeaponBase::SetWeaponTrailNiagara(UNiagaraSystem* NewTrailNiagara)
+{
+	TrailNiagara = NewTrailNiagara;
 }
 
 void AWeaponBase::OnHitboxBeginOverlap(

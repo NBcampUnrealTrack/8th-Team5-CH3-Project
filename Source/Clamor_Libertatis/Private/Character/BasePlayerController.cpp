@@ -8,6 +8,7 @@
 #include "UI/PlayerHUDWidget.h"
 #include "UI/UIManager.h"
 #include "UI/EnemyTrackerComponent.h"
+#include "Combat/SkillComponent.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -43,10 +44,6 @@ void ABasePlayerController::BeginPlay()
 
 	ShowGameStartUI();
 }
-
-// ─────────────────────────────────────────────────────────
-// Private
-// ─────────────────────────────────────────────────────────
 
 void ABasePlayerController::InitializeInput()
 {
@@ -176,4 +173,11 @@ void ABasePlayerController::InitHUDWidget()
 
 	HealthComp->OnHealthChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnHealthChanged);
 	HealthComp->OnStaminaChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnStaminaChanged);
+
+	USkillComponent* SkillComp = PlayerCharacter->FindComponentByClass<USkillComponent>();
+	if (SkillComp)
+	{
+		HUDWidgetRef->InitSkillCooldown(SkillComp);
+	}
+
 }

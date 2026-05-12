@@ -5,6 +5,8 @@
 #include "PlayerHUDWidget.generated.h"
 
 class UHealthComponent;
+class USkillComponent;     
+class USkillCooldownWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API UPlayerHUDWidget : public UUserWidget
@@ -17,6 +19,9 @@ public:
     void InitWidget(UHealthComponent* InHealthComp);
 
     UFUNCTION()
+    void InitSkillCooldown(USkillComponent* InSkillComp);
+
+    UFUNCTION()
     void OnHealthChanged(float CurrentHealth, float MaxHealth);
 
     UFUNCTION()
@@ -27,4 +32,8 @@ public:
 
     UFUNCTION(BlueprintImplementableEvent)
     void UpdateStamina(float CurrentStamina, float MaxStamina);
+
+protected:
+    UPROPERTY(meta = (BindWidget))
+    USkillCooldownWidget* SkillCooldownWidget;
 };

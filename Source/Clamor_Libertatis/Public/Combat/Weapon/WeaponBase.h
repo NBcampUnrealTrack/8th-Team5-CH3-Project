@@ -13,6 +13,7 @@ class UAnimMontage;
 class ACharacter;
 class UPrimitiveComponent;
 struct FHitResult;
+class UNiagaraSystem;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API AWeaponBase : public AActor
@@ -20,47 +21,57 @@ class CLAMOR_LIBERTATIS_API AWeaponBase : public AActor
 	GENERATED_BODY()
 	
 public:	
-    AWeaponBase();
+	AWeaponBase();
 
 public:
-    UAnimMontage* GetAttackMontage() const;
+	UAnimMontage* GetAttackMontage() const;
 
-    int32 GetMaxComboCount() const;
+	int32 GetMaxComboCount() const;
 
-    FName GetAttackSectionName(int32 ComboIndex) const;
+	FName GetAttackSectionName(int32 ComboIndex) const;
 
-    const FWeaponAttackData* GetAttackData(int32 ComboIndex) const;
+	const FWeaponAttackData* GetAttackData(int32 ComboIndex) const;
 
-    float GetAttackDamage(int32 ComboIndex) const;
-    float GetAttackStaminaCost(int32 ComboIndex) const;
+	float GetAttackDamage(int32 ComboIndex) const;
+	float GetAttackStaminaCost(int32 ComboIndex) const;
 
-    void EnableHitbox();
-    void DisableHitbox();
+	void EnableHitbox();
+	void DisableHitbox();
+	
 
-    void AttachToCharacterHand(ACharacter* TargetCharacter);
+	void AttachToCharacterHand(ACharacter* TargetCharacter);
+
+	UFUNCTION(BlueprintCallable, Category="Weapon|VFX")
+	void SetWeaponTrailNiagara(UNiagaraSystem* NewTrailNiagara);
+
+	UFUNCTION(BlueprintPure, Category="Weapon|VFX")
+	FORCEINLINE UNiagaraSystem* GetWeaponTrailNiagara() const { return TrailNiagara; };
 protected:
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
-    UBoxComponent* Hitbox;
-    
-    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
-    TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
+	UBoxComponent* Hitbox;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
+	TObjectPtr<UStaticMeshComponent> StaticMeshComponent;
 
-    UPROPERTY()
-    TSet<AActor*> HitActors;
+	UPROPERTY()
+	TSet<AActor*> HitActors;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Attack")
-    UAnimMontage* AttackComboMontage;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Attack")
+	UAnimMontage* AttackComboMontage;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Attack")
-    TArray<FWeaponAttackData> AttackDataList;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Attack")
+	TArray<FWeaponAttackData> AttackDataList;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX")
+	TObjectPtr<UNiagaraSystem> TrailNiagara;
 private:
-    UFUNCTION()
-    void OnHitboxBeginOverlap(
-        UPrimitiveComponent* OverlappedComponent,
-        AActor* OtherActor,
-        UPrimitiveComponent* OtherComp,
-        int32 OtherBodyIndex,
-        bool bFromSweep,
-        const FHitResult& SweepResult
-    );
+	UFUNCTION()
+	void OnHitboxBeginOverlap(
+		UPrimitiveComponent* OverlappedComponent,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		int32 OtherBodyIndex,
+		bool bFromSweep,
+		const FHitResult& SweepResult
+	);
 };
