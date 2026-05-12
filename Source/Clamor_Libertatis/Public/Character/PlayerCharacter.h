@@ -114,4 +114,5 @@ public:
 	void BackDodgeAnimMontage();
 	void ForwardDodgeAnimMontage();
 
+	bool IsAvailable();
 };

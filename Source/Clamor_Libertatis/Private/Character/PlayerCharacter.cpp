@@ -209,10 +209,7 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
-    if (!Controller) return;
-    //if (IsHurt) return;
-    //if (IsDead) return;
-    if (!CombatComp->IsIdle()) return;
+    if (!IsAvailable()) return;
 
     const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
@@ -240,7 +237,7 @@ void APlayerCharacter::StopMove(const FInputActionValue& value)
 
 void APlayerCharacter::StartJump(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
+    if (!IsAvailable()) return;
 
     if (value.Get<bool>())
     {
@@ -282,8 +279,10 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (!CombatComp) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable())
+    {
+        if (!CombatComp->IsAttacking()) return;
+    }
 
     CombatComp->BasicAttack();
 }
@@ -295,8 +294,7 @@ void APlayerCharacter::StopBasicAttack(const FInputActionValue& value)
 
 void APlayerCharacter::StartDodge(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable()) return;
     if (CombatComp->IsInvincible()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
@@ -319,8 +317,7 @@ void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 {
-    if (!CombatComp->IsIdle()) return;
-    if (GetCharacterMovement()->IsFalling()) return;
+    if (!IsAvailable()) return;
 
     SkillComp->ActiveSkill();
 }
@@ -340,6 +337,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
     {
         if (CombatComp->IsInvincible())
             return 0.f;
+
         HealthComp->TakeDamageValue(ActualDamage);
 
         UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
@@ -427,4 +425,14 @@ void APlayerCharacter::DodgeMontageEnded(UAnimMontage* Montage, bool bInterrupte
         CombatComp->EndDodge();
         return;
     }
+}
+
+bool APlayerCharacter::IsAvailable()
+{
+    if (!CombatComp) return false;
+    if (!HealthComp) return false;
+    if (GetCharacterMovement()->IsFalling()) return false;
+    if (!CombatComp->IsIdle()) return false;
+
+    return true;
 }
