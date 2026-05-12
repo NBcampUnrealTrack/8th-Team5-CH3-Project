@@ -298,17 +298,9 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
     if (CombatComp->IsInvincible()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
+    CombatComp->SetInvincible(true);
 
-    //뱡향키와 회피키 동시 입력했을 경우 해당 방향으로 덤블링
-    if (CurrentMoveInput.X || CurrentMoveInput.Y)
-    {
-        ForwardDodgeAnimMontage();
-    }
-    // 회피키만 입력했을 경우 백덤블링
-    else
-    {
-        BackDodgeAnimMontage();
-    }
+    DodgeAnimMontage(GetDirection());
 }
 
 void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
@@ -346,7 +338,6 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         if (HealthComp->GetCurrentHealth() > 0.0f)
         {
             HitAnimMontage();
-            CombatComp->HitReact(true);
         }
     }
     return ActualDamage;
@@ -373,31 +364,32 @@ void APlayerCharacter::DeathAnimMontage()
     }
 }
 
-void APlayerCharacter::BackDodgeAnimMontage()
+void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
 {
-    if (!BackDodgeReactMontage) return;
+    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
+    if (!AnimInstance) return;
 
-    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    switch (DodgeDirection)
     {
-        AnimInstance->Montage_Play(BackDodgeReactMontage);
-
-        FOnMontageEnded EndDelegate;
-        EndDelegate.BindUObject(this, &APlayerCharacter::DodgeMontageEnded);
-        AnimInstance->Montage_SetEndDelegate(EndDelegate, BackDodgeReactMontage);
-    }
-}
-
-void APlayerCharacter::ForwardDodgeAnimMontage()
-{
-    if (!ForwardDodgeReactMontage) return;
-
-    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-    {
+    case EDodgeDirection::Forward:
+        if (!ForwardDodgeReactMontage) return;
         AnimInstance->Montage_Play(ForwardDodgeReactMontage);
-
-        FOnMontageEnded EndDelegate;
-        EndDelegate.BindUObject(this, &APlayerCharacter::DodgeMontageEnded);
-        AnimInstance->Montage_SetEndDelegate(EndDelegate, ForwardDodgeReactMontage);
+        break;
+    case EDodgeDirection::Backward:
+        if (!BackwardDodgeReactMontage) return;
+        AnimInstance->Montage_Play(BackwardDodgeReactMontage);
+        break;
+    case EDodgeDirection::Left:
+        if (!LeftDodgeReactMontage) return;
+        AnimInstance->Montage_Play(LeftDodgeReactMontage);
+        break;
+    case EDodgeDirection::Right:
+        if (!RightDodgeReactMontage) return;
+        AnimInstance->Montage_Play(RightDodgeReactMontage);
+        break;
+    default:
+        AnimInstance->Montage_Play(ForwardDodgeReactMontage);
+        break;
     }
 }
 
@@ -417,16 +409,6 @@ void APlayerCharacter::HitAnimMontage()
     }
 }
 
-//회피 애니메이션 비정상 종료 시 EndDodge 호출
-void APlayerCharacter::DodgeMontageEnded(UAnimMontage* Montage, bool bInterrupted)
-{
-    if (bInterrupted)
-    {
-        CombatComp->EndDodge();
-        return;
-    }
-}
-
 bool APlayerCharacter::IsAvailable()
 {
     if (!CombatComp) return false;
@@ -435,4 +417,16 @@ bool APlayerCharacter::IsAvailable()
     if (!CombatComp->IsIdle()) return false;
 
     return true;
+}
+
+EDodgeDirection APlayerCharacter::GetDirection() const
+{
+    if (CurrentMoveInput.IsNearlyZero())  return EDodgeDirection::None;
+    if (FMath::Abs(CurrentMoveInput.X) >= FMath::Abs(CurrentMoveInput.Y))
+        if (CurrentMoveInput.X >= 0) return EDodgeDirection::Forward;
+        else return EDodgeDirection::Backward;
+    if (FMath::Abs(CurrentMoveInput.X) < FMath::Abs(CurrentMoveInput.Y))
+        if (CurrentMoveInput.Y >= 0) return EDodgeDirection::Right;
+        else return EDodgeDirection::Left;
+    return EDodgeDirection::None;
 }
