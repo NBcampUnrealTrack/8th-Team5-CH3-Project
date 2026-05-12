@@ -18,6 +18,8 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void OnDead() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+	
+	void HitReaction();
 public:
 	virtual void Tick(float DeltaTime) override;
 };
