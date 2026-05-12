@@ -42,14 +42,11 @@ void UCombatComponent::BasicAttack()
 		if (bIsComboEnabled && ComboIndex < GetMaxComboCount()) 
 		{
 			bComboInputBuffered = true;
-			UE_LOG(LogCombat, Warning, TEXT("Combo Input Buffered"));
 			return;
 		}
 		if (bIsAttackEnding)
 		{
 			bAttackInputBufferedDuringRecovery = true;
-
-			UE_LOG(LogCombat, Warning, TEXT("Recovery Attack Input Buffered"));
 			return;
 		}
 		return;
@@ -214,7 +211,12 @@ void UCombatComponent::SetInvincible(bool bEnable)
 		bIsInvincible = false;
 		return;
 	}
-
+	if (bEnable) {
+		UE_LOG(LogCombat, Warning, TEXT("Set Invincible True"));
+	}
+	else {
+		UE_LOG(LogCombat, Warning, TEXT("Set Invincible False"));
+	}
 	bIsInvincible = bEnable;
 
 }

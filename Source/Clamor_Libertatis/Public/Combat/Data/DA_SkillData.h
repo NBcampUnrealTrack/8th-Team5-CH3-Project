@@ -4,10 +4,12 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "Combat/DamageType/CustomDamageType.h"
 #include "DA_SkillData.generated.h"
 
 class AActor;
 class UAnimMontage;
+class UNiagaraSystem;
 
 UENUM(BlueprintType)
 enum class ESkillType : uint8
@@ -37,6 +39,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
 	ESkillType SkillType = ESkillType::Projectile;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Skill")
+	TSubclassOf<UDamageType> DamageTypeClass = UMagicDamageType::StaticClass();;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Cost")
 	float StaminaCost = 0.f;
@@ -55,6 +60,9 @@ public:
 	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Effect")
 	float SphereRadius = 0.f;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Animation")
+	TArray<TObjectPtr<UNiagaraSystem>>CastingEffects;//스킬 이펙트
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill|Animation")
 	TObjectPtr<UAnimMontage> CastMontage; //시전동작

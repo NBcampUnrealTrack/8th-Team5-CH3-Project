@@ -51,9 +51,18 @@ public:
 	UFUNCTION()
 	void AnimNotify_DisableWeaponHitbox();
 #pragma endregion Attack
-
+	
 	UFUNCTION()
 	void AnimNotify_UseSkill();
+
+	UFUNCTION()
+	void AnimNotify_SkillExecuteAttack();
+	
+	UFUNCTION()
+	void AnimNotify_SkillPlayEffect();
+
+	UFUNCTION()
+	void AnimNotify_SkillPlaySound();
 
 	
 #pragma region Dodge

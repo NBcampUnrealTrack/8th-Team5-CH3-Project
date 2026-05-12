@@ -66,6 +66,7 @@ protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 public:
+#pragma region Health
 	UFUNCTION(BlueprintCallable)
 	void SetMaxHealth(float newHealth);
 	
@@ -80,7 +81,9 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void Heal(float Amount);
+#pragma endregion Health
 
+#pragma region Stamina
 	UFUNCTION(BlueprintCallable)
 	bool ConsumeStamina(float Amount);
 	
@@ -89,7 +92,9 @@ public:
 
 	UFUNCTION(BlueprintPure)
 	float GetCurrentStamina() const;
+#pragma endregion Stamina
 	
+#pragma region Mana
 	UFUNCTION(BlueprintCallable)
 	bool ConsumeMana(float Amount);
 	
@@ -98,6 +103,7 @@ public:
 	
 	UFUNCTION(BlueprintPure)
 	float GetCurrentMana() const;
+#pragma endregion Mana
 
 
 	UPROPERTY(BlueprintAssignable)
