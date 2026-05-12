@@ -29,7 +29,8 @@ float ANormalEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 	class AController* EventInstigator, AActor* DamageCauser)
 {
 	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
-	HitReaction();
+	
+	if (!bIsDead) HitReaction();
 	
 	return ActualDamage;
 }

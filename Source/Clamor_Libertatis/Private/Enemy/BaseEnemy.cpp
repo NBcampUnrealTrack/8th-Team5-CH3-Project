@@ -78,6 +78,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		}
 		else
 		{
+			UE_LOG(LogTemp,Warning,TEXT("Enemy Was Dead"));
 			bIsDead = true;
 			OnDead();
 		}
@@ -176,9 +177,17 @@ void ABaseEnemy::OnDead()
 	}
 	
 	UAnimMontage* AM_Dead = Enemy_CombatComp->DA_EnemySkill->AM_Dead;
+	
+	if (UAnimMontage* CurrentMontage = AnimInst->GetCurrentActiveMontage())
+	{
+		UE_LOG(LogTemp,Warning,TEXT("CurrentPlay Montage %s"),*CurrentMontage->GetName())
+		AnimInst->Montage_Stop(0.f,CurrentMontage);
+	}
+	
 	if (AnimInst && AM_Dead)
 	{
 		AnimInst->Montage_Play(AM_Dead);
+		UE_LOG(LogTemp,Warning,TEXT("PlayDeadMontage"));
 	}
 	
 	SetLifeSpan(4.f);
