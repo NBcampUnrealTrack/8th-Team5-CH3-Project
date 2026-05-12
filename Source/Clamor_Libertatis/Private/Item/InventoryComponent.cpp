@@ -1,8 +1,10 @@
 ﻿#include "Item/InventoryComponent.h"
+#include "Item/HealEffectHandler.h"
 
 UInventoryComponent::UInventoryComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
+    EffectHandlerClasses.Add(EConsumableEffectType::Heal, UHealEffectHandler::StaticClass());
 }
 
 void UInventoryComponent::BeginPlay()
