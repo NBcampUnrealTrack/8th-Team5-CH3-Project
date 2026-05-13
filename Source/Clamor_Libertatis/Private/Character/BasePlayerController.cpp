@@ -2,6 +2,8 @@
 #include "Character/PlayerCharacter.h"
 #include "Combat/HealthComponent.h"
 #include "EnhancedInputSubsystems.h"
+
+//UI
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -10,6 +12,7 @@
 #include "UI/EnemyTrackerComponent.h"
 #include "Combat/SkillComponent.h"
 #include "UI/QuickSlotWidget.h"
+#include "UI/InventoryWidget.h"
 #include "Item/ConsumableInventoryComponent.h"
 
 ABasePlayerController::ABasePlayerController()
@@ -96,8 +99,11 @@ void ABasePlayerController::HideGameStartUI()
 	if (!UIManager) return;
 	UIManager->HideWidget(EUIType::GameStart);
 	if (EnemyTracker) EnemyTracker->SetSuppressed(false);
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
+	FInputModeGameAndUI InputMode;
+	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+	InputMode.SetHideCursorDuringCapture(false);
+	SetInputMode(InputMode);
+	bShowMouseCursor = true;
 }
 
 void ABasePlayerController::ShowLobbyUI()
@@ -158,33 +164,39 @@ void ABasePlayerController::QuitGame()
 
 void ABasePlayerController::ShowInventory()
 {
-//	if (!UIManager) return;
-	//UIManager->ShowWidget(EUIType::Inventory);
+	if (!UIManager) return;
 
-	//UInventoryWidget* InventoryWidget =
-		//Cast<UInventoryWidget>(UIManager->GetWidget(EUIType::Inventory));
-	//if (!InventoryWidget) return;
+	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::Inventory);
+	UE_LOG(LogTemp, Log, TEXT("RawWidget: %s"), RawWidget ? TEXT("있음") : TEXT("없음"));
+
+	UInventoryWidget* InventoryWidget = Cast<UInventoryWidget>(RawWidget);
+	UE_LOG(LogTemp, Log, TEXT("InventoryWidget 캐스트: %s"), InventoryWidget ? TEXT("성공") : TEXT("실패"));
+
+	if (!InventoryWidget) return;
 
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	UE_LOG(LogTemp, Log, TEXT("PlayerCharacter: %s"), PlayerCharacter ? TEXT("있음") : TEXT("없음"));
 	if (!PlayerCharacter) return;
 
-	//InventoryWidget->InitInventory(
-		//PlayerCharacter->ConsumableInventory,
-		//QuickSlotWidgetRef
-	//);
+	InventoryWidget->InitInventory(
+		PlayerCharacter->ConsumableInventory,
+		QuickSlotWidgetRef
+	);
 
-	//UGameplayStatics::SetGamePaused(GetWorld(), true);
-	//SetInputMode(FInputModeUIOnly{});
-	//bShowMouseCursor = true;
+	UIManager->ShowWidget(EUIType::Inventory);
+
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+	SetInputMode(FInputModeUIOnly{});
+	bShowMouseCursor = true;
 }
 
 void ABasePlayerController::HideInventory()
 {
-	//if (!UIManager) return;
-	//UIManager->HideWidget(EUIType::Inventory);
-	//UGameplayStatics::SetGamePaused(GetWorld(), false);
-	//SetInputMode(FInputModeGameOnly{});
-	//bShowMouseCursor = false;
+	if (!UIManager) return;
+	UIManager->HideWidget(EUIType::Inventory);
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+	SetInputMode(FInputModeGameOnly{});
+	bShowMouseCursor = false;
 }
 void ABasePlayerController::InitQuickSlotWidget()
 {
@@ -194,6 +206,10 @@ void ABasePlayerController::InitQuickSlotWidget()
 
 	UQuickSlotWidget* QuickSlotWidget =
 		Cast<UQuickSlotWidget>(UIManager->GetWidget(EUIType::QuickSlot));
+
+	UE_LOG(LogTemp, Log, TEXT("QuickSlotWidget 캐스트: %s"),
+		QuickSlotWidget ? TEXT("성공") : TEXT("실패"));
+
 	if (!QuickSlotWidget) return;
 
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
@@ -202,6 +218,9 @@ void ABasePlayerController::InitQuickSlotWidget()
 	QuickSlotWidget->InitQuickSlot(PlayerCharacter->ConsumableInventory);
 
 	QuickSlotWidgetRef = QuickSlotWidget;
+
+	UE_LOG(LogTemp, Log, TEXT("QuickSlotWidgetRef 설정 완료: %s"),
+		QuickSlotWidgetRef ? TEXT("성공") : TEXT("실패"));
 }
 
 void ABasePlayerController::InitHUDWidget()

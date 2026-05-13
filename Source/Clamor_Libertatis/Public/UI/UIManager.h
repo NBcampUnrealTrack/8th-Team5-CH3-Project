@@ -60,6 +60,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TMap<EUIType, FWidgetEntry> WidgetEntries;
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	UUserWidget* GetOrCreateWidget(EUIType Type);
 
 private:
 	UPROPERTY()

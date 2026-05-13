@@ -34,5 +34,5 @@ bool UConsumableInventoryComponent::UseItem(FName ItemID, int32 Quantity)
         Handler->Execute(GetOwner(), *ItemData);
     }
 
-    return true;
+    return ConsumeQuantity(Idx, Quantity);
 }

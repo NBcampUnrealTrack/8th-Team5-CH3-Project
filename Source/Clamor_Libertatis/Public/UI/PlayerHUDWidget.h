@@ -1,20 +1,19 @@
 #pragma once
-
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "PlayerHUDWidget.generated.h"
 
 class UHealthComponent;
-class USkillComponent;     
+class USkillComponent;
 class USkillCooldownWidget;
+class UButton;
+class ABasePlayerController;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API UPlayerHUDWidget : public UUserWidget
 {
     GENERATED_BODY()
-
 public:
-
     UFUNCTION()
     void InitWidget(UHealthComponent* InHealthComp);
 
@@ -34,6 +33,15 @@ public:
     void UpdateStamina(float CurrentStamina, float MaxStamina);
 
 protected:
+    virtual void NativeConstruct() override;
+
     UPROPERTY(meta = (BindWidget))
     USkillCooldownWidget* SkillCooldownWidget;
+
+    UPROPERTY(meta = (BindWidget))
+    UButton* InventoryButton;
+
+private:
+    UFUNCTION()
+    void OnInventoryButtonClicked();
 };

@@ -1,14 +1,37 @@
-#include "UI/InventoryWidget.h"
-#include "UI/InventorySlotWidget.h"
+﻿#include "UI/InventoryWidget.h"
 #include "UI/QuickSlotWidget.h"
 #include "UI/QuickSlotSlotWidget.h"
 #include "Item/ConsumableInventoryComponent.h"
 #include "Item/ItemTableRow.h"
-#include "Components/WrapBox.h"
+#include "Character/BasePlayerController.h"
+#include "Components/Button.h"
 
 void UInventoryWidget::NativeConstruct()
 {
     Super::NativeConstruct();
+
+    if (BackButton)
+        BackButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnBackButtonClicked);
+
+    AllSlots = {
+        QuickSlot1, QuickSlot2, QuickSlot3, QuickSlot4,
+        InvSlot5,  InvSlot6,  InvSlot7,  InvSlot8,
+        InvSlot9,  InvSlot10, InvSlot11, InvSlot12,
+        InvSlot13, InvSlot14, InvSlot15, InvSlot16,
+        InvSlot17, InvSlot18, InvSlot19, InvSlot20
+    };
+
+    for (int32 i = 0; i < AllSlots.Num(); i++)
+    {
+        if (!AllSlots[i]) continue;
+        AllSlots[i]->SlotIndex = i;
+        AllSlots[i]->bIsInventorySlot = true;
+    }
+
+    if (QuickSlot1) { QuickSlot1->bIsInventorySlot = false; QuickSlot1->SetKeyText("1"); }
+    if (QuickSlot2) { QuickSlot2->bIsInventorySlot = false; QuickSlot2->SetKeyText("2"); }
+    if (QuickSlot3) { QuickSlot3->bIsInventorySlot = false; QuickSlot3->SetKeyText("3"); }
+    if (QuickSlot4) { QuickSlot4->bIsInventorySlot = false; QuickSlot4->SetKeyText("4"); }
 }
 
 void UInventoryWidget::InitInventory(UConsumableInventoryComponent* InInventory,
@@ -17,15 +40,13 @@ void UInventoryWidget::InitInventory(UConsumableInventoryComponent* InInventory,
     InventoryComp = InInventory;
     QuickSlotWidgetRef = InQuickSlotWidget;
 
-    if (QuickSlotWidgetRef)
+    for (UQuickSlotSlotWidget* SlotWidget : AllSlots)
     {
-        if (QuickSlot1) { QuickSlot1->SlotIndex = 0; QuickSlot1->InitQuickSlotSlot(QuickSlotWidgetRef); }
-        if (QuickSlot2) { QuickSlot2->SlotIndex = 1; QuickSlot2->InitQuickSlotSlot(QuickSlotWidgetRef); }
-        if (QuickSlot3) { QuickSlot3->SlotIndex = 2; QuickSlot3->InitQuickSlotSlot(QuickSlotWidgetRef); }
-        if (QuickSlot4) { QuickSlot4->SlotIndex = 3; QuickSlot4->InitQuickSlotSlot(QuickSlotWidgetRef); }
+        if (SlotWidget) SlotWidget->InitQuickSlotSlot(QuickSlotWidgetRef);
     }
 
-    if (InventoryComp)
+    if (!InventoryComp->OnInventoryChanged.IsAlreadyBound(
+        this, &UInventoryWidget::OnInventoryChanged))
     {
         InventoryComp->OnInventoryChanged.AddDynamic(
             this, &UInventoryWidget::OnInventoryChanged);
@@ -36,46 +57,40 @@ void UInventoryWidget::InitInventory(UConsumableInventoryComponent* InInventory,
 
 void UInventoryWidget::RefreshInventory()
 {
-    if (!SlotContainer || !InventoryComp || !SlotWidgetClass) return;
+    if (!InventoryComp) return;
 
-    SlotContainer->ClearChildren();
-
-    for (const FInventorySlot& InventorySlot : InventoryComp->Slots)
+    for (int32 i = 0; i < AllSlots.Num(); i++)
     {
-        UInventorySlotWidget* SlotWidget =
-            CreateWidget<UInventorySlotWidget>(this, SlotWidgetClass);
-
+        UQuickSlotSlotWidget* SlotWidget = AllSlots[i];
         if (!SlotWidget) continue;
 
-        UTexture2D* Icon = nullptr;
-
-        if (!InventorySlot.IsEmpty())
+        if (!InventoryComp->Slots.IsValidIndex(i) || InventoryComp->Slots[i].IsEmpty())
         {
-            FItemTableRow* ItemData =
-                InventoryComp->GetItemData(InventorySlot.ItemID);
-
-            if (ItemData && !ItemData->Icon.IsNull())
-            {
-                Icon = ItemData->Icon.LoadSynchronous();
-            }
+            SlotWidget->ClearSlot();
+            continue;
         }
 
-        SlotWidget->InitSlot(
-            InventorySlot.ItemID,
-            InventorySlot.Quantity,
-            Icon,
-            QuickSlotWidgetRef);
+        const FInventorySlot& InvSlot = InventoryComp->Slots[i];
+        UTexture2D* Icon = nullptr;
+        FItemTableRow* ItemData = InventoryComp->GetItemData(InvSlot.ItemID);
+        if (ItemData && !ItemData->Icon.IsNull())
+            Icon = ItemData->Icon.LoadSynchronous();
 
-        SlotContainer->AddChild(SlotWidget);
+        SlotWidget->UpdateSlot(InvSlot.ItemID, InvSlot.Quantity, Icon);
     }
 
     if (QuickSlotWidgetRef)
-    {
         QuickSlotWidgetRef->RefreshAllSlots();
-    }
 }
 
 void UInventoryWidget::OnInventoryChanged()
 {
     RefreshInventory();
+}
+
+void UInventoryWidget::OnBackButtonClicked()
+{
+    ABasePlayerController* PC = Cast<ABasePlayerController>(GetOwningPlayer());
+    if (!PC) return;
+    PC->HideInventory();
 }
