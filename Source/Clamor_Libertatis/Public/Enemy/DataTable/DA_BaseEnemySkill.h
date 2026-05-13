@@ -25,7 +25,7 @@ USTRUCT(BlueprintType)
 struct FEnemyAttackCollision
 {
 	GENERATED_BODY()
-public:
+public:	
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
 	EAttackCollisionShape CollisionShape;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AttackCollision")
