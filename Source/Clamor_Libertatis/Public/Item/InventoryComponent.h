@@ -3,20 +3,16 @@
 #include "Components/ActorComponent.h"
 #include "Engine/DataTable.h"
 #include "Item/ItemTableRow.h"
-#include "Item/ItemEffectHandler.h"
 #include "InventoryComponent.generated.h"
 
 USTRUCT(BlueprintType)
 struct FInventorySlot
 {
     GENERATED_BODY()
-
     UPROPERTY(BlueprintReadWrite, Category = "Inventory")
     FName ItemID = NAME_None;
-
     UPROPERTY(BlueprintReadWrite, Category = "Inventory")
     int32 Quantity = 0;
-
     bool IsEmpty() const { return ItemID.IsNone() || Quantity <= 0; }
 };
 
@@ -35,7 +31,6 @@ UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CLAMOR_LIBERTATIS_API UInventoryComponent : public UActorComponent
 {
     GENERATED_BODY()
-
 public:
     UInventoryComponent();
 
@@ -54,14 +49,11 @@ public:
     UPROPERTY(BlueprintAssignable, Category = "Inventory")
     FOnInventoryChanged OnInventoryChanged;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Inventory|Effects")
-    TMap<EConsumableEffectType, TSubclassOf<UItemEffectHandler>> EffectHandlerClasses;
-
     UFUNCTION(BlueprintCallable, Category = "Inventory")
     EAddItemResult AddItem(FName ItemID, int32 Quantity = 1);
 
     UFUNCTION(BlueprintCallable, Category = "Inventory")
-    bool UseItem(FName ItemID, int32 Quantity = 1);
+    virtual bool UseItem(FName ItemID, int32 Quantity = 1);
 
     UFUNCTION(BlueprintCallable, Category = "Inventory")
     bool RemoveItem(FName ItemID, int32 Quantity = 1);
@@ -79,6 +71,8 @@ public:
 
 protected:
     virtual void BeginPlay() override;
+    bool ValidateUseItem(FName ItemID, int32 Quantity, int32& OutSlotIdx);
+    bool ConsumeQuantity(int32 SlotIdx, int32 Quantity);
 
 private:
     int32 FindSlotByID(FName ItemID) const;

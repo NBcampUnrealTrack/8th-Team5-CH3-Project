@@ -17,7 +17,9 @@ enum class EUIType : uint8
 	Lobby,
 	Death,
 	Victory,
-	MainMenu
+	MainMenu,
+	QuickSlot,
+	Inventory
 };
 
 USTRUCT(BlueprintType)
@@ -58,6 +60,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
 	TMap<EUIType, FWidgetEntry> WidgetEntries;
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	UUserWidget* GetOrCreateWidget(EUIType Type);
 
 private:
 	UPROPERTY()

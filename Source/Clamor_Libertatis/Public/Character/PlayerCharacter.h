@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/InventoryComponent.h"
+#include "Item/ConsumableInventoryComponent.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
@@ -130,5 +130,5 @@ public:
 
 	//인벤토리 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
-	UInventoryComponent* InventoryComponent;
+	UConsumableInventoryComponent* ConsumableInventory;
 };

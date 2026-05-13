@@ -46,6 +46,11 @@ bool UUIManager::IsWidgetVisible(EUIType Type) const
 	return false;
 }
 
+UUserWidget* UUIManager::GetOrCreateWidget(EUIType Type)
+{
+	return GetOrCreate(Type);
+}
+
 UUserWidget* UUIManager::GetOrCreate(EUIType Type)
 {
 	FWidgetEntry* Entry = WidgetEntries.Find(Type);
