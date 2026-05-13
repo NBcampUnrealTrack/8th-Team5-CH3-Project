@@ -18,4 +18,5 @@ protected:
 	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
 public:
 	virtual void Tick(float DeltaTime) override;
+	FORCEINLINE UStaticMeshComponent* GetStaticMeshComp() const { return StaticMeshComp; }
 };
