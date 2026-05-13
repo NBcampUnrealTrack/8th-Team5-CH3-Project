@@ -9,6 +9,8 @@
 #include "UI/UIManager.h"
 #include "UI/EnemyTrackerComponent.h"
 #include "Combat/SkillComponent.h"
+#include "UI/QuickSlotWidget.h"
+#include "Item/ConsumableInventoryComponent.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -153,6 +155,54 @@ void ABasePlayerController::QuitGame()
 	UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
 }
 
+void ABasePlayerController::ShowInventory()
+{
+//	if (!UIManager) return;
+	//UIManager->ShowWidget(EUIType::Inventory);
+
+	//UInventoryWidget* InventoryWidget =
+		//Cast<UInventoryWidget>(UIManager->GetWidget(EUIType::Inventory));
+	//if (!InventoryWidget) return;
+
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	if (!PlayerCharacter) return;
+
+	//InventoryWidget->InitInventory(
+		//PlayerCharacter->ConsumableInventory,
+		//QuickSlotWidgetRef
+	//);
+
+	//UGameplayStatics::SetGamePaused(GetWorld(), true);
+	//SetInputMode(FInputModeUIOnly{});
+	//bShowMouseCursor = true;
+}
+
+void ABasePlayerController::HideInventory()
+{
+	//if (!UIManager) return;
+	//UIManager->HideWidget(EUIType::Inventory);
+	//UGameplayStatics::SetGamePaused(GetWorld(), false);
+	//SetInputMode(FInputModeGameOnly{});
+	//bShowMouseCursor = false;
+}
+void ABasePlayerController::InitQuickSlotWidget()
+{
+	if (!UIManager) return;
+
+	UIManager->ShowWidget(EUIType::QuickSlot);
+
+	UQuickSlotWidget* QuickSlotWidget =
+		Cast<UQuickSlotWidget>(UIManager->GetWidget(EUIType::QuickSlot));
+	if (!QuickSlotWidget) return;
+
+	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+	if (!PlayerCharacter) return;
+
+	QuickSlotWidget->InitQuickSlot(PlayerCharacter->ConsumableInventory);
+
+	QuickSlotWidgetRef = QuickSlotWidget;
+}
+
 void ABasePlayerController::InitHUDWidget()
 {
 	if (HUDWidgetRef || !HUDWidgetClass) return;
@@ -179,5 +229,5 @@ void ABasePlayerController::InitHUDWidget()
 	{
 		HUDWidgetRef->InitSkillCooldown(SkillComp);
 	}
-
+	InitQuickSlotWidget();
 }

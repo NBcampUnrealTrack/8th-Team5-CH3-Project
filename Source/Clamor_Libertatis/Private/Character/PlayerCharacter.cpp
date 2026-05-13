@@ -53,7 +53,7 @@ APlayerCharacter::APlayerCharacter()
     CurrentMoveInput = FVector2D::ZeroVector;
 
     //인벤토리 컴포넌트 추가
-    InventoryComponent = CreateDefaultSubobject<UInventoryComponent>(TEXT("InventoryComponent"));
+    ConsumableInventory = CreateDefaultSubobject<UConsumableInventoryComponent>(TEXT("ConsumableInventory"));
 }
 
 void APlayerCharacter::BeginPlay()

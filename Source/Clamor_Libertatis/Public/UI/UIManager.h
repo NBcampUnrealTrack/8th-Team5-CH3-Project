@@ -17,7 +17,9 @@ enum class EUIType : uint8
 	Lobby,
 	Death,
 	Victory,
-	MainMenu
+	MainMenu,
+	QuickSlot,
+	Inventory
 };
 
 USTRUCT(BlueprintType)
