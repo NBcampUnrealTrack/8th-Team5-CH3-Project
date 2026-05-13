@@ -38,6 +38,8 @@ public:
 	UInputAction* DodgeAction;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
 	UInputAction* ActiveSkillAction;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
+	UInputAction* LockAction;
 
 	//UI
 	UPROPERTY(EditAnywhere, Instanced, Category = "UI")
