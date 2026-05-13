@@ -70,7 +70,10 @@ void ANormalEnemy::HitReaction()
 		if (UAnimMontage* AM_Hit = Enemy_CombatComp->DA_EnemySkill->AM_HitReaction)
 		{
 			FOnMontageEnded EndHitMontage;
-			EndHitMontage.BindUObject(this, &ANormalEnemy::OnHitMontageEnded);
+			EndHitMontage.BindWeakLambda(this, [this](UAnimMontage* Montage, bool bInterrupted)
+			{
+				OnHitMontageEnded(Montage, bInterrupted);
+			});
 			AnimInst->Montage_Play(AM_Hit);
 			AnimInst->Montage_SetEndDelegate(EndHitMontage, AM_Hit);
 		}
@@ -95,7 +98,7 @@ void ANormalEnemy::AttackHitCheck()
 }
 
 
-void ANormalEnemy::AttackToPlayer()
+UAnimMontage* ANormalEnemy::AttackToPlayer()
 {
-	Super::AttackToPlayer();
+	return Super::AttackToPlayer();
 }
