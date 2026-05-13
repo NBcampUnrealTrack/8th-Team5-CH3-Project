@@ -21,6 +21,7 @@ public:
 	
 	FORCEINLINE UEnemy_StatComponent* GetEnemyStatComp() const {return Enemy_StatComp;}
 	FORCEINLINE UEnemy_CombatComponent* GetEnemyCombatComp() const {return Enemy_CombatComp;}
+	FORCEINLINE AEnemy_BaseWeapon* GetEnemyWeapon() const { return Enemy_WeaponInst; }
 	FORCEINLINE bool IsDead() const { return bIsDead; }
 
 	virtual void AttackToPlayer();
