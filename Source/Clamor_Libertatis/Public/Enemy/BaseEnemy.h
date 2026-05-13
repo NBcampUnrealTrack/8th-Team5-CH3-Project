@@ -24,7 +24,7 @@ public:
 	FORCEINLINE AEnemy_BaseWeapon* GetEnemyWeapon() const { return Enemy_WeaponInst; }
 	FORCEINLINE bool IsDead() const { return bIsDead; }
 
-	virtual void AttackToPlayer();
+	virtual UAnimMontage* AttackToPlayer();
 
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackHitCheck();

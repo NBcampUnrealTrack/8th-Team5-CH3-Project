@@ -23,10 +23,11 @@ void ABossEnemy::OnDead()
 	Super::OnDead();
 }
 
-void ABossEnemy::AttackToPlayer()
+UAnimMontage* ABossEnemy::AttackToPlayer()
 {
-	Super::AttackToPlayer();
+	UAnimMontage* Montage = Super::AttackToPlayer();
 	Count_NormalAttack++;
+	return Montage;
 }
 
 void ABossEnemy::AttackHitCheck()
@@ -34,16 +35,18 @@ void ABossEnemy::AttackHitCheck()
 	Super::AttackHitCheck();
 }
 
-void ABossEnemy::SkillAttackToPlayer()
+UAnimMontage* ABossEnemy::SkillAttackToPlayer()
 {
 	int32 SkillCount = Enemy_CombatComp->GetSkillCount(EAttackType::Attack_Skill);
-	if (SkillCount <= 0) return;
+	if (SkillCount <= 0) return nullptr;
 
 	int32 RandomNum = FMath::RandRange(0, SkillCount - 1);
-	AnimInst->Montage_Play(Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Skill, RandomNum));
+	UAnimMontage* Montage = Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Skill, RandomNum);
+	AnimInst->Montage_Play(Montage);
 	CurrentAttackData.Key = EAttackType::Attack_Skill;
 	CurrentAttackData.Value = RandomNum;
 	ResetNormalAttackCount();
+	return Montage;
 }
 
 void ABossEnemy::ResetNormalAttackCount()
