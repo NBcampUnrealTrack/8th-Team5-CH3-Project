@@ -108,7 +108,6 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		{
 			UWidgetComponent* WidgetComp =
 				DamageActor->FindComponentByClass<UWidgetComponent>();
-
 			if (WidgetComp)
 			{
 				UDamageTextWidget* DamageWidget =

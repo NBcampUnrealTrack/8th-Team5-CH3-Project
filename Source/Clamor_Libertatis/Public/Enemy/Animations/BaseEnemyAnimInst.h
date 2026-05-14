@@ -18,6 +18,8 @@ public:
 protected:
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Stat")
 	float Enemy_GroundSpeed;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Stat")
+	float Enemy_RotationYaw;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Instance")
 	TObjectPtr<ABaseEnemy> MyOwnerInst;
 };

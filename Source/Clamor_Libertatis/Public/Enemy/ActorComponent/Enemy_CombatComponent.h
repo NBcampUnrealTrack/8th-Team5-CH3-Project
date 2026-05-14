@@ -18,7 +18,7 @@ class CLAMOR_LIBERTATIS_API UEnemy_CombatComponent : public UActorComponent
 public:
 	UEnemy_CombatComponent();
 	
-	FORCEINLINE int32 GetSkillCount(EAttackType AttackType) const {return GetEnemySkillArray(AttackType).Num();}
+	FORCEINLINE int32 GetSkillCount(EAttackType AttackType) const;
 	FORCEINLINE float GetAttackDistance(EAttackType AttackType, int32 AttackIndex) const;
 	FORCEINLINE UAnimMontage* GetAttackMontage(EAttackType AttackType, int32 AttackIndex) const {return GetEnemySkillArray(AttackType)[AttackIndex].AM_TypeMontage;}
 

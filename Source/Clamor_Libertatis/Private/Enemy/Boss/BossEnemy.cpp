@@ -25,9 +25,12 @@ void ABossEnemy::OnDead()
 
 UAnimMontage* ABossEnemy::AttackToPlayer()
 {
-	UAnimMontage* Montage = Super::AttackToPlayer();
-	Count_NormalAttack++;
-	return Montage;
+	if (UAnimMontage* Montage = Super::AttackToPlayer())
+	{
+		Count_NormalAttack++;
+		return Montage;
+	}
+	return nullptr;
 }
 
 void ABossEnemy::AttackHitCheck()
