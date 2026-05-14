@@ -57,6 +57,7 @@ public:
 	void HitReact(bool bActive);
 
 	void SetCurrentWeapon(AWeaponBase* NewWeapon);
+
 	AWeaponBase* GetCurrentWeapon() const;
 
 	int32 GetCurrentComboIndex() const;
