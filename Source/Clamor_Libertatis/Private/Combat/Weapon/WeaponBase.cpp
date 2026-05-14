@@ -201,17 +201,6 @@ bool AWeaponBase::EquipSocketItem(UWeaponSocketItemData* SocketItem, EWeaponSock
 	}
 
 	Slot->EquippedItem = SocketItem;
-	if (SocketTag == EWeaponSocketType::Blade)
-	{
-		if (Slot->EquippedItem->TrailNiagaraOverride)
-		{
-			SetWeaponTrailNiagara(Slot->EquippedItem->TrailNiagaraOverride);
-		}
-		if (Slot->EquippedItem->HitNiagaraOverride)
-		{
-			SetWeaponTrailNiagara(Slot->EquippedItem->TrailNiagaraOverride);
-		}
-	}
 	return true;
 }
 
@@ -248,9 +237,6 @@ void AWeaponBase::InitializeDefaultSocketSlots()
 	FWeaponSocketSlot GripSlot;
 	GripSlot.SocketTag = EWeaponSocketType::Grip;
 	SocketSlots.Add(GripSlot);
-
-
-
 }
 
 FWeaponSocketSlot* AWeaponBase::FindSocketSlot(EWeaponSocketType SocketTag)

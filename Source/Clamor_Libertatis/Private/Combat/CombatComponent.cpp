@@ -4,8 +4,11 @@
 #include "Combat/CombatComponent.h"
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
+
 #include "Engine/AssetManager.h"
+#include "Combat/Weapon/WeaponSocketItemData.h"
 
 DEFINE_LOG_CATEGORY(LogCombat)
 
@@ -26,7 +29,7 @@ void UCombatComponent::BeginPlay()
 	}
 
 
-
+	
 }
 
 
@@ -48,6 +51,12 @@ void UCombatComponent::BasicAttack()
 			bComboInputBuffered = true;
 			return;
 		}
+		if (bIsLateComboWindowOpen && ComboIndex < GetMaxComboCount())
+		{
+			bComboInputBuffered = true;
+			TryAdvanceCombo();
+			return;
+		}
 		if (bIsAttackEnding)
 		{
 			bAttackInputBufferedDuringRecovery = true;
@@ -67,7 +76,11 @@ void UCombatComponent::StartAttack()
 	if (!AttackMontage)
 		return;
 
-	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	if (!OwnerMesh)
+		return;
+
+	UAnimInstance* AnimInstance = OwnerMesh->GetAnimInstance();
 	if (!AnimInstance)
 		return;
 
@@ -87,7 +100,9 @@ void UCombatComponent::StartAttack()
 	bIsComboEnabled = false;//노티받고 진행
 	bComboInputBuffered = false;
 	bIsAttackEnding = false;
+	bIsLateComboWindowOpen = false;
 	bAttackInputBufferedDuringRecovery = false;
+	ClearLateComboWindow();
 
 	ComboIndex = FirstComboIndex;
 
@@ -103,11 +118,13 @@ void UCombatComponent::StartAttack()
 void UCombatComponent::EndAttack()
 {
 	DisableWeaponHitbox();
+	ClearLateComboWindow();
 	ComboIndex = 0;
 	SetCombatState(ECombatEnumState::Idle);
 	bComboInputBuffered = false;
 	bIsComboEnabled = false;
 	bIsAttackEnding = false;
+	bIsLateComboWindowOpen = false;
 	bAttackInputBufferedDuringRecovery = false;
 
 	UE_LOG(LogCombat, Warning, TEXT("EndAttack-process"));
@@ -144,43 +161,17 @@ void UCombatComponent::CheckCombo()
 		return;
 	bIsComboEnabled = false;
 
-	if (bComboInputBuffered && ComboIndex < GetMaxComboCount()) {
-		const int32 NextComboIndex = ComboIndex + 1;
-
-		if (!CurrentWeapon || !CurrentWeapon->GetAttackData(NextComboIndex))
-		{
-			EndAttack();
-			return;
-		}
-
-		if (!TryConsumeAttackStamina(NextComboIndex))
-		{
-			EndAttack();
-			return;
-		}
-
-		ComboIndex = NextComboIndex;
-		bComboInputBuffered = false;
-		bIsAttackEnding = false;
-		JumpToComboSection(ComboIndex);
+	if (bComboInputBuffered && TryAdvanceCombo())
+	{
 		return;
 	}
-	UE_LOG(LogCombat, Warning, TEXT("CheckCombo-EndAttack"));
-	bIsAttackEnding = true;
-	//EndAttack();
+
+	OpenLateComboWindow();
 }
 void UCombatComponent::SetCurrentWeapon(AWeaponBase* NewWeapon)
 {
 	CurrentWeapon = NewWeapon;
-
-
-
-
-	//테스트
-	UAssetManager& AssetManager = UAssetManager::Get();
-	FPrimaryAssetId AssetId = FPrimaryAssetId("WeaponSocketItem", FName("1001"));
-	UWeaponSocketItemData* Asset = Cast<UWeaponSocketItemData>(AssetManager.GetPrimaryAssetObject(AssetId));
-	CurrentWeapon->EquipSocketItem(Asset, Asset->CompatibleSocketTag);
+	EquipTestSocketItem();
 }
 
 AWeaponBase* UCombatComponent::GetCurrentWeapon() const
@@ -256,6 +247,7 @@ void UCombatComponent::EndDodge()
 	{
 		SetCombatState(ECombatEnumState::Idle);
 	}
+	UE_LOG(LogCombat, Warning, TEXT("Dodge End"));
 
 	bIsInvincible = false;
 }
@@ -325,7 +317,11 @@ void UCombatComponent::JumpToComboSection(int32 InComboIndex)
 	if (!OwnerCharacter || !AttackMontage)
 		return;
 
-	UAnimInstance* AnimInstance = OwnerCharacter->GetMesh()->GetAnimInstance();
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	if (!OwnerMesh)
+		return;
+
+	UAnimInstance* AnimInstance = OwnerMesh->GetAnimInstance();
 
 	if (!AnimInstance)
 		return;
@@ -336,6 +332,78 @@ void UCombatComponent::JumpToComboSection(int32 InComboIndex)
 		return;
 
 	AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+}
+
+bool UCombatComponent::TryAdvanceCombo()
+{
+	if (!IsAttacking() || !CurrentWeapon || ComboIndex >= GetMaxComboCount())
+	{
+		return false;
+	}
+
+	const int32 NextComboIndex = ComboIndex + 1;
+	if (!CurrentWeapon->GetAttackData(NextComboIndex))
+	{
+		EndAttack();
+		return false;
+	}
+
+	if (!TryConsumeAttackStamina(NextComboIndex))
+	{
+		EndAttack();
+		return false;
+	}
+
+	ClearLateComboWindow();
+	ComboIndex = NextComboIndex;
+	bComboInputBuffered = false;
+	bIsAttackEnding = false;
+	JumpToComboSection(ComboIndex);
+	return true;
+}
+
+void UCombatComponent::OpenLateComboWindow()
+{
+	if (!IsAttacking() || ComboIndex >= GetMaxComboCount() || LateComboWindowDuration <= 0.0f)
+	{
+		CloseLateComboWindow();
+		return;
+	}
+
+	bIsLateComboWindowOpen = true;
+	bIsAttackEnding = false;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			LateComboWindowTimerHandle,
+			this,
+			&UCombatComponent::CloseLateComboWindow,
+			LateComboWindowDuration,
+			false
+		);
+	}
+}
+
+void UCombatComponent::CloseLateComboWindow()
+{
+	ClearLateComboWindow();
+
+	if (IsAttacking())
+	{
+		UE_LOG(LogCombat, Warning, TEXT("LateComboWindow-EndAttack"));
+		bIsAttackEnding = true;
+	}
+}
+
+void UCombatComponent::ClearLateComboWindow()
+{
+	bIsLateComboWindowOpen = false;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(LateComboWindowTimerHandle);
+	}
 }
 
 bool UCombatComponent::TryConsumeAttackStamina(int32 InComboIndex) const
@@ -388,3 +456,40 @@ FName UCombatComponent::GetComboSectionName(int32 InComboIndex) const
 	return CurrentWeapon->GetAttackSectionName(InComboIndex);
 }
 
+void UCombatComponent::EquipTestSocketItem()
+{
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+
+	UAssetManager& AssetManager = UAssetManager::Get();
+
+	const FPrimaryAssetId AssetId(
+		FPrimaryAssetType(TEXT("WeaponSocketItem")),
+		FName(TEXT("1001"))
+	);
+
+	AssetManager.LoadPrimaryAsset(
+		AssetId,
+		TArray<FName>(),
+		FStreamableDelegate::CreateWeakLambda(this, [this, AssetId]()
+			{
+				if (!CurrentWeapon)
+				{
+					return;
+				}
+
+				UObject* LoadedObject = UAssetManager::Get().GetPrimaryAssetObject(AssetId);
+				UWeaponSocketItemData* SocketItem = Cast<UWeaponSocketItemData>(LoadedObject);
+
+				if (!SocketItem)
+				{
+					UE_LOG(LogCombat, Warning, TEXT("Failed to load socket item: %s"), *AssetId.ToString());
+					return;
+				}
+
+				CurrentWeapon->EquipSocketItem(SocketItem, SocketItem->CompatibleSocketTag);
+			})
+	);
+}
