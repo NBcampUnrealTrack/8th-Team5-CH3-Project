@@ -108,7 +108,6 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		{
 			UWidgetComponent* WidgetComp =
 				DamageActor->FindComponentByClass<UWidgetComponent>();
-
 			if (WidgetComp)
 			{
 				UDamageTextWidget* DamageWidget =
@@ -233,7 +232,7 @@ void ABaseEnemy::OnDead()
 		UE_LOG(LogTemp,Warning,TEXT("PlayDeadMontage"));
 	}
 	
-	SetLifeSpan(4.f);
+	SetLifeSpan(3.5f);
 }
 
 void ABaseEnemy::Destroyed()

@@ -8,6 +8,11 @@ UEnemy_CombatComponent::UEnemy_CombatComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 }
 
+int32 UEnemy_CombatComponent::GetSkillCount(EAttackType AttackType) const
+{
+	return GetEnemySkillArray(AttackType).IsEmpty() ? 0 : GetEnemySkillArray(AttackType).Num();
+}
+
 float UEnemy_CombatComponent::GetAttackDistance(EAttackType AttackType, int32 AttackIndex) const
 {
 	float Distance = 0.f;
@@ -60,7 +65,12 @@ void UEnemy_CombatComponent::BeginPlay()
 const TArray<FEnemySkillInfo>& UEnemy_CombatComponent::GetEnemySkillArray(EAttackType AttackType) const
 {
 	static const TArray<FEnemySkillInfo> Empty_SkillInfo;
-	
+
+	if (!DA_EnemySkill)
+	{
+		return Empty_SkillInfo;
+	}
+
 	switch (AttackType)
 	{
 	case EAttackType::Attack_Normal:
@@ -72,7 +82,7 @@ const TArray<FEnemySkillInfo>& UEnemy_CombatComponent::GetEnemySkillArray(EAttac
 	case EAttackType::NONE:
 		return Empty_SkillInfo;
 	}
-	
+
 	return Empty_SkillInfo;
 }
 

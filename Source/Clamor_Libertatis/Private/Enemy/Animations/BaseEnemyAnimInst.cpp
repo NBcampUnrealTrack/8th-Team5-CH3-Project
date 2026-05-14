@@ -20,4 +20,6 @@ void UBaseEnemyAnimInst::NativeUpdateAnimation(float DeltaSeconds)
 	
 	FVector Velocity = MyOwnerInst->GetVelocity();
 	Enemy_GroundSpeed = Velocity.Size2D();
+	FRotator OwnerRotation = MyOwnerInst ->GetActorRotation();
+	Enemy_RotationYaw = OwnerRotation.Yaw;
 }
