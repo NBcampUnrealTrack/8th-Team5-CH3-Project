@@ -232,7 +232,7 @@ void ABaseEnemy::OnDead()
 		UE_LOG(LogTemp,Warning,TEXT("PlayDeadMontage"));
 	}
 	
-	SetLifeSpan(4.f);
+	SetLifeSpan(3.5f);
 }
 
 void ABaseEnemy::Destroyed()
