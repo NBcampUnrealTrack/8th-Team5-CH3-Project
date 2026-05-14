@@ -249,13 +249,12 @@ bool USkillComponent::CommitSkillCost(const UDA_SkillData* SkillData) const
 	}
 
 
-	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost) {
+	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost * ManaCostMultiplier) {
 		HealthComponent->ConsumeStamina(SkillData->StaminaCost);
 		HealthComponent->ConsumeMana(SkillData->ManaCost * ManaCostMultiplier);
+		return true;
 	}
-
-
-	return HealthComponent->ConsumeStamina(SkillData->StaminaCost);
+	return false;
 }
 
 void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
