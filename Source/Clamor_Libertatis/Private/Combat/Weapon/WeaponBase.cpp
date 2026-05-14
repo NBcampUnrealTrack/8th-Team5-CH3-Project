@@ -27,6 +27,8 @@ AWeaponBase::AWeaponBase()
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
+
+	InitializeDefaultSocketSlots();
 }
 
 UAnimMontage* AWeaponBase::GetAttackMontage() const
@@ -72,7 +74,13 @@ float AWeaponBase::GetAttackDamage(int32 ComboIndex) const
 		return 0.0f;
 	}
 
-	return AttackData->Damage;
+	float ModifiedDamage = AttackData->Damage;
+	for (const UWeaponSocketItemData* SocketItem : GetEquippedSocketItems())
+	{
+		ModifiedDamage = SocketItem->GetModifiedDamage(ModifiedDamage);
+	}
+
+	return ModifiedDamage;
 }
 
 float AWeaponBase::GetAttackStaminaCost(int32 ComboIndex) const
@@ -84,7 +92,35 @@ float AWeaponBase::GetAttackStaminaCost(int32 ComboIndex) const
 		return 0.0f;
 	}
 
-	return AttackData->StaminaCost;
+	float ModifiedStaminaCost = AttackData->StaminaCost;
+	for (const UWeaponSocketItemData* SocketItem : GetEquippedSocketItems())
+	{
+		ModifiedStaminaCost = SocketItem->GetModifiedStaminaCost(ModifiedStaminaCost);
+	}
+
+	return ModifiedStaminaCost;
+}
+
+float AWeaponBase::GetManaCostMultiplier() const
+{
+	float ManaCostMultiplier = 1.0f;
+	for (const UWeaponSocketItemData* SocketItem : GetEquippedSocketItems())
+	{
+		ManaCostMultiplier = SocketItem->GetModifiedManaCost(ManaCostMultiplier);
+	}
+
+	return FMath::Max(0.01f, ManaCostMultiplier);
+}
+
+float AWeaponBase::GetAttackSpeedMultiplier() const
+{
+	float AttackSpeedMultiplier = 1.0f;
+	for (const UWeaponSocketItemData* SocketItem : GetEquippedSocketItems())
+	{
+		AttackSpeedMultiplier = SocketItem->GetModifiedAttackSpeed(AttackSpeedMultiplier);
+	}
+
+	return FMath::Max(0.01f, AttackSpeedMultiplier);
 }
 
 void AWeaponBase::EnableHitbox()
@@ -136,6 +172,142 @@ void AWeaponBase::AttachToCharacterHand(ACharacter* TargetCharacter)
 void AWeaponBase::SetWeaponTrailNiagara(UNiagaraSystem* NewTrailNiagara)
 {
 	TrailNiagara = NewTrailNiagara;
+}
+
+UNiagaraSystem* AWeaponBase::GetWeaponTrailNiagara() const
+{
+	for (const FWeaponSocketSlot& Slot : SocketSlots)
+	{
+		if (Slot.EquippedItem && Slot.EquippedItem->TrailNiagaraOverride)
+		{
+			return Slot.EquippedItem->TrailNiagaraOverride;
+		}
+	}
+
+	return TrailNiagara;
+}
+
+bool AWeaponBase::EquipSocketItem(UWeaponSocketItemData* SocketItem, EWeaponSocketType SocketTag)
+{
+	if (!CanEquipSocketItem(SocketItem, SocketTag))
+	{
+		return false;
+	}
+
+	FWeaponSocketSlot* Slot = FindSocketSlot(SocketTag);
+	if (!Slot)
+	{
+		return false;
+	}
+
+	Slot->EquippedItem = SocketItem;
+	if (SocketTag == EWeaponSocketType::Blade)
+	{
+		if (Slot->EquippedItem->TrailNiagaraOverride)
+		{
+			SetWeaponTrailNiagara(Slot->EquippedItem->TrailNiagaraOverride);
+		}
+		if (Slot->EquippedItem->HitNiagaraOverride)
+		{
+			SetWeaponTrailNiagara(Slot->EquippedItem->TrailNiagaraOverride);
+		}
+	}
+	return true;
+}
+
+UWeaponSocketItemData* AWeaponBase::UnequipSocketItem(EWeaponSocketType SocketTag)
+{
+	FWeaponSocketSlot* Slot = FindSocketSlot(SocketTag);
+	if (!Slot)
+	{
+		return nullptr;
+	}
+
+	UWeaponSocketItemData* RemovedItem = Slot->EquippedItem;
+	Slot->EquippedItem = nullptr;
+	return RemovedItem;
+}
+
+UWeaponSocketItemData* AWeaponBase::GetEquippedSocketItem(EWeaponSocketType SocketTag) const
+{
+	const FWeaponSocketSlot* Slot = FindSocketSlot(SocketTag);
+	return Slot ? Slot->EquippedItem : nullptr;
+}
+
+void AWeaponBase::InitializeDefaultSocketSlots()
+{
+	if (SocketSlots.Num() > 0)
+	{
+		return;
+	}
+
+	FWeaponSocketSlot BladeSlot;
+	BladeSlot.SocketTag = EWeaponSocketType::Blade;
+	SocketSlots.Add(BladeSlot);
+
+	FWeaponSocketSlot GripSlot;
+	GripSlot.SocketTag = EWeaponSocketType::Grip;
+	SocketSlots.Add(GripSlot);
+
+
+
+}
+
+FWeaponSocketSlot* AWeaponBase::FindSocketSlot(EWeaponSocketType SocketTag)
+{
+	for (FWeaponSocketSlot& Slot : SocketSlots)
+	{
+		if (Slot.SocketTag == SocketTag)
+		{
+			return &Slot;
+		}
+	}
+
+	return nullptr;
+}
+
+const FWeaponSocketSlot* AWeaponBase::FindSocketSlot(EWeaponSocketType SocketTag) const
+{
+	for (const FWeaponSocketSlot& Slot : SocketSlots)
+	{
+		if (Slot.SocketTag == SocketTag)
+		{
+			return &Slot;
+		}
+	}
+
+	return nullptr;
+}
+
+bool AWeaponBase::CanEquipSocketItem(const UWeaponSocketItemData* SocketItem, EWeaponSocketType SocketTag) const
+{
+	if (!SocketItem || SocketTag == EWeaponSocketType::None)
+	{
+		return false;
+	}
+
+	const FWeaponSocketSlot* Slot = FindSocketSlot(SocketTag);
+	if (!Slot)
+	{
+		return false;
+	}
+
+	return SocketItem->IsCompatibleWithSocket(SocketTag)
+		&& SocketItem->IsCompatibleWithWeaponTags(WeaponTags);
+}
+
+TArray<const UWeaponSocketItemData*> AWeaponBase::GetEquippedSocketItems() const
+{
+	TArray<const UWeaponSocketItemData*> EquippedItems;
+	for (const FWeaponSocketSlot& Slot : SocketSlots)
+	{
+		if (Slot.EquippedItem)
+		{
+			EquippedItems.Add(Slot.EquippedItem);
+		}
+	}
+
+	return EquippedItems;
 }
 
 void AWeaponBase::OnHitboxBeginOverlap(

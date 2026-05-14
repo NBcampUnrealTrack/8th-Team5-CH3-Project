@@ -96,6 +96,9 @@ public:
 	
 #pragma region Mana
 	UFUNCTION(BlueprintCallable)
+	void ManaHeal(float Amount);
+
+	UFUNCTION(BlueprintCallable)
 	bool ConsumeMana(float Amount);
 	
 	UFUNCTION(BlueprintPure)
