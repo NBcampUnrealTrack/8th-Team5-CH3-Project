@@ -1,6 +1,6 @@
-#include "UI/DamageTextActor.h"
+#include "UI/EnemyDamage/DamageTextActor.h"
 #include "Components/WidgetComponent.h"
-#include "UI/DamageTextWidget.h"
+#include "UI/EnemyDamage/DamageTextWidget.h"
 
 ADamageTextActor::ADamageTextActor()
 {

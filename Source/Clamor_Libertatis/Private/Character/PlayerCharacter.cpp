@@ -11,6 +11,7 @@
 #include "Combat/SkillComponent.h"
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
+#include "Character/TargetLockComponent.h"
 
 #include "Blueprint/UserWidget.h"
 
@@ -37,7 +38,8 @@ APlayerCharacter::APlayerCharacter()
     // 체력 컴포넌트 추가
     HealthComp = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComp"));
 
-
+    // 타겟락 컴포넌트 추가
+    TargetLockComp = CreateDefaultSubobject<UTargetLockComponent>(TEXT("TargetLockComp"));
 
     // 캐릭터 이동 속도 설정
     NormalSpeed = 500.0f;
@@ -206,6 +208,16 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                     &APlayerCharacter::StartActiveSkill
                 );
             }
+
+            if (PlayerController->LockAction)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->LockAction,
+                    ETriggerEvent::Started,
+                    this,
+                    &APlayerCharacter::Lock
+                );
+            }
         }
     }
 }
@@ -315,6 +327,13 @@ void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
     if (!IsAvailable()) return;
 
     SkillComp->ActiveSkill();
+}
+
+void APlayerCharacter::Lock(const FInputActionValue& value)
+{
+    if (!TargetLockComp) return;
+
+    TargetLockComp->ToggleLock();
 }
 
 

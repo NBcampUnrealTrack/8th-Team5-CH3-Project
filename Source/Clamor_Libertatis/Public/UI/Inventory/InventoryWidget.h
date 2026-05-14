@@ -70,6 +70,8 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* BackButton;
 
+    UPROPERTY(meta = (BindWidget))
+    UButton* StatButton;
 private:
     UPROPERTY()
     UConsumableInventoryComponent* InventoryComp;
@@ -81,7 +83,8 @@ private:
 
     UFUNCTION()
     void OnInventoryChanged();
-
     UFUNCTION()
     void OnBackButtonClicked();
+    UFUNCTION()
+    void OnStatButtonClicked();
 };

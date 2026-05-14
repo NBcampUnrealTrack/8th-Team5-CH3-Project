@@ -66,6 +66,8 @@ public:
 	int32 GetCurrentComboIndex() const;
 	float GetCurrentAttackDamage() const;
 	float GetCurrentAttackStaminaCost() const;
+	float GetBaseAttackDamage() const;
+
 	float GetManaCostMultiplier() const;
 
 #pragma region CombatState

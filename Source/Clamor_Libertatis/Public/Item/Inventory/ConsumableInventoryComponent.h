@@ -1,7 +1,7 @@
 #pragma once
 #include "CoreMinimal.h"
-#include "Item/InventoryComponent.h"
-#include "Item/ItemEffectHandler.h"
+#include "Item/Inventory/InventoryComponent.h"
+#include "Item/Effect/ItemEffectHandler.h"
 #include "ConsumableInventoryComponent.generated.h"
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
