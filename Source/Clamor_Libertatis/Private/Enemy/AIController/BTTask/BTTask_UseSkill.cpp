@@ -46,9 +46,21 @@ void UBTTask_UseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	AAIController* AIC = OwnerComp.GetAIOwner();
 	APawn* OwnerPawn = AIC->GetPawn();
-	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
 
-	if (!OwnerPawn || !TargetActor)
+	if (!OwnerPawn)
+	{
+		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+		return;
+	}
+
+	// 스킬이 이미 시작됐으면 몽타주가 끝날 때까지 TargetActor 소실 무시
+	if (bSkillStarted)
+	{
+		return;
+	}
+
+	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+	if (!TargetActor)
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;

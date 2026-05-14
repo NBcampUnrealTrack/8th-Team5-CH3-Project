@@ -51,6 +51,11 @@ public:
 	float DamageMultiplier = 1.0f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="VFX")
 	TObjectPtr<UNiagaraSystem> SkillVFX = nullptr;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType")
+	bool bIsLaunch = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile",
+		meta=(EditCondition="bIsLaunch", EditConditionHides))
+	bool bIsHoming = false;
 };
 
 
