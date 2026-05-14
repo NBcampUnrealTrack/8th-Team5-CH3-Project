@@ -23,7 +23,7 @@ void UBTService_CheckChaseRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(AIC->GetPawn()))
 		{
 			MaxChasingDistance = MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance;
-			// UE_LOG(LogTemp,Warning,TEXT("MaxChasingDistance : %f"),MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance);
+			// UE_LOG(LogTemp,Warning,TEXT("Who: %s MaxChasingDistance : %f"),*OwnerComp.GetOwner()->GetName(),MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance);
 		}
 	}
 }

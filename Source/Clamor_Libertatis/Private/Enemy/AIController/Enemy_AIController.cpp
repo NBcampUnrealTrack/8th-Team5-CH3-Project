@@ -31,7 +31,11 @@ void AEnemy_AIController::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->SightRadius,32,FColor::Green);
 	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),Sight_Config->LoseSightRadius,32,FColor::Red);
-	DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),300.f,32,FColor::Blue);
+	if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(GetPawn()))
+	{
+		float MaxChasingDistance = MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance;
+		DrawDebugSphere(GetWorld(),GetPawn()->GetActorLocation(),MaxChasingDistance,32,FColor::Blue);
+	}
 }
 
 void AEnemy_AIController::OnTargetPerceived(AActor* Actor, FAIStimulus Stimulus)

@@ -1,5 +1,10 @@
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 
+namespace
+{
+	FEnemySkillInfo GDefaultSkillInfo;
+}
+
 
 
 UEnemy_CombatComponent::UEnemy_CombatComponent()
@@ -30,7 +35,13 @@ float UEnemy_CombatComponent::GetAttackDistance(EAttackType AttackType, int32 At
 
 const FEnemySkillInfo& UEnemy_CombatComponent::GetSkillInfo(EAttackType AttackType, int32 AttackIndex) const
 {
-	return GetEnemySkillArray(AttackType)[AttackIndex];
+	const TArray<FEnemySkillInfo>& SkillArray = GetEnemySkillArray(AttackType);
+	if (!SkillArray.IsValidIndex(AttackIndex))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("GetSkillInfo: invalid index %d (array size: %d)"), AttackIndex, SkillArray.Num());
+		return GDefaultSkillInfo;
+	}
+	return SkillArray[AttackIndex];
 }
 
 FCollisionShape UEnemy_CombatComponent::MakeAttackCollision(EAttackType AttackType, int32 AttackIndex)
