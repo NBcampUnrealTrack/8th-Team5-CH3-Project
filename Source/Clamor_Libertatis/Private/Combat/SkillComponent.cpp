@@ -4,6 +4,7 @@
 #include "Combat/SkillComponent.h"
 #include "Combat/BaseThrowMagic.h"
 #include "Combat/Data/DA_SkillData.h"
+#include "Combat/CombatComponent.h"
 #include "Combat/HealthComponent.h"
 #include "Animation/AnimInstance.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -240,13 +241,20 @@ bool USkillComponent::CommitSkillCost(const UDA_SkillData* SkillData) const
 	{
 		return true;
 	}
-	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost) {
-		HealthComponent->ConsumeStamina(SkillData->StaminaCost);
-		HealthComponent->ConsumeMana(SkillData->ManaCost);
+	float ManaCostMultiplier = 1.f;
+	if (OwnerCharacter)
+	{
+		UCombatComponent* CombatComp = OwnerCharacter->FindComponentByClass<UCombatComponent>();
+		ManaCostMultiplier = CombatComp->GetManaCostMultiplier();
 	}
 
 
-	return HealthComponent->ConsumeStamina(SkillData->StaminaCost);
+	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost * ManaCostMultiplier) {
+		HealthComponent->ConsumeStamina(SkillData->StaminaCost);
+		HealthComponent->ConsumeMana(SkillData->ManaCost * ManaCostMultiplier);
+		return true;
+	}
+	return false;
 }
 
 void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
