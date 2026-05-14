@@ -50,6 +50,18 @@ void ABaseThrowMagic::BeginPlay()
 {
 	Super::BeginPlay();
 	SphereComponent->OnComponentHit.AddDynamic(this, &ABaseThrowMagic::OnProjectileHit);
+	
+	// 권기문:수정사항 Projectile의 Collision 설정값이 Block으로 되어있어 자기 자신에게도 막히는 현상이 발생
+	// IgnoreActorWhenMoving 메서드로 이동 중일때는 자기자신의 Collision을 Overlap할수있도록 변경
+	// 확인 하셨으면 주석 지워도 됩니다.
+	if (AActor* OwnerActor = GetOwner())
+	{
+		SphereComponent->IgnoreActorWhenMoving(OwnerActor, true);
+	}
+	if (AActor* InstigatorActor = GetInstigator())
+	{
+		SphereComponent->IgnoreActorWhenMoving(InstigatorActor, true);
+	}
 
 	ProjectileMovementComponent->InitialSpeed = InitialSpeed;
 	ProjectileMovementComponent->MaxSpeed = MaxSpeed;
@@ -74,6 +86,13 @@ void ABaseThrowMagic::BeginPlay()
 void ABaseThrowMagic::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	if (!OtherActor || OtherActor == this)
+	{
+		return;
+	}
+
+	// 권기문: 기존 누락되어있던 자기 자신에 대해 Hit할시 return 해야하는 검사식 추가
+	// 확인 하셨으면 주석 지워도 됩니다.
+	if (OtherActor == GetOwner() || OtherActor == GetInstigator())
 	{
 		return;
 	}
