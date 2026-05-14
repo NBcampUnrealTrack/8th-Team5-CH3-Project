@@ -12,10 +12,10 @@ class CLAMOR_LIBERTATIS_API ABossEnemy : public ABaseEnemy
 public:
 	ABossEnemy();
 
-	virtual void AttackToPlayer() override;
+	virtual UAnimMontage* AttackToPlayer() override;
 	virtual void AttackHitCheck() override;
 
-	void SkillAttackToPlayer();
+	UAnimMontage* SkillAttackToPlayer();
 
 	FORCEINLINE int32 GetNormalAttackCount() const { return Count_NormalAttack; }
 	void ResetNormalAttackCount();

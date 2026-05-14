@@ -1,6 +1,7 @@
 #include "Enemy/AIController/BTTask/BTTask_UseSkill.h"
 
 #include "AIController.h"
+#include "Animation/AnimInstance.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/Boss/BossEnemy.h"
 #include "Kismet/KismetMathLibrary.h"
@@ -9,14 +10,27 @@ UBTTask_UseSkill::UBTTask_UseSkill()
 {
 	NodeName = TEXT("UseSkill");
 	MaxDeltaYaw = 5.f;
+	bSkillStarted = false;
 }
 
 EBTNodeResult::Type UBTTask_UseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	bNotifyTick = true;
-	AAIController* AIC = OwnerComp.GetAIOwner();
 
+	bSkillStarted = false;
+	CachedOwnerComp = nullptr;
+	CachedSkillMontage = nullptr;
+
+	AAIController* AIC = OwnerComp.GetAIOwner();
 	if (!AIC) return EBTNodeResult::Failed;
+
+	if (ABossEnemy* Boss = Cast<ABossEnemy>(AIC->GetPawn()))
+	{
+		if (UAnimInstance* AnimInst = Boss->GetMesh()->GetAnimInstance())
+		{
+			AnimInst->OnMontageEnded.RemoveDynamic(this, &UBTTask_UseSkill::OnSkillMontageEnded);
+		}
+	}
 
 	APawn* OwnerPawn = AIC->GetPawn();
 	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
@@ -48,19 +62,60 @@ void UBTTask_UseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	float DeltaYaw = FMath::Abs(FMath::FindDeltaAngleDegrees(OwnerPawn->GetActorRotation().Yaw, TargetRotation.Yaw));
 
-	if (DeltaYaw <= MaxDeltaYaw)
+	if (DeltaYaw <= MaxDeltaYaw && !bSkillStarted)
 	{
 		if (ABossEnemy* Boss = Cast<ABossEnemy>(OwnerPawn))
 		{
-			Boss->SkillAttackToPlayer();
+			bSkillStarted = true;
+			CachedOwnerComp = &OwnerComp;
+			CachedSkillMontage = Boss->SkillAttackToPlayer();
 			OwnerComp.GetBlackboardComponent()->SetValueAsInt(TEXT("Count_NormalAttack"), 0);
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), false);
 
-			FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+			if (CachedSkillMontage)
+			{
+				if (UAnimInstance* AnimInst = Boss->GetMesh()->GetAnimInstance())
+				{
+					AnimInst->OnMontageEnded.AddDynamic(this, &UBTTask_UseSkill::OnSkillMontageEnded);
+				}
+			}
+			else
+			{
+				FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
+			}
 		}
 		else
 		{
 			FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		}
 	}
+}
+
+void UBTTask_UseSkill::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage != CachedSkillMontage) return;
+
+	if (CachedOwnerComp)
+	{
+		FinishLatentTask(*CachedOwnerComp, EBTNodeResult::Succeeded);
+	}
+}
+
+void UBTTask_UseSkill::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
+
+	if (AAIController* AIC = OwnerComp.GetAIOwner())
+	{
+		if (ABossEnemy* Boss = Cast<ABossEnemy>(AIC->GetPawn()))
+		{
+			if (UAnimInstance* AnimInst = Boss->GetMesh()->GetAnimInstance())
+			{
+				AnimInst->OnMontageEnded.RemoveDynamic(this, &UBTTask_UseSkill::OnSkillMontageEnded);
+			}
+		}
+	}
+
+	bSkillStarted = false;
+	CachedOwnerComp = nullptr;
+	CachedSkillMontage = nullptr;
 }

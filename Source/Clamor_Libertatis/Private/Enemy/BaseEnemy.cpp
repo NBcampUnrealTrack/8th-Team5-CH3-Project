@@ -123,19 +123,22 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	return DamageAmount;
 }
 
-void ABaseEnemy::AttackToPlayer()
+UAnimMontage* ABaseEnemy::AttackToPlayer()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
-	
+
 	int32 SkillCount = Enemy_CombatComp->GetSkillCount(EAttackType::Attack_Normal);
 	int32 RandomNum = FMath::RandRange(0,SkillCount - 1);
-	
+
 	if (SkillCount > 0)
 	{
-		AnimInst->Montage_Play(Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Normal,RandomNum));
+		UAnimMontage* Montage = Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Normal,RandomNum);
+		AnimInst->Montage_Play(Montage);
 		CurrentAttackData.Key = EAttackType::Attack_Normal;
 		CurrentAttackData.Value = RandomNum;
+		return Montage;
 	}
+	return nullptr;
 }
 
 void ABaseEnemy::AttackHitCheck()

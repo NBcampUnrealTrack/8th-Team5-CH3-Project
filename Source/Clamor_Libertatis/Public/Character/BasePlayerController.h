@@ -11,6 +11,8 @@ class UPlayerHUDWidget;
 class UUIManager;
 class UEnemyTrackerComponent;
 class USkillComponent;
+class UQuickSlotWidget;
+class UInventoryWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -20,6 +22,7 @@ class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
 public:
 	ABasePlayerController();
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
 	//Input
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
@@ -78,6 +81,10 @@ public:
 	void RestartGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void ShowInventory();
+	UFUNCTION(BlueprintCallable, Category = "UI")
+	void HideInventory();
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const { return HUDWidgetRef; }
@@ -90,7 +97,15 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<UPlayerHUDWidget> HUDWidgetRef;
+	UPROPERTY()
+	TObjectPtr<UQuickSlotWidget> QuickSlotWidgetRef;
 
 	void InitializeInput();
 	void InitHUDWidget();
+	void InitQuickSlotWidget();
+
+	void UseQuickSlot1();
+	void UseQuickSlot2();
+	void UseQuickSlot3();
+	void UseQuickSlot4();
 };
