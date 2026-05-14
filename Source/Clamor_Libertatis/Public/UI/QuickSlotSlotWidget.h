@@ -28,6 +28,9 @@ public:
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void ClearSlot();
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DragDrop")
+    TSubclassOf<UUserWidget> DragVisualClass;
+
     bool bIsInventorySlot = false; 
 
 protected:

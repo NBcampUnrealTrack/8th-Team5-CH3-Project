@@ -51,6 +51,16 @@ void ABasePlayerController::BeginPlay()
 	ShowGameStartUI();
 }
 
+void ABasePlayerController::SetupInputComponent()
+{
+	Super::SetupInputComponent();
+
+	InputComponent->BindKey(EKeys::One, IE_Pressed, this, &ABasePlayerController::UseQuickSlot1);
+	InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ABasePlayerController::UseQuickSlot2);
+	InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ABasePlayerController::UseQuickSlot3);
+	InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ABasePlayerController::UseQuickSlot4);
+}
+
 void ABasePlayerController::InitializeInput()
 {
 	ULocalPlayer* LocalPlayer = GetLocalPlayer();
@@ -99,37 +109,17 @@ void ABasePlayerController::HideGameStartUI()
 	if (!UIManager) return;
 	UIManager->HideWidget(EUIType::GameStart);
 	if (EnemyTracker) EnemyTracker->SetSuppressed(false);
-	FInputModeGameAndUI InputMode;
-	InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-	InputMode.SetHideCursorDuringCapture(false);
-	SetInputMode(InputMode);
-	bShowMouseCursor = true;
+	
+	SetInputMode(FInputModeGameOnly{});
+	bShowMouseCursor = false;
 }
 
-void ABasePlayerController::ShowLobbyUI()
-{
-	if (UIManager) UIManager->ShowWidget(EUIType::Lobby);
-}
-void ABasePlayerController::HideLobbyUI()
-{
-	if (UIManager) UIManager->HideWidget(EUIType::Lobby);
-}
-void ABasePlayerController::ShowDeathUI()
-{
-	if (UIManager) UIManager->ShowWidget(EUIType::Death);
-}
-void ABasePlayerController::HideDeathUI()
-{
-	if (UIManager) UIManager->HideWidget(EUIType::Death);
-}
-void ABasePlayerController::ShowVictoryUI()
-{
-	if (UIManager) UIManager->ShowWidget(EUIType::Victory);
-}
-void ABasePlayerController::HideVictoryUI()
-{
-	if (UIManager) UIManager->HideWidget(EUIType::Victory);
-}
+void ABasePlayerController::ShowLobbyUI() { if (UIManager) UIManager->ShowWidget(EUIType::Lobby); }
+void ABasePlayerController::HideLobbyUI() { if (UIManager) UIManager->HideWidget(EUIType::Lobby); }
+void ABasePlayerController::ShowDeathUI() { if (UIManager) UIManager->ShowWidget(EUIType::Death); }
+void ABasePlayerController::HideDeathUI() { if (UIManager) UIManager->HideWidget(EUIType::Death); }
+void ABasePlayerController::ShowVictoryUI() { if (UIManager) UIManager->ShowWidget(EUIType::Victory); }
+void ABasePlayerController::HideVictoryUI() { if (UIManager) UIManager->HideWidget(EUIType::Victory); }
 
 void ABasePlayerController::ShowMainMenu()
 {
@@ -251,3 +241,7 @@ void ABasePlayerController::InitHUDWidget()
 	}
 	InitQuickSlotWidget();
 }
+void ABasePlayerController::UseQuickSlot1() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(0); }
+void ABasePlayerController::UseQuickSlot2() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(1); }
+void ABasePlayerController::UseQuickSlot3() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(2); }
+void ABasePlayerController::UseQuickSlot4() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(3); }
