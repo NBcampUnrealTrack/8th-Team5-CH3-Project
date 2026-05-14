@@ -60,7 +60,7 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
-	UPROPERTY(VisibleAnywhere, Category = "Combat")
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TargetLock")
 	UTargetLockComponent* TargetLockComp;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")

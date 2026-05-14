@@ -83,7 +83,7 @@ AActor* UTargetLockComponent::FindTarget()
     if (!OwnerCharacter) return nullptr;
 
     FVector Start = OwnerCharacter->GetActorLocation();
-    FVector End = Start + OwnerCharacter->GetActorForwardVector() * 1000.0f;
+    FVector End = Start + OwnerCharacter->GetController()->GetControlRotation().Vector() * 1000.0f;
     TArray<FHitResult> HitResults;
 
     TArray<AActor*> ActorsToIgnore;
