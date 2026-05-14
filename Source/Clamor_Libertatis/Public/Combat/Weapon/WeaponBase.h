@@ -50,6 +50,7 @@ public:
 
 	float GetAttackDamage(int32 ComboIndex) const;
 	float GetAttackStaminaCost(int32 ComboIndex) const;
+	float GetManaCostMultiplier() const;
 	float GetAttackSpeedMultiplier() const;
 
 	void EnableHitbox();

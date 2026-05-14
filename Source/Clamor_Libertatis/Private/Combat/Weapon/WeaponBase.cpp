@@ -101,6 +101,17 @@ float AWeaponBase::GetAttackStaminaCost(int32 ComboIndex) const
 	return ModifiedStaminaCost;
 }
 
+float AWeaponBase::GetManaCostMultiplier() const
+{
+	float ManaCostMultiplier = 1.0f;
+	for (const UWeaponSocketItemData* SocketItem : GetEquippedSocketItems())
+	{
+		ManaCostMultiplier = SocketItem->GetModifiedManaCost(ManaCostMultiplier);
+	}
+
+	return FMath::Max(0.01f, ManaCostMultiplier);
+}
+
 float AWeaponBase::GetAttackSpeedMultiplier() const
 {
 	float AttackSpeedMultiplier = 1.0f;
