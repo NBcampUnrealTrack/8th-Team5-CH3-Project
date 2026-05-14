@@ -1,5 +1,6 @@
-#include "Item/ConsumableInventoryComponent.h"
-#include "Item/HealEffectHandler.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
+#include "Item/Effect/HealEffectHandler.h"
+#include "Item/Effect/BombEffectHandler.h"
 
 UConsumableInventoryComponent::UConsumableInventoryComponent()
 {
@@ -14,6 +15,7 @@ UConsumableInventoryComponent::UConsumableInventoryComponent()
     }
 
     EffectHandlerClasses.Add(EConsumableEffectType::Heal, UHealEffectHandler::StaticClass());
+    EffectHandlerClasses.Add(EConsumableEffectType::Bomb, UBombEffectHandler::StaticClass());
     // 나중에 마나/스태미너 추가할 때 여기만 추가
     // EffectHandlerClasses.Add(EConsumableEffectType::Mana, UManaEffectHandler::StaticClass());
 }

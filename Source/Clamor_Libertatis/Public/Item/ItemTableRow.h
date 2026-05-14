@@ -19,7 +19,8 @@ enum class EConsumableEffectType : uint8
     None        UMETA(DisplayName = "없음"),
     Heal        UMETA(DisplayName = "체력 회복"),
     Mana        UMETA(DisplayName = "마나 회복"),
-    Stamina     UMETA(DisplayName = "스태미너 회복")
+    Stamina     UMETA(DisplayName = "스태미너 회복"),
+    Bomb        UMETA(DisplayName = "폭탄")
 };
 
 USTRUCT(BlueprintType)
@@ -44,4 +45,10 @@ struct CLAMOR_LIBERTATIS_API FItemTableRow : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consumable")
     float EffectValue = 0.f;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consumable")
+    float EffectRadius = 0.f;    
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Consumable")
+    float EffectDuration = 0.f;   
 };

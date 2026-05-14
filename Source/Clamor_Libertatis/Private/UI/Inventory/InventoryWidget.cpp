@@ -1,7 +1,7 @@
-﻿#include "UI/InventoryWidget.h"
-#include "UI/QuickSlotWidget.h"
-#include "UI/QuickSlotSlotWidget.h"
-#include "Item/ConsumableInventoryComponent.h"
+﻿#include "UI/Inventory/InventoryWidget.h"
+#include "UI/Inventory/QuickSlotWidget.h"
+#include "UI/Inventory/QuickSlotSlotWidget.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/ItemTableRow.h"
 #include "Character/BasePlayerController.h"
 #include "Components/Button.h"
@@ -12,6 +12,9 @@ void UInventoryWidget::NativeConstruct()
 
     if (BackButton)
         BackButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnBackButtonClicked);
+
+    if (StatButton)
+        StatButton->OnClicked.AddDynamic(this, &UInventoryWidget::OnStatButtonClicked); // 추가
 
     AllSlots = {
         QuickSlot1, QuickSlot2, QuickSlot3, QuickSlot4,
@@ -93,4 +96,12 @@ void UInventoryWidget::OnBackButtonClicked()
     ABasePlayerController* PC = Cast<ABasePlayerController>(GetOwningPlayer());
     if (!PC) return;
     PC->HideInventory();
+}
+
+void UInventoryWidget::OnStatButtonClicked()
+{
+    ABasePlayerController* PC = Cast<ABasePlayerController>(GetOwningPlayer());
+    if (!PC) return;
+    PC->HideInventory();  
+    PC->ShowStatWidget(); 
 }

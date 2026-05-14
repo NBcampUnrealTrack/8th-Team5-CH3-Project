@@ -196,6 +196,12 @@ float UCombatComponent::GetCurrentAttackStaminaCost() const
 	return CurrentWeapon->GetAttackStaminaCost(ComboIndex);
 }
 
+float UCombatComponent::GetBaseAttackDamage() const
+{
+	if (!CurrentWeapon) return 0.f;
+	return CurrentWeapon->GetAttackDamage(1);
+}
+
 void UCombatComponent::SetCombatState(ECombatEnumState NewState)
 {
 	if (CombatState == ECombatEnumState::Dead && NewState != ECombatEnumState::Dead)

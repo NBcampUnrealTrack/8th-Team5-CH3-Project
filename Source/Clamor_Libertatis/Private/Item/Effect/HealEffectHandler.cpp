@@ -1,4 +1,4 @@
-#include "Item/HealEffectHandler.h"
+#include "Item/Effect/HealEffectHandler.h"
 #include "Combat/HealthComponent.h"
 
 bool UHealEffectHandler::Execute_Implementation(AActor* Owner, const FItemTableRow& ItemData)

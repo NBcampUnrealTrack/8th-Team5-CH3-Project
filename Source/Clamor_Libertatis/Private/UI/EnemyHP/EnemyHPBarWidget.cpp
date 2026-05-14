@@ -1,5 +1,4 @@
-// EnemyHPBarWidget.cpp
-#include "UI/EnemyHPBarWidget.h"
+#include "UI/EnemyHP/EnemyHPBarWidget.h"
 #include "Enemy/BaseEnemy.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Components/ProgressBar.h"

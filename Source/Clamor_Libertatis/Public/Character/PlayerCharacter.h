@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ConsumableInventoryComponent.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 

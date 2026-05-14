@@ -1,6 +1,6 @@
-#include "UI/QuickSlotWidget.h"
-#include "UI/QuickSlotSlotWidget.h"
-#include "Item/ConsumableInventoryComponent.h"
+#include "UI/Inventory/QuickSlotWidget.h"
+#include "UI/Inventory/QuickSlotSlotWidget.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/ItemTableRow.h"
 #include "Engine/Texture2D.h"
 

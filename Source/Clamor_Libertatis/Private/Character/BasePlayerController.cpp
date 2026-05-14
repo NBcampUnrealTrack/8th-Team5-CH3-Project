@@ -9,11 +9,12 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "UI/PlayerHUDWidget.h"
 #include "UI/UIManager.h"
-#include "UI/EnemyTrackerComponent.h"
+#include "UI/EnemyHP/EnemyTrackerComponent.h"
 #include "Combat/SkillComponent.h"
-#include "UI/QuickSlotWidget.h"
-#include "UI/InventoryWidget.h"
-#include "Item/ConsumableInventoryComponent.h"
+#include "UI/Inventory/QuickSlotWidget.h"
+#include "UI/Inventory/InventoryWidget.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
+#include "UI/Inventory/StatWidget.h"
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -188,6 +189,30 @@ void ABasePlayerController::HideInventory()
 	SetInputMode(FInputModeGameOnly{});
 	bShowMouseCursor = false;
 }
+
+void ABasePlayerController::ShowStatWidget()
+{
+	if (!UIManager) return;
+
+	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::Stat);
+	UStatWidget* StatWidget = Cast<UStatWidget>(RawWidget);
+	if (!StatWidget) return;
+
+	StatWidget->InitStatWidget(this);
+	UIManager->ShowWidget(EUIType::Stat);
+	UGameplayStatics::SetGamePaused(GetWorld(), true);
+	SetInputMode(FInputModeUIOnly{});
+	bShowMouseCursor = true;
+}
+
+void ABasePlayerController::HideStatWidget()
+{
+	if (!UIManager) return;
+	UIManager->HideWidget(EUIType::Stat);
+	UGameplayStatics::SetGamePaused(GetWorld(), false);
+	SetInputMode(FInputModeGameOnly{});
+	bShowMouseCursor = false;
+}
 void ABasePlayerController::InitQuickSlotWidget()
 {
 	if (!UIManager) return;
@@ -228,17 +253,11 @@ void ABasePlayerController::InitHUDWidget()
 	UHealthComponent* HealthComp = PlayerCharacter->GetHealthComponent();
 	if (!HealthComp) return;
 
-	HUDWidgetRef->OnHealthChanged(HealthComp->GetCurrentHealth(), HealthComp->GetMaxHealth());
-	HUDWidgetRef->OnStaminaChanged(HealthComp->GetCurrentStamina(), HealthComp->GetMaxStamina());
-
-	HealthComp->OnHealthChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnHealthChanged);
-	HealthComp->OnStaminaChanged.AddDynamic(HUDWidgetRef, &UPlayerHUDWidget::OnStaminaChanged);
-
+	HUDWidgetRef->InitWidget(HealthComp);
 	USkillComponent* SkillComp = PlayerCharacter->FindComponentByClass<USkillComponent>();
 	if (SkillComp)
-	{
 		HUDWidgetRef->InitSkillCooldown(SkillComp);
-	}
+
 	InitQuickSlotWidget();
 }
 void ABasePlayerController::UseQuickSlot1() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(0); }

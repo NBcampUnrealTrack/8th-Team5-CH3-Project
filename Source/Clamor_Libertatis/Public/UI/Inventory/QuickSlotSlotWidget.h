@@ -2,7 +2,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/WidgetBlueprintLibrary.h"
-#include "Item/ConsumableInventoryComponent.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "QuickSlotSlotWidget.generated.h"
 
 class UImage;
