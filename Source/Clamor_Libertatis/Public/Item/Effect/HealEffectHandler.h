@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ItemEffectHandler.h"
+#include "Item/Effect/ItemEffectHandler.h"
 #include "HealEffectHandler.generated.h"
 
 UCLASS()

@@ -1,4 +1,4 @@
-﻿#include "Item/InventoryComponent.h"
+﻿#include "Item/Inventory/InventoryComponent.h"
 
 UInventoryComponent::UInventoryComponent()
 {

@@ -209,12 +209,20 @@ float UCombatComponent::GetCurrentAttackStaminaCost() const
 	return CurrentWeapon->GetAttackStaminaCost(ComboIndex);
 }
 
+float UCombatComponent::GetBaseAttackDamage() const
+{
+	if (!CurrentWeapon) return 0.f;
+	return CurrentWeapon->GetAttackDamage(1);
+
+}
+
 float UCombatComponent::GetManaCostMultiplier() const
 {
 	if (!CurrentWeapon)
 		return 1.f;
 	//방어구 등 추가되면 여기서
 	return CurrentWeapon->GetManaCostMultiplier();
+
 }
 
 void UCombatComponent::SetCombatState(ECombatEnumState NewState)

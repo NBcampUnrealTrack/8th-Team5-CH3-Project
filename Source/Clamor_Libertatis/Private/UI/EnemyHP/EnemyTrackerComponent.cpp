@@ -1,6 +1,6 @@
-#include "UI/EnemyTrackerComponent.h"
+#include "UI/EnemyHP/EnemyTrackerComponent.h"
 #include "Enemy/BaseEnemy.h"
-#include "UI/EnemyHPBarWidget.h"
+#include "UI/EnemyHP/EnemyHPBarWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "GameFramework/PlayerController.h"
 #include "GameFramework/Pawn.h"
