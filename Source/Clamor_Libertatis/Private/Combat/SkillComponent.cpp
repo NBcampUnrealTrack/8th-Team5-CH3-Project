@@ -192,7 +192,7 @@ void USkillComponent::PlayEffect()
 	}
 	const FVector PlayLocation = OwnerCharacter->GetActorLocation();
 
-	if (PendingSkillData && PendingSkillData->CastingEffects[0])
+	if (PendingSkillData && PendingSkillData->CastingEffects.IsValidIndex(0) && PendingSkillData->CastingEffects[0])
 	{
 		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			GetWorld(),
@@ -245,7 +245,10 @@ bool USkillComponent::CommitSkillCost(const UDA_SkillData* SkillData) const
 	if (OwnerCharacter)
 	{
 		UCombatComponent* CombatComp = OwnerCharacter->FindComponentByClass<UCombatComponent>();
-		ManaCostMultiplier = CombatComp->GetManaCostMultiplier();
+		if (CombatComp)
+		{
+			ManaCostMultiplier = CombatComp->GetManaCostMultiplier();
+		}
 	}
 
 

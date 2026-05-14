@@ -29,7 +29,18 @@ public:
 	UFUNCTION(BlueprintCallable)
 	virtual void AttackHitCheck();
 
+	UFUNCTION(BlueprintCallable)
+	void ApplyStun(float Duration);
+
 	const FEnemySkillInfo* GetCurrentSkillInfo() const;
+
+private:
+	UFUNCTION()
+	void EndStun();
+
+	FTimerHandle StunTimerHandle;
+	bool bIsStunned = false;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;

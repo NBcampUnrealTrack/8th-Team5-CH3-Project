@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/ConsumableInventoryComponent.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "GameFramework/Character.h"
 #include "PlayerCharacter.generated.h"
 
@@ -15,6 +15,7 @@ class USkillComponent;
 class AWeaponBase;
 struct FInputActionValue;
 class UHealthComponent;
+class UTargetLockComponent;
 
 UENUM(BlueprintType)
 enum class EDodgeDirection : uint8
@@ -42,7 +43,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
-	// 카메라, 스프링암 컴포넌트 추가
+	// 컴포넌트 추가
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
 	UCameraComponent* CameraComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera")
@@ -59,6 +60,8 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Combat")
 	UHealthComponent* HealthComp;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "TargetLock")
+	UTargetLockComponent* TargetLockComp;
 
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* HitReactMontage;
@@ -104,6 +107,8 @@ public:
 	void StopDodge(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
 	void StartActiveSkill(const FInputActionValue& value);
+	UFUNCTION()
+	void Lock(const FInputActionValue& value);
 	UFUNCTION()
 	float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 

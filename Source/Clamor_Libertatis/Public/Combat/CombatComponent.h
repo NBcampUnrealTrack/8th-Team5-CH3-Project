@@ -22,6 +22,9 @@ class CLAMOR_LIBERTATIS_API UCombatComponent : public UActorComponent
 public:	
 	UCombatComponent();
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Combat|Combo", meta=(ClampMin="0.0"))
+	float LateComboWindowDuration = 0.2f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
@@ -63,6 +66,8 @@ public:
 	int32 GetCurrentComboIndex() const;
 	float GetCurrentAttackDamage() const;
 	float GetCurrentAttackStaminaCost() const;
+	float GetBaseAttackDamage() const;
+
 	float GetManaCostMultiplier() const;
 
 #pragma region CombatState
@@ -89,6 +94,12 @@ private:
 	
 	void StartAttack();
 
+	bool TryAdvanceCombo();
+	void OpenLateComboWindow();
+	void CloseLateComboWindow();
+	void ClearLateComboWindow();
+
+
 	void JumpToComboSection(int32 InComboIndex);
 	bool TryConsumeAttackStamina(int32 InComboIndex) const;
 	UAnimMontage* GetCurrentAttackMontage() const;
@@ -102,8 +113,12 @@ private:
 	bool bIsComboEnabled = false;//콤보입력가능한지
 	bool bComboInputBuffered = false;//콤보입력했는지
 	bool bIsAttackEnding = false;//종료중인지
+	bool bIsLateComboWindowOpen = false;//CheckCombo 이후 추가 입력 허용 구간
 	bool bAttackInputBufferedDuringRecovery = false;//종료 후딜레이 중 입력
 	bool bIsInvincible = false;//회피무적
 	int32 ComboIndex = 0;
 #pragma endregion States
+	void EquipTestSocketItem();
+
+	FTimerHandle LateComboWindowTimerHandle;
 };

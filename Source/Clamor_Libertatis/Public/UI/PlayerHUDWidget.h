@@ -26,11 +26,17 @@ public:
     UFUNCTION()
     void OnStaminaChanged(float CurrentStamina, float MaxStamina);
 
+    UFUNCTION()
+    void OnManaChanged(float CurrentMana, float MaxMana);
+
     UFUNCTION(BlueprintImplementableEvent)
     void UpdateHP(float CurrentHealth, float MaxHealth);
 
     UFUNCTION(BlueprintImplementableEvent)
     void UpdateStamina(float CurrentStamina, float MaxStamina);
+
+    UFUNCTION(BlueprintImplementableEvent)
+    void UpdateMana(float CurrentMana, float MaxMana);
 
 protected:
     virtual void NativeConstruct() override;
@@ -39,9 +45,9 @@ protected:
     USkillCooldownWidget* SkillCooldownWidget;
 
     UPROPERTY(meta = (BindWidget))
-    UButton* InventoryButton;
+    UButton* StatButton;
 
 private:
     UFUNCTION()
-    void OnInventoryButtonClicked();
+    void OnStatButtonClicked();
 };

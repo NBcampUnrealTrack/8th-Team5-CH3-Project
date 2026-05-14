@@ -66,6 +66,9 @@ public:
 	UWeaponSocketItemData* UnequipSocketItem(EWeaponSocketType SocketTag);
 
 	UFUNCTION(BlueprintPure, Category="Weapon|Socket")
+	bool CanEquipSocketItem(const UWeaponSocketItemData* SocketItem, EWeaponSocketType SocketTag) const;
+
+	UFUNCTION(BlueprintPure, Category="Weapon|Socket")
 	UWeaponSocketItemData* GetEquippedSocketItem(EWeaponSocketType SocketTag) const;
 
 	UFUNCTION(BlueprintPure, Category="Weapon|Socket")
@@ -106,8 +109,6 @@ private:
 	FWeaponSocketSlot* FindSocketSlot(EWeaponSocketType SocketTag);
 
 	const FWeaponSocketSlot* FindSocketSlot(EWeaponSocketType SocketTag) const;
-
-	bool CanEquipSocketItem(const UWeaponSocketItemData* SocketItem, EWeaponSocketType SocketTag) const;
 
 	TArray<const UWeaponSocketItemData*> GetEquippedSocketItems() const;
 

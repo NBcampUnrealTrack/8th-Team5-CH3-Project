@@ -1,6 +1,6 @@
 #include "Enemy/BaseEnemy.h"
 #include "Components/WidgetComponent.h"
-#include "UI/DamageTextWidget.h"
+#include "UI/EnemyDamage/DamageTextWidget.h"
 #include "BrainComponent.h"
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
@@ -21,6 +21,11 @@ ABaseEnemy::ABaseEnemy()
 	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
 	
 	bIsDead = false;
+
+	static ConstructorHelpers::FClassFinder<AActor> DamageTextFinder(
+		TEXT("/Game/UI/BP_DamageTextActor.BP_DamageTextActor_C"));
+	if (DamageTextFinder.Succeeded())
+		DamageTextActorClass = DamageTextFinder.Class;
 }
 
 void ABaseEnemy::BeginPlay()
@@ -169,15 +174,39 @@ void ABaseEnemy::AttackHitCheck()
 	}
 }
 
-float ABaseEnemy::GetCurrentAttackDamage() const
+void ABaseEnemy::ApplyStun(float Duration)
 {
-	return Enemy_StatComp->GetEnemyStat().Attack_Damage;
+	if (bIsStunned || bIsDead) return;
+	bIsStunned = true;
+
+	AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController());
+	if (AIC && AIC->GetBrainComponent())
+		AIC->GetBrainComponent()->StopLogic(TEXT("Stunned"));
+
+	GetWorldTimerManager().SetTimer(
+		StunTimerHandle,
+		this,
+		&ABaseEnemy::EndStun,
+		Duration,
+		false
+	);
 }
+
 
 const FEnemySkillInfo* ABaseEnemy::GetCurrentSkillInfo() const
 {
 	if (!Enemy_CombatComp) return nullptr;
 	return &Enemy_CombatComp->GetSkillInfo(CurrentAttackData.Key, CurrentAttackData.Value);
+}
+
+void ABaseEnemy::EndStun()
+{
+	if (bIsDead) return;
+	bIsStunned = false;
+
+	AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController());
+	if (AIC && AIC->GetBrainComponent())
+		AIC->GetBrainComponent()->RestartLogic();
 }
 
 void ABaseEnemy::OnDead()
@@ -215,4 +244,9 @@ void ABaseEnemy::Destroyed()
 	}
 	
 	Super::Destroyed();
+}
+
+float ABaseEnemy::GetCurrentAttackDamage() const
+{
+	return Enemy_StatComp->GetEnemyStat().Attack_Damage;
 }
