@@ -5,6 +5,7 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/HealthComponent.h"
 #include "GameFramework/Character.h"
+#include "Engine/AssetManager.h"
 
 DEFINE_LOG_CATEGORY(LogCombat)
 
@@ -23,6 +24,9 @@ void UCombatComponent::BeginPlay()
 	{
 		HealthComponent = OwnerCharacter->FindComponentByClass<UHealthComponent>();
 	}
+
+
+
 }
 
 
@@ -87,7 +91,7 @@ void UCombatComponent::StartAttack()
 
 	ComboIndex = FirstComboIndex;
 
-	AnimInstance->Montage_Play(AttackMontage);
+	AnimInstance->Montage_Play(AttackMontage, CurrentWeapon->GetAttackSpeedMultiplier());
 	//애님 종료시 안전장치
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
@@ -168,6 +172,15 @@ void UCombatComponent::CheckCombo()
 void UCombatComponent::SetCurrentWeapon(AWeaponBase* NewWeapon)
 {
 	CurrentWeapon = NewWeapon;
+
+
+
+
+	//테스트
+	UAssetManager& AssetManager = UAssetManager::Get();
+	FPrimaryAssetId AssetId = FPrimaryAssetId("WeaponSocketItem", FName("1001"));
+	UWeaponSocketItemData* Asset = Cast<UWeaponSocketItemData>(AssetManager.GetPrimaryAssetObject(AssetId));
+	CurrentWeapon->EquipSocketItem(Asset, Asset->CompatibleSocketTag);
 }
 
 AWeaponBase* UCombatComponent::GetCurrentWeapon() const
@@ -191,7 +204,7 @@ float UCombatComponent::GetCurrentAttackDamage() const
 float UCombatComponent::GetCurrentAttackStaminaCost() const
 {
 	if (!CurrentWeapon)
-		return 0.f;
+		return 1.f;
 
 	return CurrentWeapon->GetAttackStaminaCost(ComboIndex);
 }
@@ -200,6 +213,16 @@ float UCombatComponent::GetBaseAttackDamage() const
 {
 	if (!CurrentWeapon) return 0.f;
 	return CurrentWeapon->GetAttackDamage(1);
+
+}
+
+float UCombatComponent::GetManaCostMultiplier() const
+{
+	if (!CurrentWeapon)
+		return 1.f;
+	//방어구 등 추가되면 여기서
+	return CurrentWeapon->GetManaCostMultiplier();
+
 }
 
 void UCombatComponent::SetCombatState(ECombatEnumState NewState)
@@ -327,13 +350,9 @@ bool UCombatComponent::TryConsumeAttackStamina(int32 InComboIndex) const
 		return true;
 	}
 
-	const FWeaponAttackData* AttackData = CurrentWeapon->GetAttackData(InComboIndex);
-	if (!AttackData)
-	{
-		return false;
-	}
+	float StaminaCost = CurrentWeapon->GetAttackStaminaCost(InComboIndex);
 
-	return HealthComponent->ConsumeStamina(AttackData->StaminaCost);
+	return HealthComponent->ConsumeStamina(StaminaCost);
 }
 
 UAnimMontage* UCombatComponent::GetCurrentAttackMontage() const

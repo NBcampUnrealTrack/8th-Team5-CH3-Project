@@ -184,6 +184,18 @@ float UHealthComponent::GetCurrentStamina() const
 {
 	return Stamina.CurrentValue;
 }
+
+void UHealthComponent::ManaHeal(float Amount)
+{
+	if (Amount <= 0 || bDead)
+		return;
+	if (Mana.Recover(Amount))
+	{
+		OnManaChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
+	}
+}
+
+
 bool UHealthComponent::ConsumeMana(float Amount)
 {
 	if (bDead)

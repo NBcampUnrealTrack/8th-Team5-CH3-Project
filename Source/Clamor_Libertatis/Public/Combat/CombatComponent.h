@@ -57,6 +57,7 @@ public:
 	void HitReact(bool bActive);
 
 	void SetCurrentWeapon(AWeaponBase* NewWeapon);
+
 	AWeaponBase* GetCurrentWeapon() const;
 
 	int32 GetCurrentComboIndex() const;
@@ -64,6 +65,7 @@ public:
 	float GetCurrentAttackStaminaCost() const;
 	float GetBaseAttackDamage() const;
 
+	float GetManaCostMultiplier() const;
 
 #pragma region CombatState
 
