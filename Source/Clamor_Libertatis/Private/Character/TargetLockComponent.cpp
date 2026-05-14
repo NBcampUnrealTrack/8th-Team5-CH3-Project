@@ -1,4 +1,4 @@
-// TargetLockComponent.cpp
+ï»¿// TargetLockComponent.cpp
 
 #include "Character/TargetLockComponent.h"
 #include "Enemy/BaseEnemy.h"
@@ -53,7 +53,7 @@ void UTargetLockComponent::StartLock()
     {
         if (UCharacterMovementComponent* MovementComp = OwnerCharacter->GetCharacterMovement())
         {
-            // Ä³¸¯ÅÍ Á¤¸é °íÁ¤
+            // ìºë¦­í„° ì •ë©´ ê³ ì •
             MovementComp->bOrientRotationToMovement = false;
             OwnerCharacter->bUseControllerRotationYaw = true;
         }
@@ -117,7 +117,7 @@ AActor* UTargetLockComponent::FindTarget()
         AActor* Target = Hit.GetActor();
         if (IsValidTarget(Target))
         {
-            // ÇÃ·¹ÀÌ¾î¿Í °¡Àå °¡±î¿î °Å¸®ÀÇ Å¸°ÙÀ» ±¸ÇÔ
+            // í”Œë ˆì´ì–´ì™€ ê°€ìž¥ ê°€ê¹Œìš´ ê±°ë¦¬ì˜ íƒ€ê²Ÿì„ êµ¬í•¨
             float DistSq = FVector::DistSquaredXY(OwnerCharacter->GetActorLocation(), Target->GetActorLocation());
             if (DistSq < MinDistsq)
             {
@@ -129,7 +129,7 @@ AActor* UTargetLockComponent::FindTarget()
     return BestTarget;
 }
 
-// Å¸°ÙÀÌ À¯È¿ÇÑÁö, EnemyÀÎÁö °Ë»ç
+// íƒ€ê²Ÿì´ ìœ íš¨í•œì§€, Enemyì¸ì§€ ê²€ì‚¬
 bool UTargetLockComponent::IsValidTarget(AActor* Target) const
 {
     if (!Target) return false;
@@ -161,7 +161,7 @@ bool UTargetLockComponent::ValidateCurrentTarget() const
 {
     if (OwnerCharacter && CurrentTarget)
     {
-        // ÀûÀÌ Á×°Å³ª ÀÏÁ¤ °Å¸® ÀÌ»ó ¸Ö¾îÁú °æ¿ì false
+        // ì ì´ ì£½ê±°ë‚˜ ì¼ì • ê±°ë¦¬ ì´ìƒ ë©€ì–´ì§ˆ ê²½ìš° false
         if (!CurrentTarget->IsDead())
         {
             if (MaxLockDistsq > FVector::DistSquaredXY(OwnerCharacter->GetActorLocation(), CurrentTarget->GetActorLocation()))
