@@ -104,8 +104,7 @@ void UQuickSlotSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry,
 
     UInventoryDragDropOperation* DragOp = NewObject<UInventoryDragDropOperation>(this);
     DragOp->ItemID = CachedItemID;
-    DragOp->Pivot = EDragPivot::MouseDown;
-
+    DragOp->Pivot = EDragPivot::CenterCenter;
     if (bIsInventorySlot)
     {
         DragOp->SourceInventorySlotIndex = SlotIndex;
@@ -117,17 +116,25 @@ void UQuickSlotSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry,
         DragOp->SourceInventorySlotIndex = -1;
     }
 
-    UQuickSlotSlotWidget* DragVisual =
-        CreateWidget<UQuickSlotSlotWidget>(GetOwningPlayer(), GetClass());
-    if (DragVisual)
+    if (DragVisualClass)
     {
-        UTexture2D* Icon = nullptr;
-        if (ItemIcon)
-            Icon = Cast<UTexture2D>(ItemIcon->GetBrush().GetResourceObject());
-
-        DragVisual->UpdateSlot(CachedItemID, CachedQuantity, Icon);
+        UUserWidget* DragVisual = CreateWidget<UUserWidget>(GetOwningPlayer(), DragVisualClass);
+        if (DragVisual)
+        {
+            UImage* DragIcon = Cast<UImage>(DragVisual->GetWidgetFromName(TEXT("DragIcon")));
+            if (DragIcon && ItemIcon)
+            {
+                UTexture2D* Icon = Cast<UTexture2D>(ItemIcon->GetBrush().GetResourceObject());
+                if (Icon)
+                {
+                    DragIcon->SetBrushFromTexture(Icon);
+                    DragIcon->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 0.8f));
+                }
+            }
+        }
+        DragOp->DefaultDragVisual = DragVisual;
     }
-    DragOp->DefaultDragVisual = DragVisual;
+
     OutOperation = DragOp;
 }
 
@@ -139,7 +146,6 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
         Cast<UInventoryDragDropOperation>(InOperation);
     if (!DragOp) return false;
 
-    // 인벤토리 슬롯끼리 스왑 (QuickSlotWidget 불필요)
     if (bIsInventorySlot && DragOp->SourceInventorySlotIndex >= 0)
     {
         if (!QuickSlotWidgetRef) return false;

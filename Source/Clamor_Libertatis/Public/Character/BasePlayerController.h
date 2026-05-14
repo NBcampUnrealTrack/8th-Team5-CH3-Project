@@ -22,6 +22,7 @@ class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
 public:
 	ABasePlayerController();
 	virtual void BeginPlay() override;
+	virtual void SetupInputComponent() override;
 
 	//Input
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Input")
@@ -102,4 +103,9 @@ private:
 	void InitializeInput();
 	void InitHUDWidget();
 	void InitQuickSlotWidget();
+
+	void UseQuickSlot1();
+	void UseQuickSlot2();
+	void UseQuickSlot3();
+	void UseQuickSlot4();
 };
