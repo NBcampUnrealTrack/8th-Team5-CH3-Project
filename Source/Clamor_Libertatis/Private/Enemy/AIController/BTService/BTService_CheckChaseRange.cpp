@@ -9,21 +9,21 @@ UBTService_CheckChaseRange::UBTService_CheckChaseRange()
 {
 	NodeName = TEXT("CheckChaseRange");
 	Interval = 0.2f;
-	MaxChasingDistance = 0.f;
 	bNotifyBecomeRelevant = true;
 }
 
 void UBTService_CheckChaseRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
 {
 	Super::OnBecomeRelevant(OwnerComp, NodeMemory);
-	
+
+	FCheckChaseRangeMemory* Memory = reinterpret_cast<FCheckChaseRangeMemory*>(NodeMemory);
+	Memory->MaxChasingDistance = 0.f;
+
 	if (AAIController* AIC = OwnerComp.GetAIOwner())
 	{
-		// UE_LOG(LogTemp,Warning,TEXT("AIC Cashing Success"));
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(AIC->GetPawn()))
 		{
-			MaxChasingDistance = MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance;
-			// UE_LOG(LogTemp,Warning,TEXT("Who: %s MaxChasingDistance : %f"),*OwnerComp.GetOwner()->GetName(),MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance);
+			Memory->MaxChasingDistance = MyOwner->GetEnemyStatComp()->GetEnemyStat().MaxChasingDistance;
 		}
 	}
 }
@@ -31,15 +31,17 @@ void UBTService_CheckChaseRange::OnBecomeRelevant(UBehaviorTreeComponent& OwnerC
 void UBTService_CheckChaseRange::TickNode(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds)
 {
 	Super::TickNode(OwnerComp, NodeMemory, DeltaSeconds);
-	
+
+	FCheckChaseRangeMemory* Memory = reinterpret_cast<FCheckChaseRangeMemory*>(NodeMemory);
+
 	AAIController* AIC = OwnerComp.GetAIOwner();
 	APawn* OwnerPawn = AIC->GetPawn();
 	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-	
+
 	if (OwnerPawn && TargetActor)
 	{
 		float Dist = FVector::Dist(OwnerPawn->GetActorLocation(), TargetActor->GetActorLocation());
-		if (Dist <= MaxChasingDistance)
+		if (Dist <= Memory->MaxChasingDistance)
 		{
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"),true);
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"),true);
@@ -50,5 +52,4 @@ void UBTService_CheckChaseRange::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"),false);
 		}
 	}
-	
 }
