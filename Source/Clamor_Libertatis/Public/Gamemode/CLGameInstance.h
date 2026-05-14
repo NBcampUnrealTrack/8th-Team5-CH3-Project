@@ -25,6 +25,9 @@ public:
 	bool HasViewedQuestion(FName RowName) const { return ViewedQuestions.Contains(RowName); }
 	const TSet<FName>& GetAllViewedQuestions() const { return ViewedQuestions; }
 
+	// 임시 기능 -> Opening 1회만, 시나리오 매니저 업데이트 후 제거 예정
+	bool bHasSeenOpening = false;
+
 private:
 	int32 WonBattleCount;
 

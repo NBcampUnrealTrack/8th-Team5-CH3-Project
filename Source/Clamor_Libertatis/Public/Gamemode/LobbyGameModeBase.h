@@ -6,7 +6,10 @@
 #include "GameFramework/GameModeBase.h"
 #include "LobbyGameModeBase.generated.h"
 
-class ULoreManagerComponent;
+// TODO:: 더 이상 쓰지 않음 삭제 예정
+// class ULoreManagerComponent;
+
+class UScenarioManagerComponent;
 
 /**
  * 
@@ -19,6 +22,9 @@ class ALobbyGameModeBase : public AGameModeBase
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario")
+	class UScenarioManagerComponent* ScenarioManagerComp;
+
 public:
 
 	ALobbyGameModeBase();
@@ -30,15 +36,25 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameLogic")
 	void ReadyComplete();	
 	
-	UFUNCTION(BlueprintCallable, Category = "GameLogic")
-	void LookAround();
+	// TODO:: 시나리오 관리 업데이트 후 완전히 삭제 예정
+	/*UFUNCTION(BlueprintCallable, Category = "GameLogic")
+	void LookAround();*/
 
 	// 배틀로 진입함
 	UFUNCTION(BlueprintCallable, Category = "GameLogic")
 	void GotoBattle();
 
+
+	// Opening Widget
+	UPROPERTY(EditAnywhere) 
+	TSubclassOf<UUserWidget> OpeningWidgetClass;
+
+
 private:
-	UPROPERTY(VisibleAnywhere, Category = "GameLogic")
-	TObjectPtr<ULoreManagerComponent> LoreManagerComp;
+
+	//TODO:: 기획상 더 이상 사용하지 않음.
+	// 시나리오 관리 기능 도입 후 완전 삭제
+	/*UPROPERTY(VisibleAnywhere, Category = "GameLogic")
+	TObjectPtr<ULoreManagerComponent> LoreManagerComp;*/
 	
 };

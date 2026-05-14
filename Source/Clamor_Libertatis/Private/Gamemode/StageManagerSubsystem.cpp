@@ -1,6 +1,7 @@
 #include "Gamemode/StageManagerSubsystem.h"
 #include "Kismet/GameplayStatics.h"
 #include "Enemy/BaseEnemy.h"
+#include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Combat/HealthComponent.h"
 #include "Character/PlayerCharacter.h"
 
@@ -18,9 +19,12 @@ void UStageManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	RemainingEnemyCount = Enemies.Num();
 	for (AActor* Actor : Enemies)
 	{
-		if (UHealthComponent* HC = Actor->GetComponentByClass<UHealthComponent>())
+		if (ABaseEnemy* Enemy = Cast<ABaseEnemy>(Actor))
 		{
-			HC->OnDeath.AddDynamic(this, &UStageManagerSubsystem::OnEnemyDeath);
+			if (UEnemy_StatComponent* StatComp = Enemy->GetEnemyStatComp())
+			{
+				StatComp->OnHPChanged.AddDynamic(this, &UStageManagerSubsystem::OnEnemyHPChanged);
+			}
 		}
 	}
 	
@@ -34,12 +38,15 @@ void UStageManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 	
 }
 
-void UStageManagerSubsystem::OnEnemyDeath()
+void UStageManagerSubsystem::OnEnemyHPChanged(float CurrentHP, float MaxHP)
 {
-	RemainingEnemyCount--;
-	if (RemainingEnemyCount <= 0)
+	if (CurrentHP <= 0.f)
 	{
-		OnAllEnemiesDead.Broadcast();
+		RemainingEnemyCount--;
+		if (RemainingEnemyCount <= 0)
+		{
+			OnAllEnemiesDead.Broadcast();
+		}
 	}
 }
 
