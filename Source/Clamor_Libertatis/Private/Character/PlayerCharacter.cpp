@@ -56,6 +56,7 @@ APlayerCharacter::APlayerCharacter()
 
     //인벤토리 컴포넌트 추가
     ConsumableInventory = CreateDefaultSubobject<UConsumableInventoryComponent>(TEXT("ConsumableInventory"));
+    SocketItemInventory = CreateDefaultSubobject<USocketItemInventoryComponent>(TEXT("SocketItemInventory"));
 }
 
 void APlayerCharacter::BeginPlay()

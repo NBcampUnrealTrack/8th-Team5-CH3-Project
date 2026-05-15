@@ -3,8 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "GameFramework/Character.h"
+#include "Item/Inventory/ConsumableInventoryComponent.h"
+#include "Item/Inventory/SocketItemInventoryComponent.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
@@ -16,6 +17,7 @@ class AWeaponBase;
 struct FInputActionValue;
 class UHealthComponent;
 class UTargetLockComponent;
+
 
 UENUM(BlueprintType)
 enum class EDodgeDirection : uint8
@@ -136,4 +138,6 @@ public:
 	//인벤토리 컴포넌트
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	UConsumableInventoryComponent* ConsumableInventory;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
+	TObjectPtr<USocketItemInventoryComponent> SocketItemInventory;
 };
