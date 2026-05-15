@@ -154,11 +154,15 @@ void ABaseEnemy::AttackHitCheck()
 		const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
 		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
 
+		// 루트모션 애니메이션은 Pitch/Roll이 Actor Rotation에 섞이므로 Yaw만 사용
+		FRotator HorizontalRot = FRotator(0.f, GetActorRotation().Yaw, 0.f);
+		FVector HorizontalForward = HorizontalRot.Vector();
+
 		FVector StartPos = (SkillInfo && SkillInfo->bIsHoming && PlayerPawn)
 			? PlayerPawn->GetActorLocation()
-			: GetActorLocation() + (GetActorForwardVector() * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
+			: GetActorLocation() + (HorizontalForward * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
 		FCollisionShape AttackCollision = Enemy_CombatComp->MakeAttackCollision(CurrentAttackData.Key,CurrentAttackData.Value);
-		FQuat Rotation = GetActorRotation().Quaternion();
+		FQuat Rotation = HorizontalRot.Quaternion();
 		
 		TArray<FOverlapResult> OverlapResults;
 		//TODO::Need to Custom TraceChannel
