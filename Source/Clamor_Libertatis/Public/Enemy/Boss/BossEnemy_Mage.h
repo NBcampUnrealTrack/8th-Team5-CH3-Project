@@ -31,6 +31,6 @@ protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
-	TObjectPtr<ABaseThrowMagic> PendingProjectile;
+	TArray<TObjectPtr<ABaseThrowMagic>> PendingProjectiles;
 
 };
