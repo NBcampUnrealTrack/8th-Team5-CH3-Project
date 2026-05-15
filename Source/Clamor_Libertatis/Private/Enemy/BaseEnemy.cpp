@@ -148,10 +148,15 @@ UAnimMontage* ABaseEnemy::AttackToPlayer()
 void ABaseEnemy::AttackHitCheck()
 {
 	UE_LOG(LogTemp,Warning,TEXT("AttackHitCheckOn"));
-	
+
 	if (Enemy_CombatComp)
 	{
-		FVector StartPos = GetActorLocation() + (GetActorForwardVector() * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
+		const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
+		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+
+		FVector StartPos = (SkillInfo && SkillInfo->bIsHoming && PlayerPawn)
+			? PlayerPawn->GetActorLocation()
+			: GetActorLocation() + (GetActorForwardVector() * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
 		FCollisionShape AttackCollision = Enemy_CombatComp->MakeAttackCollision(CurrentAttackData.Key,CurrentAttackData.Value);
 		FQuat Rotation = GetActorRotation().Quaternion();
 		

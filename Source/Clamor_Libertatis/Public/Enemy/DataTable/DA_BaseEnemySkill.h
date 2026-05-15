@@ -53,8 +53,7 @@ public:
 	TObjectPtr<UNiagaraSystem> SkillVFX = nullptr;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType")
 	bool bIsLaunch = false;
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile",
-		meta=(EditCondition="bIsLaunch", EditConditionHides))
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile")
 	bool bIsHoming = false;
 };
 
