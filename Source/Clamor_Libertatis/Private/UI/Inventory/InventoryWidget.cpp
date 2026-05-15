@@ -31,10 +31,10 @@ void UInventoryWidget::NativeConstruct()
         AllSlots[i]->bIsInventorySlot = true;
     }
 
-    if (QuickSlot1) { QuickSlot1->bIsInventorySlot = false; QuickSlot1->SetKeyText("1"); }
-    if (QuickSlot2) { QuickSlot2->bIsInventorySlot = false; QuickSlot2->SetKeyText("2"); }
-    if (QuickSlot3) { QuickSlot3->bIsInventorySlot = false; QuickSlot3->SetKeyText("3"); }
-    if (QuickSlot4) { QuickSlot4->bIsInventorySlot = false; QuickSlot4->SetKeyText("4"); }
+    if (QuickSlot1) { QuickSlot1->SetKeyText("1"); }
+    if (QuickSlot2) { QuickSlot2->SetKeyText("2"); }
+    if (QuickSlot3) { QuickSlot3->SetKeyText("3"); }
+    if (QuickSlot4) { QuickSlot4->SetKeyText("4"); }
 }
 
 void UInventoryWidget::InitInventory(UConsumableInventoryComponent* InInventory,
