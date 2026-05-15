@@ -211,3 +211,24 @@ void ABaseThrowMagic::EnableCollision()
 		SphereComponent->SetCollisionEnabled(ECollisionEnabled::QueryAndPhysics);
 	}
 }
+
+void ABaseThrowMagic::PrepareForLaunch()
+{
+	ProjectileMovementComponent->Deactivate();
+	GetWorldTimerManager().ClearTimer(CollisionEnableTimerHandle);
+	SphereComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+}
+
+void ABaseThrowMagic::Launch(FVector Direction)
+{
+	ProjectileMovementComponent->Velocity = Direction * InitialSpeed;
+	ProjectileMovementComponent->Activate(false);
+
+	GetWorldTimerManager().SetTimer(
+		CollisionEnableTimerHandle,
+		this,
+		&ABaseThrowMagic::EnableCollision,
+		CollisionEnableDelay > 0.f ? CollisionEnableDelay : 0.05f,
+		false
+	);
+}

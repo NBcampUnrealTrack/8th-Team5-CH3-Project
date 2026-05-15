@@ -5,6 +5,8 @@
 #include "NiagaraSystem.h"
 #include "DA_BaseEnemySkill.generated.h"
 
+class ABaseThrowMagic;
+
 UENUM()
 enum class EAttackType : uint8
 {
@@ -55,6 +57,14 @@ public:
 	bool bIsLaunch = false;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile",
 		meta=(EditCondition="bIsLaunch", EditConditionHides))
+	TSubclassOf<ABaseThrowMagic> ProjectileClass = nullptr;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile",
+		meta=(EditCondition="bIsLaunch", EditConditionHides, ClampMin=1))
+	int32 ProjectileCount = 1;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile",
+		meta=(EditCondition="bIsLaunch", EditConditionHides, ClampMin=0.f, ClampMax=360.f))
+	float SpreadAngle = 0.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile")
 	bool bIsHoming = false;
 };
 

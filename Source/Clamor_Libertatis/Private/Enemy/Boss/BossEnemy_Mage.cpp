@@ -1,5 +1,6 @@
 #include "Enemy/Boss/BossEnemy_Mage.h"
 #include "Combat/BaseThrowMagic.h"
+#include "Components/SphereComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -39,9 +40,10 @@ void ABossEnemy_Mage::AttackHitCheck()
 		Super::AttackHitCheck();
 	}
 }
+
 void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
 {
-	if (!ProjectileClass) return;
+	if (!SkillInfo.ProjectileClass) return;
 
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	if (!MeshComp) return;
@@ -54,38 +56,141 @@ void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
 		? MeshComp->GetSocketLocation(SocketName)
 		: GetActorLocation();
 
-	FVector DirectionToPlayer = (PlayerPawn->GetActorLocation() - SpawnLocation).GetSafeNormal();
-	FRotator SpawnRotation = DirectionToPlayer.Rotation();
+	FVector BaseDirection = (PlayerPawn->GetActorLocation() - SpawnLocation).GetSafeNormal();
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = this;
 	SpawnParams.Instigator = this;
 
-	ABaseThrowMagic* Projectile = GetWorld()->SpawnActor<ABaseThrowMagic>(
-		ProjectileClass,
-		SpawnLocation,
-		SpawnRotation,
-		SpawnParams
-	);
+	int32 Count = FMath::Max(1, SkillInfo.ProjectileCount);
+	TArray<ABaseThrowMagic*> Spawned;
 
-	if (!Projectile) return;
-
-	Projectile->DamageAmount = GetCurrentAttackDamage();
-
-	if (SkillInfo.bIsHoming)
+	for (int32 i = 0; i < Count; i++)
 	{
-		UProjectileMovementComponent* PMC = Projectile->ProjectileMovementComponent;
-		if (PMC)
+		float Angle = (Count == 1) ? 0.f
+			: -SkillInfo.SpreadAngle * 0.5f + i * (SkillInfo.SpreadAngle / (Count - 1));
+
+		FVector SpreadDirection = BaseDirection.RotateAngleAxis(Angle, FVector::UpVector);
+
+		ABaseThrowMagic* Projectile = GetWorld()->SpawnActor<ABaseThrowMagic>(
+			SkillInfo.ProjectileClass,
+			SpawnLocation,
+			SpreadDirection.Rotation(),
+			SpawnParams
+		);
+		if (!Projectile) continue;
+
+		Projectile->DamageAmount = GetCurrentAttackDamage();
+
+		if (SkillInfo.bIsHoming)
 		{
-			PMC->bIsHomingProjectile = true;
-			PMC->HomingTargetComponent = PlayerPawn->GetRootComponent();
-			PMC->HomingAccelerationMagnitude = HomingAccelerationMagnitude;
+			UProjectileMovementComponent* PMC = Projectile->ProjectileMovementComponent;
+			if (PMC)
+			{
+				PMC->bIsHomingProjectile = true;
+				PMC->HomingTargetComponent = PlayerPawn->GetRootComponent();
+				PMC->HomingAccelerationMagnitude = HomingAccelerationMagnitude;
+			}
 		}
+
+		Spawned.Add(Projectile);
 	}
+
+	for (ABaseThrowMagic* A : Spawned)
+		for (ABaseThrowMagic* B : Spawned)
+			if (A != B) A->SphereComponent->IgnoreActorWhenMoving(B, true);
 }
 
 FName ABossEnemy_Mage::GetProjectileSpawnSocket() const
 {
 	return FName("MagicSocket");
+}
+
+void ABossEnemy_Mage::SpawnChargeProjectile(FName SocketName)
+{
+	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
+	if (!SkillInfo || !SkillInfo->ProjectileClass) return;
+
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp) return;
+
+	FVector SpawnLocation = (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+		? MeshComp->GetSocketLocation(SocketName)
+		: GetActorLocation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	int32 Count = FMath::Max(1, SkillInfo->ProjectileCount);
+	PendingProjectiles.Empty();
+
+	for (int32 i = 0; i < Count; i++)
+	{
+		ABaseThrowMagic* Projectile = GetWorld()->SpawnActor<ABaseThrowMagic>(
+			SkillInfo->ProjectileClass,
+			SpawnLocation,
+			FRotator::ZeroRotator,
+			SpawnParams
+		);
+		if (!Projectile) continue;
+
+		Projectile->PrepareForLaunch();
+		Projectile->DamageAmount = GetCurrentAttackDamage();
+
+		if (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+		{
+			Projectile->AttachToComponent(MeshComp,
+				FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+				SocketName);
+		}
+
+		PendingProjectiles.Add(Projectile);
+	}
+}
+
+void ABossEnemy_Mage::LaunchChargeProjectile()
+{
+	if (PendingProjectiles.IsEmpty()) return;
+
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!PlayerPawn) return;
+
+	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
+	int32 Count = PendingProjectiles.Num();
+
+	for (int32 i = 0; i < Count; i++)
+		for (int32 j = 0; j < Count; j++)
+			if (i != j && PendingProjectiles[i] && PendingProjectiles[j])
+				PendingProjectiles[i]->SphereComponent->IgnoreActorWhenMoving(PendingProjectiles[j], true);
+
+	for (int32 i = 0; i < Count; i++)
+	{
+		ABaseThrowMagic* Projectile = PendingProjectiles[i];
+		if (!Projectile) continue;
+
+		Projectile->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		FVector BaseDirection = (PlayerPawn->GetActorLocation() - Projectile->GetActorLocation()).GetSafeNormal();
+		float SpreadAngle = SkillInfo ? SkillInfo->SpreadAngle : 0.f;
+		float Angle = (Count == 1) ? 0.f
+			: -SpreadAngle * 0.5f + i * (SpreadAngle / (Count - 1));
+
+		FVector LaunchDirection = BaseDirection.RotateAngleAxis(Angle, FVector::UpVector);
+		Projectile->Launch(LaunchDirection);
+
+		if (SkillInfo && SkillInfo->bIsHoming)
+		{
+			UProjectileMovementComponent* PMC = Projectile->ProjectileMovementComponent;
+			if (PMC)
+			{
+				PMC->bIsHomingProjectile = true;
+				PMC->HomingTargetComponent = PlayerPawn->GetRootComponent();
+				PMC->HomingAccelerationMagnitude = HomingAccelerationMagnitude;
+			}
+		}
+	}
+
+	PendingProjectiles.Empty();
 }
 
