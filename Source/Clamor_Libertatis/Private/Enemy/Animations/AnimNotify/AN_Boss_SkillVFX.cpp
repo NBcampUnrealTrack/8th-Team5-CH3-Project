@@ -23,6 +23,7 @@ void UAN_Boss_SkillVFX::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	{
 		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(Enemy->GetWorld(), 0);
 		SpawnLocation = PlayerPawn ? PlayerPawn->GetActorLocation() : Enemy->GetActorLocation();
+		SpawnLocation.Z = 0.f;
 	}
 	else if (MeshComp->DoesSocketExist(SpawnSocketName))
 	{
@@ -34,7 +35,7 @@ void UAN_Boss_SkillVFX::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 		VFXSpawnLocation.Z = 0.f;
 		SpawnLocation = VFXSpawnLocation;
 	}
-	SpawnLocation.Z = 0.f;
+	
 
 	FRotator SpawnRotation = MeshComp->DoesSocketExist(SpawnSocketName)
 		? MeshComp->GetSocketRotation(SpawnSocketName)
