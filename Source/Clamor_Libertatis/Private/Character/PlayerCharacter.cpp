@@ -294,10 +294,7 @@ void APlayerCharacter::StopSprint(const FInputActionValue& value)
 
 void APlayerCharacter::StartBasicAttack(const FInputActionValue& value)
 {
-    if (!IsAvailable())
-    {
-        if (!CombatComp->IsAttacking()) return;
-    }
+    if (!IsAvailable() && !CombatComp->IsAttacking()) return;
 
     CombatComp->BasicAttack();
 }
@@ -309,7 +306,7 @@ void APlayerCharacter::StopBasicAttack(const FInputActionValue& value)
 
 void APlayerCharacter::StartDodge(const FInputActionValue& value)
 {
-    if (!IsAvailable()) return;
+    if (!IsAvailable() && !CombatComp->IsAttacking()) return;
     if (CombatComp->IsInvincible()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
