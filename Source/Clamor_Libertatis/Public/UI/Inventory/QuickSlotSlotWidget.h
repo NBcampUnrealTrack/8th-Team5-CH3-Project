@@ -8,6 +8,7 @@
 class UImage;
 class UTextBlock;
 class UQuickSlotWidget;
+class UItemPopupWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API UQuickSlotSlotWidget : public UUserWidget
@@ -30,6 +31,9 @@ public:
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DragDrop")
     TSubclassOf<UUserWidget> DragVisualClass;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Popup")
+    TSubclassOf<UItemPopupWidget> PopupWidgetClass;
 
     bool bIsInventorySlot = false; 
 
@@ -56,6 +60,11 @@ protected:
         const FDragDropEvent& InDragDropEvent,
         UDragDropOperation* InOperation) override;
 
+    virtual void NativeOnMouseEnter(const FGeometry& InGeometry,
+        const FPointerEvent& InMouseEvent) override;
+
+    virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
+
 private:
     UPROPERTY()
     UQuickSlotWidget* QuickSlotWidgetRef;
@@ -64,4 +73,7 @@ private:
 
     FName CachedItemID = NAME_None;
     int32 CachedQuantity = 0;
-};
+
+    UPROPERTY()
+    UItemPopupWidget* PopupWidget = nullptr;
+};  

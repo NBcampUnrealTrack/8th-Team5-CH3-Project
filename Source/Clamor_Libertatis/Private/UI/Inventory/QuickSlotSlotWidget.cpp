@@ -1,5 +1,6 @@
 ﻿#include "UI/Inventory/QuickSlotSlotWidget.h"
 #include "UI/Inventory/QuickSlotWidget.h"
+#include "UI/Inventory/ItemPopupWidget.h"
 #include "UI/Inventory/InventoryDragDropOperation.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/ItemTableRow.h"
@@ -178,4 +179,48 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
     }
 
     return false;
+}
+
+void UQuickSlotSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry,
+    const FPointerEvent& InMouseEvent)
+{
+    Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
+
+    if (!bIsInventorySlot) return;
+    if (CachedItemID.IsNone()) return;
+    if (!PopupWidgetClass) return;
+    if (!QuickSlotWidgetRef) return;
+
+    UConsumableInventoryComponent* InvComp = QuickSlotWidgetRef->GetInventoryComp();
+    if (!InvComp) return;
+
+    FItemTableRow* ItemData = InvComp->GetItemData(CachedItemID);
+    if (!ItemData) return;
+
+    if (!PopupWidget)
+    {
+        PopupWidget = CreateWidget<UItemPopupWidget>(GetOwningPlayer(), PopupWidgetClass);
+        if (PopupWidget)
+            PopupWidget->AddToViewport(100);
+    }
+
+    if (PopupWidget)
+    {
+        PopupWidget->InitPopup(*ItemData);
+
+        float MouseX, MouseY;
+        GetOwningPlayer()->GetMousePosition(MouseX, MouseY);
+
+        PopupWidget->SetPositionInViewport(
+            FVector2D(MouseX + 15.f, MouseY), true);
+        PopupWidget->SetVisibility(ESlateVisibility::Visible);
+    }
+}
+
+void UQuickSlotSlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
+{
+    Super::NativeOnMouseLeave(InMouseEvent);
+
+    if (PopupWidget)
+        PopupWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
