@@ -31,7 +31,11 @@ void ABossEnemy_Mage::SetupPlayerInputComponent(UInputComponent* PlayerInputComp
 void ABossEnemy_Mage::AttackHitCheck()
 {
 	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
-	if (SkillInfo && SkillInfo->bIsLaunch)
+	if (SkillInfo && SkillInfo->bIsLaserAttack)
+	{
+		FireLaser(*SkillInfo);
+	}
+	else if (SkillInfo && SkillInfo->bIsLaunch)
 	{
 		SpawnProjectile(*SkillInfo);
 	}
@@ -39,6 +43,47 @@ void ABossEnemy_Mage::AttackHitCheck()
 	{
 		Super::AttackHitCheck();
 	}
+}
+
+void ABossEnemy_Mage::FireLaser(const FEnemySkillInfo& SkillInfo)
+{
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp) return;
+
+	FName SocketName = GetProjectileSpawnSocket();
+	FVector Start = (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+		? MeshComp->GetSocketLocation(SocketName)
+		: GetActorLocation();
+
+	FVector AimDirection = GetActorForwardVector();
+
+	FVector End = Start + AimDirection * SkillInfo.LaserRange;
+
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	FHitResult HitResult;
+	FCollisionShape LaserShape = FCollisionShape::MakeSphere(SkillInfo.LaserRadius);
+	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity, ECC_Visibility, LaserShape, Params);
+
+	FVector BeamEnd = End;
+
+	if (bHit && HitResult.GetActor() && HitResult.GetActor()->ActorHasTag(TEXT("Player")))
+	{
+		UGameplayStatics::ApplyDamage(HitResult.GetActor(), GetCurrentAttackDamage(), GetController(), this, UDamageType::StaticClass());
+	}
+
+	// if (SkillInfo.LaserVFX)
+	// {
+	// 	UNiagaraComponent* BeamComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+	// 		this, SkillInfo.LaserVFX, Start, GetActorRotation());
+	// 	if (BeamComp)
+	// 	{
+	// 		BeamComp->SetNiagaraVariableVec3(TEXT("BeamEnd"), BeamEnd);
+	// 	}
+	// }
+
+	DrawDebugCylinder(GetWorld(), Start, BeamEnd, SkillInfo.LaserRadius, 12, FColor::Cyan, false, 2.f);
 }
 
 void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
