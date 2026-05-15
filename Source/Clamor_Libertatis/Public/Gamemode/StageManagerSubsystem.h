@@ -24,7 +24,7 @@ public:
 
 private:
 	UFUNCTION()
-	void OnEnemyDeath();
+	void OnEnemyHPChanged(float CurrentHP, float MaxHP);
 
 	UFUNCTION()
 	void OnPlayerDeath();
