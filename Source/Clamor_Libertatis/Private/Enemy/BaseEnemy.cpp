@@ -163,7 +163,7 @@ void ABaseEnemy::AttackHitCheck()
 		TArray<FOverlapResult> OverlapResults;
 		//TODO::Need to Custom TraceChannel
 		GetWorld()->OverlapMultiByChannel(OverlapResults,StartPos, Rotation, ECC_Visibility, AttackCollision);
-		DrawDebugBox(GetWorld(),StartPos,AttackCollision.GetExtent(),FColor::Red,false,2.f,0,1.f);
+		DrawDebugBox(GetWorld(),StartPos,AttackCollision.GetExtent(),Rotation,FColor::Red,false,2.f,0,1.f);
 		
 		TArray<AActor*> AlreadyHitActors;
 		for (const FOverlapResult& OverlapResult : OverlapResults)
