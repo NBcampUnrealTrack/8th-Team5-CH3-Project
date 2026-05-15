@@ -41,7 +41,7 @@ void ABossEnemy_Mage::AttackHitCheck()
 }
 void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
 {
-	if (!ProjectileClass) return;
+	if (!SkillInfo.ProjectileClass) return;
 
 	USkeletalMeshComponent* MeshComp = GetMesh();
 	if (!MeshComp) return;
@@ -62,7 +62,7 @@ void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
 	SpawnParams.Instigator = this;
 
 	ABaseThrowMagic* Projectile = GetWorld()->SpawnActor<ABaseThrowMagic>(
-		ProjectileClass,
+		SkillInfo.ProjectileClass,
 		SpawnLocation,
 		SpawnRotation,
 		SpawnParams
@@ -87,5 +87,57 @@ void ABossEnemy_Mage::SpawnProjectile(const FEnemySkillInfo& SkillInfo)
 FName ABossEnemy_Mage::GetProjectileSpawnSocket() const
 {
 	return FName("MagicSocket");
+}
+
+void ABossEnemy_Mage::SpawnChargeProjectile(FName SocketName)
+{
+	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
+	if (!SkillInfo || !SkillInfo->ProjectileClass) return;
+
+	USkeletalMeshComponent* MeshComp = GetMesh();
+	if (!MeshComp) return;
+
+	FVector SpawnLocation = (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+		? MeshComp->GetSocketLocation(SocketName)
+		: GetActorLocation();
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = this;
+	SpawnParams.Instigator = this;
+
+	ABaseThrowMagic* Projectile = GetWorld()->SpawnActor<ABaseThrowMagic>(
+		SkillInfo->ProjectileClass,
+		SpawnLocation,
+		FRotator::ZeroRotator,
+		SpawnParams
+	);
+	if (!Projectile) return;
+
+	Projectile->PrepareForLaunch();
+	Projectile->DamageAmount = GetCurrentAttackDamage();
+
+	if (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+	{
+		Projectile->AttachToComponent(MeshComp,
+			FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+			SocketName);
+	}
+
+	PendingProjectile = Projectile;
+}
+
+void ABossEnemy_Mage::LaunchChargeProjectile()
+{
+	if (!PendingProjectile) return;
+
+	APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(GetWorld(), 0);
+	if (!PlayerPawn) return;
+
+	PendingProjectile->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+	FVector Direction = (PlayerPawn->GetActorLocation() - PendingProjectile->GetActorLocation()).GetSafeNormal();
+	PendingProjectile->Launch(Direction);
+
+	PendingProjectile = nullptr;
 }
 
