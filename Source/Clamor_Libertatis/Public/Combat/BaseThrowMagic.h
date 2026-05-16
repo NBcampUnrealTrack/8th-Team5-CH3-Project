@@ -63,4 +63,8 @@ protected:
 	void EnableCollision();
 
 	FTimerHandle CollisionEnableTimerHandle;
+
+public:
+	void PrepareForLaunch();
+	void Launch(FVector Direction);
 };

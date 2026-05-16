@@ -22,12 +22,16 @@ public:
 	virtual FName GetProjectileSpawnSocket() const override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Projectile")
-	TSubclassOf<ABaseThrowMagic> ProjectileClass;
-
-	UPROPERTY(EditDefaultsOnly, Category="Projectile")
 	float HomingAccelerationMagnitude = 1500.f;
+
+	void SpawnChargeProjectile(FName SocketName);
+	void LaunchChargeProjectile();
+	void FireLaser(const FEnemySkillInfo& SkillInfo);
 
 protected:
 	virtual void BeginPlay() override;
+
+	UPROPERTY()
+	TArray<TObjectPtr<ABaseThrowMagic>> PendingProjectiles;
 
 };

@@ -20,7 +20,8 @@ enum class EUIType : uint8
 	MainMenu,
 	QuickSlot,
 	Inventory,
-	Stat
+	Stat,
+	SocketInventory
 };
 
 USTRUCT(BlueprintType)
