@@ -4,11 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "Combat/Data/DA_SkillData.h"
 #include "SkillComponent.generated.h"
 
 class ACharacter;
-class UDA_SkillData;
 class UHealthComponent;
+class UAnimMontage;
+class UTargetLockComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSkill, Log, All)
 
@@ -26,20 +28,12 @@ public:
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	void ActiveSkill();
 
-	//다른방식으로 스킬 데이터를 가진다면 이걸로 시전 가능
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	bool TryActivateSkill(UDA_SkillData* SkillData);
 	
-	//애님노티파이
 	UFUNCTION(BlueprintCallable, Category="Skill")
-	void ExecutePendingSkill();
+	void ExecuteSkillEvent(FName EventID);
 	
-	UFUNCTION()
-	void ExecuteAttack();
-	
-	UFUNCTION()
-	void PlayEffect();
-
 	FOnSkillCooldownStart OnSkillCooldownStart;
 
 protected:
@@ -55,9 +49,12 @@ protected:
 private:
 	UPROPERTY()
 	TObjectPtr<ACharacter> OwnerCharacter;
-
+	
 	UPROPERTY()
 	TObjectPtr<UHealthComponent> HealthComponent;
+
+	UPROPERTY()
+	TObjectPtr<UTargetLockComponent> LockOnComponent;
 
 	UPROPERTY()
 	TObjectPtr<UDA_SkillData> PendingSkillData;
@@ -67,14 +64,24 @@ private:
 	bool CanActivateSkill(const UDA_SkillData* SkillData) const;
 	bool CommitSkillCost(const UDA_SkillData* SkillData) const;
 	void StartCooldown(const UDA_SkillData* SkillData);
-	void ExecuteSkill(const UDA_SkillData* SkillData);
 
-	void SpawnProjectileSkill(const UDA_SkillData* SkillData);
 
-	FVector GetAimTargetLocation(const UDA_SkillData* SkillData) const;
+
+
+	void ExecuteEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+
+	void ExecuteAttackEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+	void PlayEffectEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+	void SpawnProjectileEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+	void SpawnActorEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+	void PlaySoundEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
+
+
+	FVector GetAimTargetLocation(float Range) const;
 	FVector GetSkillSpawnLocation() const;
+	FVector GetSkillEventLocation(const FSkillEventCommonData& CommonData) const;
 
-	UPROPERTY()
-	UDA_SkillData* LastActivatedSkillData = nullptr;
+	UFUNCTION()
+	void OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 
 };

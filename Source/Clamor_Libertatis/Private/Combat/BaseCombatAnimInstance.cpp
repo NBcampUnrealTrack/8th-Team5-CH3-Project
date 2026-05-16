@@ -94,21 +94,21 @@ void UBaseCombatAnimInstance::AnimNotify_DisableWeaponHitbox()
 void UBaseCombatAnimInstance::AnimNotify_UseSkill()
 {
 	if (USkillComponent* Comp = GetSkillComponent()) {
-		Comp->ExecutePendingSkill();
+		//Comp->ExecutePendingSkill();
 	}
 }
 
 void UBaseCombatAnimInstance::AnimNotify_SkillExecuteAttack()
 {
 	if (USkillComponent* Comp = GetSkillComponent()) {
-		Comp->ExecuteAttack();
+		//Comp->ExecuteAttack();
 	}
 }
 
 void UBaseCombatAnimInstance::AnimNotify_SkillPlayEffect()
 {
 	if (USkillComponent* Comp = GetSkillComponent()) {
-		Comp->PlayEffect();
+		//Comp->PlayEffect();
 	}
 }
 

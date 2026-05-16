@@ -6,7 +6,10 @@
 #include "Combat/Data/DA_SkillData.h"
 #include "Combat/CombatComponent.h"
 #include "Combat/HealthComponent.h"
+#include "Enemy/BaseEnemy.h"
 #include "Animation/AnimInstance.h"
+#include "Animation/AnimMontage.h"
+#include "Character/TargetLockComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/Character.h"
 #include "Kismet/GameplayStatics.h"
@@ -31,6 +34,10 @@ void USkillComponent::BeginPlay()
 	if (OwnerCharacter)
 	{
 		HealthComponent = OwnerCharacter->FindComponentByClass<UHealthComponent>();
+	}
+	if (OwnerCharacter)
+	{
+		LockOnComponent = OwnerCharacter->FindComponentByClass<UTargetLockComponent>();
 	}
 }
 
@@ -84,129 +91,48 @@ bool USkillComponent::TryActivateSkill(UDA_SkillData* SkillData)
 			PendingSkillData = nullptr;
 			return false;
 		}
+
+		FOnMontageEnded MontageEndedDelegate;
+		MontageEndedDelegate.BindUObject(this, &USkillComponent::OnSkillMontageEnded);
+		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, SkillData->CastMontage);
 		return true;
 	}
 
-	ExecuteSkill(SkillData);
 	return true;
 }
 
-void USkillComponent::ExecutePendingSkill()
-{
-	UDA_SkillData* SkillData = PendingSkillData;
-	PendingSkillData = nullptr;
 
+void USkillComponent::ExecuteSkillEvent(FName EventID)
+{
+	if (EventID.IsNone())
+	{
+		UE_LOG(LogSkill, Warning, TEXT("ExecuteSkillEvent failed: EventID is None."));
+		return;
+	}
+
+	UDA_SkillData* SkillData = PendingSkillData;
 	if (!SkillData)
 	{
+		UE_LOG(LogSkill, Warning, TEXT("ExecuteSkillEvent failed: no pending skill for EventID %s."), *EventID.ToString());
 		return;
 	}
 
-	ExecuteSkill(SkillData);
-}
-
-void USkillComponent::ExecuteAttack()
-{
-	UWorld* World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-	if (!OwnerCharacter)
-	{
-		return;
-	}
-	if (!PendingSkillData)
-	{
-		return;
-	}
-
-	FVector StartPos = OwnerCharacter->GetActorLocation();
-	FCollisionShape CollisionShape;
-	CollisionShape.SetSphere(PendingSkillData->SphereRadius);
-	FQuat Rotation = OwnerCharacter->GetActorRotation().Quaternion();
-	TArray<FHitResult> HitResults;
-	TArray<AActor*> IgnoreActors;
-
-	IgnoreActors.Add(OwnerCharacter);
-
-
-	if (OwnerCharacter->GetInstigator())
-	{
-		IgnoreActors.Add(OwnerCharacter->GetInstigator());
-	}
-
-
-	FCollisionQueryParams QueryParams;
-	QueryParams.AddIgnoredActors(IgnoreActors);
-	QueryParams.bTraceComplex = false;
-	//TODO::Need to Custom TraceChannel
-	const bool bHit = World->SweepMultiByChannel(
-		HitResults,
-		StartPos,
-		StartPos,
-		FQuat::Identity,
-		ECC_Pawn,//<-Pawn 만 체크하는거임
-		CollisionShape,
-		QueryParams
+	const FSkillEventData* FoundEvent = SkillData->Events.FindByPredicate(
+		[EventID](const FSkillEventData& EventData)
+		{
+			return EventData.EventID == EventID;
+		}
 	);
 
-#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
-	DrawDebugSphere(GetWorld(), StartPos, PendingSkillData->SphereRadius, 32, FColor::Red, false, 2.f);
-#endif
-
-	AController* InstigatorController = OwnerCharacter->GetInstigatorController();
-	TArray<AActor*> DamagedActors;
-	for (const FHitResult& HitResult : HitResults)
+	if (!FoundEvent)
 	{
-		AActor* HitActor = HitResult.GetActor();
-
-		if (!HitActor)
-		{
-			continue;
-		}
-
-		if (DamagedActors.Contains(HitActor))
-		{
-			continue;
-		}
-		DamagedActors.Add(HitActor);
-
-// 		if (HitActor->ActorHasTag(TEXT("Enemy")))
-// 		{
-// 		}
-		UGameplayStatics::ApplyDamage(
-			HitActor,
-			PendingSkillData->Damage,
-			InstigatorController,
-			OwnerCharacter,
-			UDamageType::StaticClass()
-		);
-	}
-}
-
-void USkillComponent::PlayEffect()
-{
-	if (!OwnerCharacter)
-	{
+		UE_LOG(LogSkill, Warning, TEXT("ExecuteSkillEvent failed: EventID %s was not found in %s."),
+			*EventID.ToString(),
+			*GetNameSafe(SkillData));
 		return;
 	}
-	const FVector PlayLocation = OwnerCharacter->GetActorLocation();
 
-	if (PendingSkillData && PendingSkillData->CastingEffects.IsValidIndex(0) && PendingSkillData->CastingEffects[0])
-	{
-		UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-			GetWorld(),
-			PendingSkillData->CastingEffects[0],
-			PlayLocation,
-			PlayLocation.Rotation(),
-			FVector(2.f)
-		);
-		if (NiagaraComp)
-		{
-			//크기 파라미터 즉시수정.
-			NiagaraComp->SetVariableFloat(TEXT("Scale_All"), 2.f);
-		}
-	}
+	ExecuteEvent(SkillData, *FoundEvent);
 }
 
 bool USkillComponent::CanActivateSkill(const UDA_SkillData* SkillData) const
@@ -274,26 +200,170 @@ void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
 	}
 }
 
-void USkillComponent::ExecuteSkill(const UDA_SkillData* SkillData)
+
+void USkillComponent::ExecuteEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
 {
 	if (!SkillData)
 	{
 		return;
 	}
 
-	switch (SkillData->SkillType)
+	switch (EventData.EventType)
 	{
-	case ESkillType::Projectile:
-		SpawnProjectileSkill(SkillData);
+	case ESkillEventType::Attack:
+		ExecuteAttackEvent(SkillData, EventData);
+		break;
+	case ESkillEventType::Effect:
+		PlayEffectEvent(SkillData, EventData);
+		break;
+	case ESkillEventType::Projectile:
+		SpawnProjectileEvent(SkillData, EventData);
+		break;
+	case ESkillEventType::Spawn:
+		SpawnActorEvent(SkillData, EventData);
+		break;
+	case ESkillEventType::Sound:
+		PlaySoundEvent(SkillData, EventData);
 		break;
 	default:
 		break;
 	}
 }
 
-void USkillComponent::SpawnProjectileSkill(const UDA_SkillData* SkillData)
+void USkillComponent::ExecuteAttackEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
 {
-	if (!OwnerCharacter || !SkillData || !SkillData->ProjectileClass)
+	UWorld* World = GetWorld();
+	if (!World || !OwnerCharacter || !SkillData)
+	{
+		return;
+	}
+
+	const float Radius = EventData.CommonData.Radius;
+	if (Radius <= 0.0f)
+	{
+		return;
+	}
+
+	const FVector StartPos = GetSkillEventLocation(EventData.CommonData);
+	const FCollisionShape CollisionShape = FCollisionShape::MakeSphere(Radius);
+	TArray<FHitResult> HitResults;
+
+	FCollisionQueryParams QueryParams;
+	QueryParams.AddIgnoredActor(OwnerCharacter);
+	if (OwnerCharacter->GetInstigator())
+	{
+		QueryParams.AddIgnoredActor(OwnerCharacter->GetInstigator());
+	}
+	QueryParams.bTraceComplex = false;
+
+	const bool bHit = World->SweepMultiByChannel(
+		HitResults,
+		StartPos,
+		StartPos,
+		FQuat::Identity,
+		EventData.AttackData.TraceChannel,
+		CollisionShape,
+		QueryParams
+	);
+
+#if !(UE_BUILD_SHIPPING || UE_BUILD_TEST)
+	DrawDebugSphere(World, StartPos, Radius, 32, FColor::Red, false, 2.f);
+#endif
+
+	if (!bHit)
+	{
+		return;
+	}
+
+	const float Damage = EventData.CommonData.Damage;
+	TSubclassOf<UDamageType> DamageTypeClass = EventData.CommonData.DamageTypeClass;
+	if (!DamageTypeClass)
+	{
+		DamageTypeClass = UDamageType::StaticClass();
+	}
+
+	AController* InstigatorController = OwnerCharacter->GetInstigatorController();
+	TArray<AActor*> DamagedActors;
+	for (const FHitResult& HitResult : HitResults)
+	{
+		AActor* HitActor = HitResult.GetActor();
+		if (!HitActor || DamagedActors.Contains(HitActor))
+		{
+			continue;
+		}
+
+		DamagedActors.Add(HitActor);
+		UGameplayStatics::ApplyDamage(
+			HitActor,
+			Damage,
+			InstigatorController,
+			OwnerCharacter,
+			DamageTypeClass
+		);
+	}
+}
+
+void USkillComponent::PlayEffectEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
+{
+	if (!OwnerCharacter || !SkillData)
+	{
+		return;
+	}
+
+	UNiagaraSystem* NiagaraSystem = EventData.EffectData.NiagaraSystem;
+
+	if (!NiagaraSystem)
+	{
+		return;
+	}
+
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	const bool bCanAttach = EventData.EffectData.bAttachToSocket
+		&& OwnerMesh
+		&& !EventData.CommonData.SpawnSocketName.IsNone()
+		&& OwnerMesh->DoesSocketExist(EventData.CommonData.SpawnSocketName);
+
+	UNiagaraComponent* NiagaraComp = nullptr;
+	if (bCanAttach)
+	{
+		NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAttached(
+			NiagaraSystem,
+			OwnerMesh,
+			EventData.CommonData.SpawnSocketName,
+			EventData.CommonData.LocationOffset,
+			FRotator::ZeroRotator,
+			EAttachLocation::KeepRelativeOffset,
+			true
+		);
+	}
+	else
+	{
+		NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			NiagaraSystem,
+			GetSkillEventLocation(EventData.CommonData),
+			OwnerCharacter->GetActorRotation(),
+			EventData.EffectData.Scale
+		);
+	}
+
+	if (NiagaraComp)
+	{
+		NiagaraComp->SetWorldScale3D(EventData.EffectData.Scale);
+		//받은 에셋 나이아가라에 스케일설정하려면 원본을 건드려야 해서 유저파라미너 수정만 하는방식으로 사용 
+		NiagaraComp->SetVariableFloat(TEXT("Scale_All"), EventData.EffectData.Scale.X);
+	}
+}
+
+void USkillComponent::SpawnProjectileEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
+{
+	if (!OwnerCharacter || !SkillData)
+	{
+		return;
+	}
+
+	TSubclassOf<AActor> ProjectileClass = EventData.ProjectileData.ProjectileClass;
+	if (!ProjectileClass)
 	{
 		return;
 	}
@@ -304,10 +374,10 @@ void USkillComponent::SpawnProjectileSkill(const UDA_SkillData* SkillData)
 		return;
 	}
 
-	const FVector SpawnLocation = GetSkillSpawnLocation();
-	const FVector TargetLocation = GetAimTargetLocation(SkillData);
+	const FVector SpawnLocation = GetSkillEventLocation(EventData.CommonData);
+	const float Range = EventData.CommonData.Range;
+	const FVector TargetLocation = GetAimTargetLocation(Range);
 	const FVector FireDirection = (TargetLocation - SpawnLocation).GetSafeNormal();
-
 	if (FireDirection.IsNearlyZero())
 	{
 		return;
@@ -320,7 +390,7 @@ void USkillComponent::SpawnProjectileSkill(const UDA_SkillData* SkillData)
 		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
 	AActor* SpawnedActor = World->SpawnActor<AActor>(
-		SkillData->ProjectileClass,
+		ProjectileClass,
 		SpawnLocation,
 		FireDirection.Rotation(),
 		SpawnParams
@@ -328,17 +398,77 @@ void USkillComponent::SpawnProjectileSkill(const UDA_SkillData* SkillData)
 
 	if (ABaseThrowMagic* ThrowMagic = Cast<ABaseThrowMagic>(SpawnedActor))
 	{
-		ThrowMagic->DamageAmount = SkillData->Damage;
-		if (SkillData->SphereRadius > 0.0f)
+		ThrowMagic->DamageAmount = EventData.CommonData.Damage;
+		const float ExplosionRadius = EventData.ProjectileData.ExplosionRadius > 0.0f
+			? EventData.ProjectileData.ExplosionRadius
+			: EventData.CommonData.Radius;
+		if (ExplosionRadius > 0.0f)
 		{
-			ThrowMagic->ExplosionRadius = SkillData->SphereRadius;
+			ThrowMagic->ExplosionRadius = ExplosionRadius;
 		}
 	}
 }
 
-FVector USkillComponent::GetAimTargetLocation(const UDA_SkillData* SkillData) const
+void USkillComponent::SpawnActorEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
 {
-	if (!OwnerCharacter || !SkillData)
+	if (!OwnerCharacter || !SkillData || !EventData.SpawnData.SpawnClass)
+	{
+		return;
+	}
+
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	const FVector SpawnLocation = EventData.SpawnData.bSpawnAtAimTarget
+		? GetAimTargetLocation(EventData.CommonData.Range)
+		: GetSkillEventLocation(EventData.CommonData);
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = OwnerCharacter;
+	SpawnParams.Instigator = OwnerCharacter;
+	SpawnParams.SpawnCollisionHandlingOverride =
+		ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	World->SpawnActor<AActor>(
+		EventData.SpawnData.SpawnClass,
+		SpawnLocation,
+		OwnerCharacter->GetActorRotation(),
+		SpawnParams
+	);
+}
+
+void USkillComponent::PlaySoundEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData)
+{
+	if (!OwnerCharacter || !SkillData || !EventData.SoundData.Sound)
+	{
+		return;
+	}
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		EventData.SoundData.Sound,
+		GetSkillEventLocation(EventData.CommonData),
+		EventData.SoundData.VolumeMultiplier,
+		EventData.SoundData.PitchMultiplier
+	);
+}
+
+
+
+FVector USkillComponent::GetAimTargetLocation(float Range) const
+{
+	if (LockOnComponent && LockOnComponent->GetCurrentTarget()) {
+		
+
+
+		return LockOnComponent->GetCurrentTarget()->GetActorLocation();
+	}
+
+
+	if (!OwnerCharacter)
 	{
 		return FVector::ZeroVector;
 	}
@@ -346,14 +476,14 @@ FVector USkillComponent::GetAimTargetLocation(const UDA_SkillData* SkillData) co
 	AController* Controller = OwnerCharacter->GetController();
 	if (!Controller)
 	{
-		return OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * SkillData->SkillRange;
+		return OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * Range;
 	}
 
 	FVector ViewLocation;
 	FRotator ViewRotation;
 	Controller->GetPlayerViewPoint(ViewLocation, ViewRotation);
 
-	const float TraceDistance = FMath::Max(0.0f, SkillData->SkillRange);
+	const float TraceDistance = FMath::Max(0.0f, Range);
 	const FVector TraceEnd = ViewLocation + ViewRotation.Vector() * TraceDistance;
 
 	UWorld* World = GetWorld();
@@ -392,4 +522,34 @@ FVector USkillComponent::GetSkillSpawnLocation() const
 	}
 
 	return OwnerCharacter->GetActorLocation() + OwnerCharacter->GetActorForwardVector() * 50.0f;
+}
+
+FVector USkillComponent::GetSkillEventLocation(const FSkillEventCommonData& CommonData) const
+{
+	if (!OwnerCharacter)
+	{
+		return FVector::ZeroVector;
+	}
+
+	FVector BaseLocation = FVector::ZeroVector;
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	
+	if (!CommonData.SpawnSocketName.IsNone() && OwnerMesh && OwnerMesh->DoesSocketExist(CommonData.SpawnSocketName))
+	{
+		BaseLocation = OwnerMesh->GetSocketLocation(CommonData.SpawnSocketName);
+	}
+	else
+	{
+		BaseLocation = GetSkillSpawnLocation();
+	}
+
+	return BaseLocation + OwnerCharacter->GetActorRotation().RotateVector(CommonData.LocationOffset);
+}
+
+void USkillComponent::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (PendingSkillData)
+	{
+		PendingSkillData = nullptr;
+	}
 }
