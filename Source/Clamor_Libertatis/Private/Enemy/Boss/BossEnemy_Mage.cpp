@@ -51,9 +51,10 @@ void ABossEnemy_Mage::FireLaser(const FEnemySkillInfo& SkillInfo)
 	if (!MeshComp) return;
 
 	FName SocketName = GetProjectileSpawnSocket();
-	FVector Start = (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
-		? MeshComp->GetSocketLocation(SocketName)
-		: GetActorLocation();
+	// FVector Start = (SocketName != NAME_None && MeshComp->DoesSocketExist(SocketName))
+	// 	? MeshComp->GetSocketLocation(SocketName)
+	// 	: GetActorLocation();
+	FVector Start = GetActorLocation();
 
 	FVector AimDirection = GetActorForwardVector();
 
@@ -64,12 +65,15 @@ void ABossEnemy_Mage::FireLaser(const FEnemySkillInfo& SkillInfo)
 
 	FHitResult HitResult;
 	FCollisionShape LaserShape = FCollisionShape::MakeSphere(SkillInfo.LaserRadius);
-	bool bHit = GetWorld()->SweepSingleByChannel(HitResult, Start, End, FQuat::Identity, ECC_Visibility, LaserShape, Params);
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECC_Pawn);
+	bool bHit = GetWorld()->SweepSingleByObjectType(HitResult, Start, End, FQuat::Identity, ObjectQueryParams, LaserShape, Params);
 
 	FVector BeamEnd = End;
 
 	if (bHit && HitResult.GetActor() && HitResult.GetActor()->ActorHasTag(TEXT("Player")))
 	{
+		UE_LOG(LogTemp,Warning,TEXT("LaserAttack Hit On"));
 		UGameplayStatics::ApplyDamage(HitResult.GetActor(), GetCurrentAttackDamage(), GetController(), this, UDamageType::StaticClass());
 	}
 
