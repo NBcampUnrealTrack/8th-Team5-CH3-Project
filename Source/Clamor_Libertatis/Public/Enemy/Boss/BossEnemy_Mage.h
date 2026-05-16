@@ -26,6 +26,7 @@ public:
 
 	void SpawnChargeProjectile(FName SocketName);
 	void LaunchChargeProjectile();
+	void FireLaser(const FEnemySkillInfo& SkillInfo);
 
 protected:
 	virtual void BeginPlay() override;

@@ -66,6 +66,17 @@ public:
 	float SpreadAngle = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile")
 	bool bIsHoming = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType")
+	bool bIsLaserAttack = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Laser",
+		meta=(EditCondition="bIsLaserAttack", EditConditionHides, ClampMin=100.f))
+	float LaserRange = 3000.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Laser",
+		meta=(EditCondition="bIsLaserAttack", EditConditionHides, ClampMin=1.f))
+	float LaserRadius = 30.f;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Laser",
+		meta=(EditCondition="bIsLaserAttack", EditConditionHides))
+	TObjectPtr<UNiagaraSystem> LaserVFX = nullptr;
 };
 
 
