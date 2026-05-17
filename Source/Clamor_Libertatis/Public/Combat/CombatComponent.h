@@ -70,6 +70,9 @@ public:
 
 	float GetManaCostMultiplier() const;
 
+	void SetSuperarmor(bool bEnable);
+	bool IsSuperarmor();
+
 #pragma region CombatState
 
 	void SetCombatState(ECombatEnumState NewState);
@@ -117,6 +120,8 @@ private:
 	bool bAttackInputBufferedDuringRecovery = false;//종료 후딜레이 중 입력
 	bool bIsInvincible = false;//회피무적
 	int32 ComboIndex = 0;
+
+	bool Superarmor = false;
 #pragma endregion States
 	void EquipTestSocketItem();
 
