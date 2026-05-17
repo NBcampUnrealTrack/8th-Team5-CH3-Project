@@ -45,6 +45,20 @@ void UTargetLockComponent::ToggleLock()
     StartLock();
 }
 
+void UTargetLockComponent::ToggleCharacterRotationLock(bool bEnable)
+{
+    //다른 동작중 캐릭터의 회전이 고정되는것을 조절하기위한 함수, CurrentTarget을 유지함.
+    if (!CurrentTarget)
+        return;
+    if (CurrentTarget && OwnerCharacter)
+    {
+        if (UCharacterMovementComponent* MovementComp = OwnerCharacter->GetCharacterMovement())
+        {
+			// 캐릭터 정면 고정
+            OwnerCharacter->bUseControllerRotationYaw = bEnable;
+        }
+    }
+}
 void UTargetLockComponent::StartLock()
 {
     CurrentTarget = Cast<ABaseEnemy>(FindTarget());
@@ -54,7 +68,6 @@ void UTargetLockComponent::StartLock()
         if (UCharacterMovementComponent* MovementComp = OwnerCharacter->GetCharacterMovement())
         {
             // 캐릭터 정면 고정
-            MovementComp->bOrientRotationToMovement = false;
             OwnerCharacter->bUseControllerRotationYaw = true;
         }
         SetComponentTickEnabled(true);
@@ -71,7 +84,6 @@ void UTargetLockComponent::EndLock()
     {
         if (UCharacterMovementComponent* MovementComp = OwnerCharacter->GetCharacterMovement())
         {
-            MovementComp->bOrientRotationToMovement = true;
             OwnerCharacter->bUseControllerRotationYaw = false;
         }
     }
@@ -150,7 +162,6 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     TargetRotation.Pitch = -15.f;
 
     OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
-
     if (!ValidateCurrentTarget())
     {
         EndLock();

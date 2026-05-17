@@ -91,7 +91,7 @@ bool USkillComponent::TryActivateSkill(UDA_SkillData* SkillData)
 			PendingSkillData = nullptr;
 			return false;
 		}
-
+		LockOnComponent->ToggleCharacterRotationLock(false);
 		FOnMontageEnded MontageEndedDelegate;
 		MontageEndedDelegate.BindUObject(this, &USkillComponent::OnSkillMontageEnded);
 		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, SkillData->CastMontage);
@@ -552,4 +552,12 @@ void USkillComponent::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupt
 	{
 		PendingSkillData = nullptr;
 	}
+	if (OwnerCharacter) {
+		if (UCombatComponent* CombatComponent = OwnerCharacter->FindComponentByClass<UCombatComponent>())
+		{
+			CombatComponent->SetSuperarmor(false);
+		}
+	}
+
+	LockOnComponent->ToggleCharacterRotationLock(true);
 }

@@ -140,4 +140,5 @@ public:
 	UConsumableInventoryComponent* ConsumableInventory;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<USocketItemInventoryComponent> SocketItemInventory;
+
 };

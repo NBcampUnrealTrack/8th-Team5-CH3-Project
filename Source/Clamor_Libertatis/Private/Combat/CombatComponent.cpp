@@ -9,6 +9,7 @@
 
 #include "Engine/AssetManager.h"
 #include "Combat/Weapon/WeaponSocketItemData.h"
+#include <Character/TargetLockComponent.h>
 
 DEFINE_LOG_CATEGORY(LogCombat)
 
@@ -216,6 +217,18 @@ float UCombatComponent::GetManaCostMultiplier() const
 
 }
 
+void UCombatComponent::SetSuperarmor(bool bEnable)
+{
+	if (IsDead())
+		return;
+	Superarmor = bEnable;
+}
+
+bool UCombatComponent::IsSuperarmor()
+{
+	return Superarmor;
+}
+
 void UCombatComponent::SetCombatState(ECombatEnumState NewState)
 {
 	if (CombatState == ECombatEnumState::Dead && NewState != ECombatEnumState::Dead)
@@ -248,8 +261,12 @@ void UCombatComponent::EndDodge()
 		SetCombatState(ECombatEnumState::Idle);
 	}
 	UE_LOG(LogCombat, Warning, TEXT("Dodge End"));
-
+	
 	bIsInvincible = false;
+	UTargetLockComponent* LockOnComponent = OwnerCharacter->FindComponentByClass<UTargetLockComponent>();
+	if (LockOnComponent) {
+		LockOnComponent->ToggleCharacterRotationLock(true);
+	}
 }
 
 void UCombatComponent::EnableCombo()
