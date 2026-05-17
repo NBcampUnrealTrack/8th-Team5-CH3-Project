@@ -272,7 +272,11 @@ void APlayerCharacter::StopJump(const FInputActionValue& value)
 void APlayerCharacter::Look(const FInputActionValue& value)
 {
     FVector2D LookInput = value.Get<FVector2D>();
-
+    if (TargetLockComp && TargetLockComp->GetCurrentTarget())
+    {
+        // 락온 중에는 마우스가 컨트롤러 회전을 건드리지 않게 막음
+        return;
+    }
     AddControllerYawInput(LookInput.X);
     AddControllerPitchInput(LookInput.Y);
 }
@@ -343,19 +347,19 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         EventInstigator,
         DamageCauser
     );
-    UE_LOG(LogTemp, Warning, TEXT("Player Took Damage: %f"), ActualDamage);
+    
 
     if (HealthComp)
     {
-        if (CombatComp->IsInvincible())
+        if (CombatComp->IsInvincible()) {
+            UE_LOG(LogTemp, Warning, TEXT("Player is invincible."), ActualDamage);
             return 0.f;
+        }
 
         HealthComp->TakeDamageValue(ActualDamage);
+		UE_LOG(LogTemp, Warning, TEXT("Player Took Damage: %f, Current HP: %f"), ActualDamage, HealthComp->GetCurrentHealth());
 
-        UE_LOG(LogTemp, Warning, TEXT("Current HP: %f"),
-            HealthComp->GetCurrentHealth());
-
-        if (HealthComp->GetCurrentHealth() > 0.0f)
+        if (HealthComp->GetCurrentHealth() > 0.0f && CombatComp->IsSuperarmor() == false)
         {
             HitAnimMontage();
         }
@@ -388,7 +392,6 @@ void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     if (!AnimInstance) return;
-
     switch (DodgeDirection)
     {
     case EDodgeDirection::Forward:
@@ -411,6 +414,9 @@ void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
         AnimInstance->Montage_Play(ForwardDodgeReactMontage);
         break;
     }
+    if (TargetLockComp) {
+        TargetLockComp->ToggleCharacterRotationLock(false);
+    }
 }
 
 // 피격 시 애니메이션 몽타주 실행
@@ -422,10 +428,6 @@ void APlayerCharacter::HitAnimMontage()
     if (AnimInstance)
     {
         AnimInstance->Montage_Play(HitReactMontage);
-
-        //FOnMontageEnded EndDelegate;
-        //EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
-        //AnimInstance->Montage_SetEndDelegate(EndDelegate, HitReactMontage);
     }
 }
 

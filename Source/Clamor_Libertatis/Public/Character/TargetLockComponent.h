@@ -49,8 +49,10 @@ protected:
 	void StartLock();
 	void EndLock();
 
+
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	void ToggleLock();
+	void ToggleCharacterRotationLock(bool bEnable);
 };
