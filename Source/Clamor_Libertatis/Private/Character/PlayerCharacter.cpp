@@ -428,10 +428,6 @@ void APlayerCharacter::HitAnimMontage()
     if (AnimInstance)
     {
         AnimInstance->Montage_Play(HitReactMontage);
-
-        //FOnMontageEnded EndDelegate;
-        //EndDelegate.BindUObject(this, &APlayerCharacter::HitMontageEnded);
-        //AnimInstance->Montage_SetEndDelegate(EndDelegate, HitReactMontage);
     }
 }
 
