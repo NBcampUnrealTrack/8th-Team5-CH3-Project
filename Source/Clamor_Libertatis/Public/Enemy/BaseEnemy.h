@@ -49,6 +49,10 @@ protected:
 	
 	void EquipWeapon();
 	virtual float GetCurrentAttackDamage() const;
+	void BeginMontageAttack(UAnimMontage* Montage);
+
+	UFUNCTION()
+	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
 #pragma region Weapon
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;

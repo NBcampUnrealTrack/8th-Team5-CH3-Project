@@ -78,6 +78,7 @@ UAnimMontage* ABossEnemy::SkillAttackToPlayer()
 	CurrentAttackData.Key = EAttackType::Attack_Skill;
 	CurrentAttackData.Value = RandomNum;
 	ResetNormalAttackCount();
+	BeginMontageAttack(Montage);
 	return Montage;
 }
 
@@ -92,6 +93,7 @@ UAnimMontage* ABossEnemy::PhaseSkillAttackToPlayer()
 	CurrentAttackData.Key = EAttackType::Attack_Skill_Phase;
 	CurrentAttackData.Value = RandomNum;
 	ResetNormalAttackCount();
+	BeginMontageAttack(Montage);
 	return Montage;
 }
 

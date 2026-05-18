@@ -6,6 +6,8 @@
 #include "BossEnemy_Mage.generated.h"
 
 class ABaseThrowMagic;
+class ABaseEnemy;
+class UBoxComponent;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABossEnemy_Mage : public ABossEnemy , public IMageCaster
@@ -27,11 +29,18 @@ public:
 	void SpawnChargeProjectile(FName SocketName);
 	void LaunchChargeProjectile();
 	void FireLaser(const FEnemySkillInfo& SkillInfo);
+	void SummonMinions();
 
 protected:
 	virtual void BeginPlay() override;
 
 	UPROPERTY()
 	TArray<TObjectPtr<ABaseThrowMagic>> PendingProjectiles;
+
+	UPROPERTY(VisibleAnywhere, Category="Summon")
+	TObjectPtr<UBoxComponent> SummonSpawnBox;
+
+	UPROPERTY(EditDefaultsOnly, Category="Summon")
+	TArray<TSubclassOf<ABaseEnemy>> SummonMinionClasses;
 
 };
