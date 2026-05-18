@@ -172,6 +172,12 @@ void ABossEnemy_Mage::Destroyed()
 	Super::Destroyed();
 }
 
+UAnimMontage* ABossEnemy_Mage::DodgeBackward()
+{
+	LaunchCharacter(-GetActorForwardVector() * DodgeSpeed, true, false);
+	return nullptr;
+}
+
 void ABossEnemy_Mage::SpawnChargeProjectile(FName SocketName)
 {
 	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();

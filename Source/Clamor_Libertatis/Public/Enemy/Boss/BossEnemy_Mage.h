@@ -27,10 +27,15 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category="Projectile")
 	float HomingAccelerationMagnitude = 1500.f;
 
+	virtual UAnimMontage* DodgeBackward() override;
+
 	void SpawnChargeProjectile(FName SocketName);
 	void LaunchChargeProjectile();
 	void FireLaser(const FEnemySkillInfo& SkillInfo);
 	void SummonMinions();
+
+	UPROPERTY(EditAnywhere, Category = "Dodge")
+	float DodgeSpeed = 1200.f;
 
 protected:
 	virtual void BeginPlay() override;

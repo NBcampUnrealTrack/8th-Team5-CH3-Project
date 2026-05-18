@@ -3,6 +3,7 @@
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
 #include "Enemy/AIController/Enemy_AIController.h"
+#include "Enemy/DataTable/DA_BaseEnemySkill.h"
 #include "BehaviorTree/BlackboardComponent.h"
 
 ABossEnemy::ABossEnemy()
@@ -49,7 +50,32 @@ float ABossEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 		}
 	}
 
+	if (!bIsDead && ActualDamage > 0.f)
+	{
+		if (AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController()))
+		{
+			if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
+			{
+				if (!BB->GetValueAsBool(TEXT("bShouldDodge")) && FMath::FRand() < DodgeChance)
+				{
+					BB->SetValueAsBool(TEXT("bShouldDodge"), true);
+				}
+			}
+		}
+	}
+
 	return ActualDamage;
+}
+
+UAnimMontage* ABossEnemy::DodgeBackward()
+{
+	if (!Enemy_CombatComp || !Enemy_CombatComp->DA_EnemySkill) return nullptr;
+
+	UAnimMontage* DodgeMontage = Enemy_CombatComp->DA_EnemySkill->AM_Dodge;
+	if (!DodgeMontage || !AnimInst) return nullptr;
+
+	AnimInst->Montage_Play(DodgeMontage);
+	return DodgeMontage;
 }
 
 UAnimMontage* ABossEnemy::AttackToPlayer()
