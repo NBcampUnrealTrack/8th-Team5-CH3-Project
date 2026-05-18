@@ -12,7 +12,7 @@ UTargetLockComponent::UTargetLockComponent()
     PrimaryComponentTick.bCanEverTick = true;
     PrimaryComponentTick.bStartWithTickEnabled = false;
 
-    TraceRadius = 10.f;
+    TraceRadius = 150.f;
     MaxLockDistsq = 1000.f * 1000.f * 1.3f;
 }
 
@@ -160,10 +160,7 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     FVector End = CurrentTarget->GetActorLocation();
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
     TargetRotation.Pitch = -15.f;
-
-    FRotator CurrentRotation = OwnerCharacter->GetController()->GetControlRotation();
-    FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 2.f);
-    OwnerCharacter->GetController()->SetControlRotation(NewRotation);
+    OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
     if (!ValidateCurrentTarget())
     {
         EndLock();
