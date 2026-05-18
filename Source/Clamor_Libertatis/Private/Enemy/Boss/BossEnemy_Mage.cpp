@@ -17,18 +17,15 @@ ABossEnemy_Mage::ABossEnemy_Mage()
 	SummonSpawnBox->SetBoxExtent(FVector(300.f, 300.f, 50.f));
 }
 
-
 void ABossEnemy_Mage::BeginPlay()
 {
 	Super::BeginPlay();
 }
 
-
 void ABossEnemy_Mage::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
-
 
 void ABossEnemy_Mage::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -162,6 +159,19 @@ FName ABossEnemy_Mage::GetProjectileSpawnSocket() const
 	return FName("MagicSocket");
 }
 
+void ABossEnemy_Mage::Destroyed()
+{
+	for (auto Minions : SummonMinionsArray)
+	{
+		if (Minions)
+		{
+			Minions->Destroy();
+		}
+	}
+	
+	Super::Destroyed();
+}
+
 void ABossEnemy_Mage::SpawnChargeProjectile(FName SocketName)
 {
 	const FEnemySkillInfo* SkillInfo = GetCurrentSkillInfo();
@@ -224,7 +234,8 @@ void ABossEnemy_Mage::SummonMinions()
 		FVector RandomPoint = FMath::RandPointInBox(SpawnArea);
 		RandomPoint.Z = SpawnZ;
 
-		GetWorld()->SpawnActor<ABaseEnemy>(MinionClass, RandomPoint, FRotator::ZeroRotator, SpawnParams);
+		ABaseEnemy* SummonedEnemy = GetWorld()->SpawnActor<ABaseEnemy>(MinionClass, RandomPoint, FRotator::ZeroRotator, SpawnParams);
+		SummonMinionsArray.Add(SummonedEnemy);
 	}
 }
 
