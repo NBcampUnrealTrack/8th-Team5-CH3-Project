@@ -23,7 +23,7 @@ AWeaponBase::AWeaponBase()
 	Hitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Hitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Hitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	Hitbox->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
@@ -296,6 +296,32 @@ TArray<const UWeaponSocketItemData*> AWeaponBase::GetEquippedSocketItems() const
 	return EquippedItems;
 }
 
+void AWeaponBase::PlayHitSound(const FHitResult& SweepResult, const AActor* HitActor) const
+{
+	if (!HitSound)
+	{
+		return;
+	}
+
+	FVector PlayLocation = GetActorLocation();
+	if (SweepResult.bBlockingHit || SweepResult.Location != FVector::ZeroVector)
+	{
+		PlayLocation = SweepResult.Location;
+	}
+	else if (HitActor)
+	{
+		PlayLocation = HitActor->GetActorLocation();
+	}
+
+	UGameplayStatics::PlaySoundAtLocation(
+		this,
+		HitSound,
+		PlayLocation,
+		HitSoundVolume,
+		HitSoundPitch
+	);
+}
+
 void AWeaponBase::OnHitboxBeginOverlap(
 	UPrimitiveComponent* OverlappedComponent,
 	AActor* OtherActor,
@@ -336,11 +362,16 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	APawn* OwnerPawn = Cast<APawn>(OwnerActor);
 	AController* InstigatorController = OwnerPawn ? OwnerPawn->GetController() : nullptr;
 
-	UGameplayStatics::ApplyDamage(
+	const float AppliedDamage = UGameplayStatics::ApplyDamage(
 		OtherActor,
 		Damage,
 		InstigatorController,
 		OwnerActor,
 		UDamageType::StaticClass()
 	);
+
+	if (AppliedDamage > 0.0f)
+	{
+		PlayHitSound(SweepResult, OtherActor);
+	}
 }
