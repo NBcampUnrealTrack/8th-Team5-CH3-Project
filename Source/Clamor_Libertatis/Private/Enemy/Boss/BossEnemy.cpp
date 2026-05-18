@@ -2,10 +2,15 @@
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
+#include "Enemy/AIController/Enemy_AIController.h"
+#include "BehaviorTree/BlackboardComponent.h"
 
 ABossEnemy::ABossEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
+	Count_NormalAttack = 0;
+	bIsPhase2 = false;
+	Phase2HPThreshold = 0.5f;
 }
 
 void ABossEnemy::BeginPlay()
@@ -21,6 +26,30 @@ void ABossEnemy::Tick(float DeltaTime)
 void ABossEnemy::OnDead()
 {
 	Super::OnDead();
+}
+
+float ABossEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
+{
+	float ActualDamage = Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+
+	if (!bIsPhase2 && !bIsDead && Enemy_StatComp)
+	{
+		const FEnemyStat& Stat = Enemy_StatComp->GetEnemyStat();
+		if (Stat.MaxHP > 0.f && (Stat.HP / Stat.MaxHP) <= Phase2HPThreshold)
+		{
+			bIsPhase2 = true;
+
+			if (AEnemy_AIController* AIC = Cast<AEnemy_AIController>(GetController()))
+			{
+				if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
+				{
+					BB->SetValueAsBool(TEXT("bIsPhase2"), true);
+				}
+			}
+		}
+	}
+
+	return ActualDamage;
 }
 
 UAnimMontage* ABossEnemy::AttackToPlayer()
@@ -47,6 +76,20 @@ UAnimMontage* ABossEnemy::SkillAttackToPlayer()
 	UAnimMontage* Montage = Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Skill, RandomNum);
 	AnimInst->Montage_Play(Montage);
 	CurrentAttackData.Key = EAttackType::Attack_Skill;
+	CurrentAttackData.Value = RandomNum;
+	ResetNormalAttackCount();
+	return Montage;
+}
+
+UAnimMontage* ABossEnemy::PhaseSkillAttackToPlayer()
+{
+	int32 SkillCount = Enemy_CombatComp->GetSkillCount(EAttackType::Attack_Skill_Phase);
+	if (SkillCount <= 0) return nullptr;
+
+	int32 RandomNum = FMath::RandRange(0, SkillCount - 1);
+	UAnimMontage* Montage = Enemy_CombatComp->GetAttackMontage(EAttackType::Attack_Skill_Phase, RandomNum);
+	AnimInst->Montage_Play(Montage);
+	CurrentAttackData.Key = EAttackType::Attack_Skill_Phase;
 	CurrentAttackData.Value = RandomNum;
 	ResetNormalAttackCount();
 	return Montage;
