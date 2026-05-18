@@ -8,7 +8,7 @@
 class UImage;
 class UTextBlock;
 class UQuickSlotWidget;
-class UItemPopupWidget;
+class UMasterInventoryWidget;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API UQuickSlotSlotWidget : public UUserWidget
@@ -20,60 +20,45 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void SetKeyText(const FString& Key);
-
     void InitQuickSlotSlot(UQuickSlotWidget* InQuickSlotWidget);
+    void SetMasterWidget(UMasterInventoryWidget* InMasterWidget);
 
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void UpdateSlot(FName ItemID, int32 Quantity, UTexture2D* Icon);
-
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void ClearSlot();
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DragDrop")
     TSubclassOf<UUserWidget> DragVisualClass;
 
-    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Popup")
-    TSubclassOf<UItemPopupWidget> PopupWidgetClass;
-
-    bool bIsInventorySlot = false; 
+    bool bIsInventorySlot = false;
 
 protected:
     virtual void NativeConstruct() override;
 
     UPROPERTY(meta = (BindWidget))
     UImage* ItemIcon;
-
     UPROPERTY(meta = (BindWidget))
     UTextBlock* QuantityText;
-
     UPROPERTY(meta = (BindWidget))
     UTextBlock* KeyText;
 
     virtual FReply NativeOnMouseButtonDown(const FGeometry& InGeometry,
         const FPointerEvent& InMouseEvent) override;
-
     virtual void NativeOnDragDetected(const FGeometry& InGeometry,
         const FPointerEvent& InMouseEvent,
         UDragDropOperation*& OutOperation) override;
-
     virtual bool NativeOnDrop(const FGeometry& InGeometry,
         const FDragDropEvent& InDragDropEvent,
         UDragDropOperation* InOperation) override;
 
-    virtual void NativeOnMouseEnter(const FGeometry& InGeometry,
-        const FPointerEvent& InMouseEvent) override;
-
-    virtual void NativeOnMouseLeave(const FPointerEvent& InMouseEvent) override;
-
 private:
     UPROPERTY()
     UQuickSlotWidget* QuickSlotWidgetRef;
+    UPROPERTY()
+    UMasterInventoryWidget* MasterWidgetRef = nullptr;
 
     FString CachedKeyString;
-
     FName CachedItemID = NAME_None;
     int32 CachedQuantity = 0;
-
-    UPROPERTY()
-    UItemPopupWidget* PopupWidget = nullptr;
-};  
+};

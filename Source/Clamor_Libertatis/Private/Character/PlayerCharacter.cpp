@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Character/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "Combat/CombatComponent.h"
 #include "Combat/SkillComponent.h"
@@ -225,9 +226,11 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
 
 void APlayerCharacter::Move(const FInputActionValue& Value)
 {
+    const FVector2D MoveInput = Value.Get<FVector2D>();
+    CurrentMoveInput = MoveInput;
+
     if (!IsAvailable()) return;
 
-    const FVector2D MoveInput = Value.Get<FVector2D>();
     const FRotator ControlRotation = Controller->GetControlRotation();
     const FRotator YawRotation(0.f, ControlRotation.Yaw, 0.f);
 
@@ -243,7 +246,6 @@ void APlayerCharacter::Move(const FInputActionValue& Value)
     {
         AddMovementInput(RightDirection, MoveInput.Y);
     }
-    CurrentMoveInput = MoveInput;
 }
 
 void APlayerCharacter::StopMove(const FInputActionValue& value)
@@ -362,6 +364,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         if (HealthComp->GetCurrentHealth() > 0.0f && CombatComp->IsSuperarmor() == false)
         {
             HitAnimMontage();
+            SpawnHitEffect();
         }
     }
     return ActualDamage;
@@ -451,4 +454,21 @@ EDodgeDirection APlayerCharacter::GetDirection() const
         if (CurrentMoveInput.Y >= 0) return EDodgeDirection::Right;
         else return EDodgeDirection::Left;
     return EDodgeDirection::None;
+}
+
+void APlayerCharacter::SpawnHitEffect()
+{
+    if (HitEffect)
+    {
+        FVector SpawnLocation = GetActorLocation();
+        FRotator SpawnRotation = GetActorRotation();
+
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            HitEffect,
+            SpawnLocation,
+            SpawnRotation,
+            FVector(1.0f)
+        );
+    }
 }

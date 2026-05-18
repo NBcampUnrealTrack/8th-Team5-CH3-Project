@@ -12,9 +12,9 @@
 #include "UI/EnemyHP/EnemyTrackerComponent.h"
 #include "Combat/SkillComponent.h"
 #include "UI/Inventory/QuickSlotWidget.h"
-#include "UI/Inventory/InventoryWidget.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
-#include "UI/Inventory/StatWidget.h"
+#include "UI/Inventory/MasterInventoryWidget.h"
+
 
 ABasePlayerController::ABasePlayerController()
 	: InputMappingContext(nullptr)
@@ -153,66 +153,47 @@ void ABasePlayerController::QuitGame()
 	UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
 }
 
-void ABasePlayerController::ShowInventory()
+void ABasePlayerController::ShowMasterInventory()
 {
-	if (!UIManager) return;
+	UE_LOG(LogTemp, Warning, TEXT("ShowMasterInventory 호출됨"));
 
-	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::Inventory);
-	UE_LOG(LogTemp, Log, TEXT("RawWidget: %s"), RawWidget ? TEXT("있음") : TEXT("없음"));
+	if (!UIManager) { UE_LOG(LogTemp, Error, TEXT("UIManager 없음")); return; }
 
-	UInventoryWidget* InventoryWidget = Cast<UInventoryWidget>(RawWidget);
-	UE_LOG(LogTemp, Log, TEXT("InventoryWidget 캐스트: %s"), InventoryWidget ? TEXT("성공") : TEXT("실패"));
+	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::MasterInventory);
+	UE_LOG(LogTemp, Warning, TEXT("RawWidget: %s"), RawWidget ? TEXT("있음") : TEXT("없음"));
 
-	if (!InventoryWidget) return;
+	UMasterInventoryWidget* MasterWidget = Cast<UMasterInventoryWidget>(RawWidget);
+	UE_LOG(LogTemp, Warning, TEXT("MasterWidget 캐스트: %s"), MasterWidget ? TEXT("성공") : TEXT("실패"));
+
+	if (!MasterWidget) return;
 
 	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-	UE_LOG(LogTemp, Log, TEXT("PlayerCharacter: %s"), PlayerCharacter ? TEXT("있음") : TEXT("없음"));
+	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter: %s"), PlayerCharacter ? TEXT("있음") : TEXT("없음"));
+
 	if (!PlayerCharacter) return;
 
-	InventoryWidget->InitInventory(
+	MasterWidget->InitWidget(
 		PlayerCharacter->ConsumableInventory,
-		QuickSlotWidgetRef
+		PlayerCharacter->SocketItemInventory,
+		QuickSlotWidgetRef,
+		PlayerCharacter->SpawnedWeapon
 	);
 
-	UIManager->ShowWidget(EUIType::Inventory);
-
+	UIManager->ShowWidget(EUIType::MasterInventory);
 	UGameplayStatics::SetGamePaused(GetWorld(), true);
 	SetInputMode(FInputModeUIOnly{});
 	bShowMouseCursor = true;
 }
 
-void ABasePlayerController::HideInventory()
+void ABasePlayerController::HideMasterInventory()
 {
 	if (!UIManager) return;
-	UIManager->HideWidget(EUIType::Inventory);
+	UIManager->HideWidget(EUIType::MasterInventory);
 	UGameplayStatics::SetGamePaused(GetWorld(), false);
 	SetInputMode(FInputModeGameOnly{});
 	bShowMouseCursor = false;
 }
 
-void ABasePlayerController::ShowStatWidget()
-{
-	if (!UIManager) return;
-
-	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::Stat);
-	UStatWidget* StatWidget = Cast<UStatWidget>(RawWidget);
-	if (!StatWidget) return;
-
-	StatWidget->InitStatWidget(this);
-	UIManager->ShowWidget(EUIType::Stat);
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-	SetInputMode(FInputModeUIOnly{});
-	bShowMouseCursor = true;
-}
-
-void ABasePlayerController::HideStatWidget()
-{
-	if (!UIManager) return;
-	UIManager->HideWidget(EUIType::Stat);
-	UGameplayStatics::SetGamePaused(GetWorld(), false);
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
-}
 void ABasePlayerController::InitQuickSlotWidget()
 {
 	if (!UIManager) return;
