@@ -3,8 +3,7 @@
 UCLGameInstance::UCLGameInstance()
 {
 	WonBattleCount = 0;
-	//LastScenarioRowName = TEXT("Scenario_1");
-    LastScenarioRowName = TEXT("Question_0");
+	LastScenarioRowName = TEXT("Scenario_1");    
 }
 
 void UCLGameInstance::AddWonBattle()

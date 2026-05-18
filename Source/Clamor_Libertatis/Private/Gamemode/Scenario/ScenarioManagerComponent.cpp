@@ -11,9 +11,11 @@ UScenarioManagerComponent::UScenarioManagerComponent()
 	PrimaryComponentTick.bCanEverTick = false;
 }
 
+// Called when Scenario starts First time or when Next Step is requested
 void UScenarioManagerComponent::StartScenario(FName RowName)
 {
     CurrentRowName = RowName;
+    bScenarioEnd = false;
 
     FString Left, Right;
     if (SplitRowNameFromEnd(RowName, Left, Right))
@@ -45,13 +47,13 @@ void UScenarioManagerComponent::RequestNextStep()
 {
     if (!ScenarioTable || CurrentRowName.IsNone())
     {
-        OnScenarioEnded.Broadcast();
+        HandleScenarioEnd();
         return;
     }
     FScenarioData* CurrentData = ScenarioTable->FindRow<FScenarioData>(CurrentRowName, TEXT(""));
     if (!CurrentData)
     {
-        OnScenarioEnded.Broadcast();
+        HandleScenarioEnd();
         return;
     }
 
@@ -67,7 +69,7 @@ void UScenarioManagerComponent::RequestNextStep()
         }
         else
         {            
-            OnScenarioEnded.Broadcast();
+            HandleScenarioEnd();
             return;
         }
     }
@@ -78,7 +80,7 @@ void UScenarioManagerComponent::RequestNextStep()
 
     if (NextRowName == FName("End"))
     {
-        OnScenarioEnded.Broadcast();
+        HandleScenarioEnd();
         return;
     }
 
@@ -92,7 +94,7 @@ void UScenarioManagerComponent::RequestNextStep()
     }
     else
     {
-        OnScenarioEnded.Broadcast();
+        HandleScenarioEnd();
     }
 }
 
@@ -143,6 +145,12 @@ void UScenarioManagerComponent::SaveLastRowName(FName RowName)
     }
 }
 
+void UScenarioManagerComponent::HandleScenarioEnd()
+{    
+    OnScenarioEnded.Broadcast();
+    bScenarioEnd = true;
+}
+
 bool UScenarioManagerComponent::IsStepAlreadyReadQuestion(FName TargetRowName) const
 {
     FString Left, Right;
@@ -170,4 +178,9 @@ bool UScenarioManagerComponent::GetSkipQuestion(FScenarioData& Output) const
 
     
     return false;
+}
+
+bool UScenarioManagerComponent::IsScenarioEnd() const
+{
+    return bScenarioEnd;
 }
