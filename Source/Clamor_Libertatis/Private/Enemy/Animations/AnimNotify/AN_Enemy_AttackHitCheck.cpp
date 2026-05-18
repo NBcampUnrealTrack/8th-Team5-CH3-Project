@@ -6,10 +6,9 @@ void UAN_Enemy_AttackHitCheck::Notify(USkeletalMeshComponent* MeshComp, UAnimSeq
                                       const FAnimNotifyEventReference& EventReference)
 {
 	Super::Notify(MeshComp, Animation, EventReference);
-	
+
 	if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(MeshComp->GetOwner()))
 	{
 		MyOwner->AttackHitCheck();
 	}
-	
 }

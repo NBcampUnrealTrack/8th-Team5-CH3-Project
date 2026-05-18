@@ -22,6 +22,7 @@ public:
 	virtual void AttackHitCheck() override;
 	virtual void SpawnProjectile(const FEnemySkillInfo& SkillInfo) override;
 	virtual FName GetProjectileSpawnSocket() const override;
+	virtual void Destroyed() override;
 
 	UPROPERTY(EditDefaultsOnly, Category="Projectile")
 	float HomingAccelerationMagnitude = 1500.f;
@@ -42,5 +43,9 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly, Category="Summon")
 	TArray<TSubclassOf<ABaseEnemy>> SummonMinionClasses;
+	
+private:
+	UPROPERTY()
+	TArray<ABaseEnemy*> SummonMinionsArray;
 
 };

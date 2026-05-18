@@ -118,6 +118,12 @@ void ABaseThrowMagic::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor*
 		}
 	}
 
+	// [권기문] HitSound가 설정된 경우 충돌 지점에서 사운드 재생
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, HitSound, ExplosionLocation);
+	}
+
 	ApplyExplosionDamage(ExplosionLocation);
 	Destroy();
 }
