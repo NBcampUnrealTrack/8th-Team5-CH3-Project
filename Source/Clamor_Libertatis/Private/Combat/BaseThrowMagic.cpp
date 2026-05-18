@@ -97,6 +97,9 @@ void ABaseThrowMagic::OnProjectileHit(UPrimitiveComponent* HitComponent, AActor*
 		return;
 	}
 
+	// [권기문] 서브클래스 필터 체크 - EnemyThrowMagic 등에서 특정 액터(미니언 등)를 무시하기 위해 추가
+	if (!ShouldReactToHit(OtherActor)) return;
+
 	const FVector ExplosionLocation = Hit.ImpactPoint;
 
 	if (MagicHitEffect)
@@ -191,6 +194,9 @@ void ABaseThrowMagic::ApplyExplosionDamage(const FVector& ExplosionLocation)
 		{
 			continue;
 		}
+
+		// [권기문] 서브클래스 필터 체크 - 폭발 범위 내에서도 반응하지 않을 액터를 제외
+		if (!ShouldReactToHit(HitActor)) continue;
 
 		DamagedActors.Add(HitActor);
 

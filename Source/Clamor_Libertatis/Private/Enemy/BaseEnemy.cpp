@@ -1,4 +1,5 @@
 #include "Enemy/BaseEnemy.h"
+#include "Components/CapsuleComponent.h"
 #include "Components/WidgetComponent.h"
 #include "UI/EnemyDamage/DamageTextWidget.h"
 #include "BrainComponent.h"
@@ -10,6 +11,7 @@
 
 #include "Character/BasePlayerController.h"
 #include "Engine/OverlapResult.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
 ABaseEnemy::ABaseEnemy()
@@ -17,10 +19,12 @@ ABaseEnemy::ABaseEnemy()
 	PrimaryActorTick.bCanEverTick = true;
 	
 	Enemy_StatComp = CreateDefaultSubobject<UEnemy_StatComponent>(TEXT("StatComponent"));
-	
+
 	Enemy_CombatComp = CreateDefaultSubobject<UEnemy_CombatComponent>(TEXT("CombatComponent"));
-	
+
 	bIsDead = false;
+
+	GetCharacterMovement()->bEnablePhysicsInteraction = false;
 
 	static ConstructorHelpers::FClassFinder<AActor> DamageTextFinder(
 		TEXT("/Game/UI/BP_DamageTextActor.BP_DamageTextActor_C"));
@@ -127,6 +131,20 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	return DamageAmount;
 }
 
+void ABaseEnemy::BeginMontageAttack(UAnimMontage* Montage)
+{
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &ABaseEnemy::OnAttackMontageEnded);
+	AnimInst->Montage_SetEndDelegate(EndDelegate, Montage);
+}
+
+void ABaseEnemy::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
+}
+
 UAnimMontage* ABaseEnemy::AttackToPlayer()
 {
 	UE_LOG(LogTemp,Warning,TEXT("Enemy Attack Started"));
@@ -140,6 +158,7 @@ UAnimMontage* ABaseEnemy::AttackToPlayer()
 		AnimInst->Montage_Play(Montage);
 		CurrentAttackData.Key = EAttackType::Attack_Normal;
 		CurrentAttackData.Value = RandomNum;
+		BeginMontageAttack(Montage);
 		return Montage;
 	}
 	return nullptr;
