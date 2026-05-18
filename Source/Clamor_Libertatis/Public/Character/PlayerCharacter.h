@@ -17,7 +17,8 @@ class AWeaponBase;
 struct FInputActionValue;
 class UHealthComponent;
 class UTargetLockComponent;
-class UNiagaraSystem;
+class UParticleSystem;
+class USoundBase;
 
 
 UENUM(BlueprintType)
@@ -86,7 +87,11 @@ public:
 	FVector2D CurrentMoveInput;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
-	UNiagaraSystem* HitEffect;
+	class UParticleSystem* HitEffect;
+	UPROPERTY(EditAnywhere, Category = "CameraShake")
+	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
+	UPROPERTY(EditAnywhere, Category = "Sound")
+	USoundBase* HitSound;
 
 	// 캐릭터 행동 입력
 	UFUNCTION()
