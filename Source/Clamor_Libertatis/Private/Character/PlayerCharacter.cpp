@@ -7,6 +7,7 @@
 #include "Character/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Kismet/GameplayStatics.h"
 
 #include "Combat/CombatComponent.h"
 #include "Combat/SkillComponent.h"
@@ -460,15 +461,35 @@ void APlayerCharacter::SpawnHitEffect()
 {
     if (HitEffect)
     {
-        FVector SpawnLocation = GetActorLocation();
-        FRotator SpawnRotation = GetActorRotation();
-
-        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+        UGameplayStatics::SpawnEmitterAtLocation(
             GetWorld(),
             HitEffect,
-            SpawnLocation,
-            SpawnRotation,
+            GetActorLocation(),
+            GetActorRotation(),
             FVector(1.0f)
+        );
+    }
+
+    if (HitCameraShakeClass)
+    {
+        if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
+        {
+            if (PlayerController->PlayerCameraManager)
+            {
+                PlayerController->PlayerCameraManager->StartCameraShake(HitCameraShakeClass, 1.0f);
+            }
+        }
+    }
+
+    if (HitSound)
+    {
+        UGameplayStatics::PlaySoundAtLocation(
+            GetWorld(),
+            HitSound,
+            GetActorLocation(),
+            1.0f,
+            1.0f,
+            0.0f
         );
     }
 }
