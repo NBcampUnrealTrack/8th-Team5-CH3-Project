@@ -43,6 +43,7 @@ public:
 
     bool GetSkipQuestion(FScenarioData& Output) const;
 
+    bool IsScenarioEnd() const;
 
 private:
     bool SplitRowNameFromEnd(FName InRowName, FString& OutLeft, FString& OutRight) const;
@@ -51,6 +52,10 @@ private:
     TArray<FScenarioData> BuildChoiceList(const FScenarioData& Data) const;
 
     void SaveLastRowName(FName RowName);
+
+    void HandleScenarioEnd();
+    
+    bool bScenarioEnd;
 
 
     UPROPERTY(EditAnywhere, Category = "Scenario")

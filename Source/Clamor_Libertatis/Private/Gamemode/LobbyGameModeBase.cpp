@@ -67,6 +67,11 @@ void ALobbyGameModeBase::BeginPlay()
 
 void ALobbyGameModeBase::ReadyComplete()
 {
+    if (!ScenarioManagerComp->IsScenarioEnd())
+    {
+        return;
+    }
+
     // 로비관련 UI 비활성화
     UE_LOG(LogTemp, Warning, TEXT("Called Ready Complete"));
 
