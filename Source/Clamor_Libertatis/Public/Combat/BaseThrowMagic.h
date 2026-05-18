@@ -29,6 +29,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	TObjectPtr<UNiagaraSystem> MagicHitEffect;
 
+	// [권기문] 투사체 충돌 시 재생할 사운드. 에디터에서 블루프린트별로 설정 가능
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	TObjectPtr<USoundBase> HitSound;
+
 	UPROPERTY(VisibleAnywhere)
 	TObjectPtr<UProjectileMovementComponent> ProjectileMovementComponent;
 
