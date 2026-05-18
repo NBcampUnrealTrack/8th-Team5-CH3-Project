@@ -3,7 +3,7 @@
 USocketItemInventoryComponent::USocketItemInventoryComponent()
 {
     AllowedItemType = EItemType::SocketItem;
-    MaxSlots = 20;
+    MaxSlots = 5;
 
     static ConstructorHelpers::FObjectFinder<UDataTable> DTFinder(
         TEXT("/Game/Item/DT_ItemTable.DT_ItemTable"));

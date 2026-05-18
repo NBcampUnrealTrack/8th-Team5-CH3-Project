@@ -82,13 +82,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowInventory();
+	void ShowMasterInventory();
 	UFUNCTION(BlueprintCallable, Category = "UI")
-	void HideInventory();
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void ShowStatWidget();
-	UFUNCTION(BlueprintCallable, Category = "UI")
-	void HideStatWidget();
+	void HideMasterInventory();
 
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const { return HUDWidgetRef; }

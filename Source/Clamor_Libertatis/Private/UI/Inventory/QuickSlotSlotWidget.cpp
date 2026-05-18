@@ -1,6 +1,6 @@
 ﻿#include "UI/Inventory/QuickSlotSlotWidget.h"
 #include "UI/Inventory/QuickSlotWidget.h"
-#include "UI/Inventory/ItemPopupWidget.h"
+#include "UI/Inventory/MasterInventoryWidget.h"
 #include "UI/Inventory/InventoryDragDropOperation.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/ItemTableRow.h"
@@ -22,6 +22,11 @@ void UQuickSlotSlotWidget::SetKeyText(const FString& Key)
 void UQuickSlotSlotWidget::InitQuickSlotSlot(UQuickSlotWidget* InQuickSlotWidget)
 {
     QuickSlotWidgetRef = InQuickSlotWidget;
+}
+
+void UQuickSlotSlotWidget::SetMasterWidget(UMasterInventoryWidget* InMasterWidget)
+{
+    MasterWidgetRef = InMasterWidget;
 }
 
 void UQuickSlotSlotWidget::UpdateSlot(FName ItemID, int32 Quantity, UTexture2D* Icon)
@@ -86,8 +91,14 @@ void UQuickSlotSlotWidget::ClearSlot()
 FReply UQuickSlotSlotWidget::NativeOnMouseButtonDown(
     const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
-
     if (CachedItemID.IsNone()) return FReply::Unhandled();
+
+    if (InMouseEvent.GetEffectingButton() == EKeys::RightMouseButton)
+    {
+        if (MasterWidgetRef)
+            MasterWidgetRef->ShowConsumableItemInfo(CachedItemID);
+        return FReply::Handled();
+    }
 
     FReply Reply = UWidgetBlueprintLibrary::DetectDragIfPressed(
         InMouseEvent, this, EKeys::LeftMouseButton).NativeReply;
@@ -106,6 +117,7 @@ void UQuickSlotSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry,
     UInventoryDragDropOperation* DragOp = NewObject<UInventoryDragDropOperation>(this);
     DragOp->ItemID = CachedItemID;
     DragOp->Pivot = EDragPivot::CenterCenter;
+
     if (bIsInventorySlot)
     {
         DragOp->SourceInventorySlotIndex = SlotIndex;
@@ -152,7 +164,6 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
         if (!QuickSlotWidgetRef) return false;
         UConsumableInventoryComponent* InvComp = QuickSlotWidgetRef->GetInventoryComp();
         if (!InvComp) return false;
-
         InvComp->Slots.Swap(DragOp->SourceInventorySlotIndex, SlotIndex);
         InvComp->OnInventoryChanged.Broadcast();
         return true;
@@ -171,6 +182,7 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
         QuickSlotWidgetRef->SwapQuickSlots(DragOp->SourceHotbarSlotIndex, SlotIndex);
         return true;
     }
+
     if (!bIsInventorySlot && DragOp->SourceInventorySlotIndex >= 0)
     {
         if (!QuickSlotWidgetRef) return false;
@@ -179,48 +191,4 @@ bool UQuickSlotSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
     }
 
     return false;
-}
-
-void UQuickSlotSlotWidget::NativeOnMouseEnter(const FGeometry& InGeometry,
-    const FPointerEvent& InMouseEvent)
-{
-    Super::NativeOnMouseEnter(InGeometry, InMouseEvent);
-
-    if (!bIsInventorySlot) return;
-    if (CachedItemID.IsNone()) return;
-    if (!PopupWidgetClass) return;
-    if (!QuickSlotWidgetRef) return;
-
-    UConsumableInventoryComponent* InvComp = QuickSlotWidgetRef->GetInventoryComp();
-    if (!InvComp) return;
-
-    FItemTableRow* ItemData = InvComp->GetItemData(CachedItemID);
-    if (!ItemData) return;
-
-    if (!PopupWidget)
-    {
-        PopupWidget = CreateWidget<UItemPopupWidget>(GetOwningPlayer(), PopupWidgetClass);
-        if (PopupWidget)
-            PopupWidget->AddToViewport(100);
-    }
-
-    if (PopupWidget)
-    {
-        PopupWidget->InitPopup(*ItemData);
-
-        float MouseX, MouseY;
-        GetOwningPlayer()->GetMousePosition(MouseX, MouseY);
-
-        PopupWidget->SetPositionInViewport(
-            FVector2D(MouseX + 15.f, MouseY), true);
-        PopupWidget->SetVisibility(ESlateVisibility::Visible);
-    }
-}
-
-void UQuickSlotSlotWidget::NativeOnMouseLeave(const FPointerEvent& InMouseEvent)
-{
-    Super::NativeOnMouseLeave(InMouseEvent);
-
-    if (PopupWidget)
-        PopupWidget->SetVisibility(ESlateVisibility::Collapsed);
 }
