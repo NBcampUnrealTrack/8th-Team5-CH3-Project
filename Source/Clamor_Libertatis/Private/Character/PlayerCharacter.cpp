@@ -6,6 +6,7 @@
 #include "EnhancedInputComponent.h"
 #include "Character/BasePlayerController.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 #include "Combat/CombatComponent.h"
 #include "Combat/SkillComponent.h"
@@ -363,6 +364,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         if (HealthComp->GetCurrentHealth() > 0.0f && CombatComp->IsSuperarmor() == false)
         {
             HitAnimMontage();
+            SpawnHitEffect();
         }
     }
     return ActualDamage;
@@ -452,4 +454,21 @@ EDodgeDirection APlayerCharacter::GetDirection() const
         if (CurrentMoveInput.Y >= 0) return EDodgeDirection::Right;
         else return EDodgeDirection::Left;
     return EDodgeDirection::None;
+}
+
+void APlayerCharacter::SpawnHitEffect()
+{
+    if (HitEffect)
+    {
+        FVector SpawnLocation = GetActorLocation();
+        FRotator SpawnRotation = GetActorRotation();
+
+        UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+            GetWorld(),
+            HitEffect,
+            SpawnLocation,
+            SpawnRotation,
+            FVector(1.0f)
+        );
+    }
 }

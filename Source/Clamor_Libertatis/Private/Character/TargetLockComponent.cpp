@@ -13,7 +13,7 @@ UTargetLockComponent::UTargetLockComponent()
     PrimaryComponentTick.bStartWithTickEnabled = false;
 
     TraceRadius = 150.f;
-    MaxLockDistsq = 1000000.f;
+    MaxLockDistsq = 1000.f * 1000.f * 1.3f;
 }
 
 
@@ -102,7 +102,7 @@ AActor* UTargetLockComponent::FindTarget()
     ActorsToIgnore.Add(OwnerCharacter);
 
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
     bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
         this,
