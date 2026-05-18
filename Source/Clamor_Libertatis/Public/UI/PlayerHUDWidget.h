@@ -48,6 +48,7 @@ protected:
     UButton* StatButton;
 
 private:
+
     UFUNCTION()
     void OnStatButtonClicked();
 };

@@ -19,9 +19,7 @@ enum class EUIType : uint8
 	Victory,
 	MainMenu,
 	QuickSlot,
-	Inventory,
-	Stat,
-	SocketInventory
+	MasterInventory
 };
 
 USTRUCT(BlueprintType)
