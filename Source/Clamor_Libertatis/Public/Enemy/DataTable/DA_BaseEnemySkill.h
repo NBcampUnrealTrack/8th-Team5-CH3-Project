@@ -96,4 +96,6 @@ public:
 	TObjectPtr<UAnimMontage> AM_Dead;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|HitReaction")
 	TObjectPtr<UAnimMontage> AM_HitReaction;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|Dodge")
+	TObjectPtr<UAnimMontage> AM_Dodge;
 };
