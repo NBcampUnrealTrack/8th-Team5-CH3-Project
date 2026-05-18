@@ -15,6 +15,7 @@ class ACharacter;
 class UPrimitiveComponent;
 struct FHitResult;
 class UNiagaraSystem;
+class USoundBase;
 
 USTRUCT(BlueprintType)
 struct CLAMOR_LIBERTATIS_API FWeaponSocketSlot
@@ -103,6 +104,15 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX")
 	TObjectPtr<UNiagaraSystem> TrailNiagara;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX")
+	TObjectPtr<USoundBase> HitSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX", meta=(ClampMin="0.0"))
+	float HitSoundVolume = 1.0f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX", meta=(ClampMin="0.0"))
+	float HitSoundPitch = 1.0f;
 private:
 	void InitializeDefaultSocketSlots();
 
@@ -111,6 +121,8 @@ private:
 	const FWeaponSocketSlot* FindSocketSlot(EWeaponSocketType SocketTag) const;
 
 	TArray<const UWeaponSocketItemData*> GetEquippedSocketItems() const;
+
+	void PlayHitSound(const FHitResult& SweepResult, const AActor* HitActor) const;
 
 	UFUNCTION()
 	void OnHitboxBeginOverlap(
