@@ -1,4 +1,4 @@
-﻿// TargetLockComponent.cpp
+// TargetLockComponent.cpp
 
 #include "Character/TargetLockComponent.h"
 #include "Enemy/BaseEnemy.h"
@@ -161,7 +161,9 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
     TargetRotation.Pitch = -15.f;
 
-    OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
+    FRotator CurrentRotation = OwnerCharacter->GetController()->GetControlRotation();
+    FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 2.f);
+    OwnerCharacter->GetController()->SetControlRotation(NewRotation);
     if (!ValidateCurrentTarget())
     {
         EndLock();
