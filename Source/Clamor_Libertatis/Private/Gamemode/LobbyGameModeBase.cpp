@@ -14,16 +14,8 @@
 
 ALobbyGameModeBase::ALobbyGameModeBase()
 {
-    // TODO:: 기획상 LoreManagerComp 완전히 제거 됨.
-    // 시나리오 시스템 도입 후 삭제
-    
-    /*LoreManagerComp = CreateDefaultSubobject<ULoreManagerComponent>(TEXT("LoreManagerComp"));
-    
-    if (LoreManagerComp) {
-        UE_LOG(LogTemp, Warning, TEXT("LoreManager initialized"));
-    }*/
-
     ScenarioManagerComp = CreateDefaultSubobject<UScenarioManagerComponent>(TEXT("ScenarioManagerComp"));
+    
 }
 
 void ALobbyGameModeBase::BeginPlay()
@@ -33,45 +25,24 @@ void ALobbyGameModeBase::BeginPlay()
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
         
-        // TODO:: 임시코드, 오프닝 1회만 보여줌
-        // 시나리오 진행도 작성되면 그거랑 통합하기
-        if(GI->bHasSeenOpening == false)
+        if (ScenarioManagerComp)
         {
-            if (OpeningWidgetClass)
+           
+
+            if (!GI->HasWatchedOpening())
             {
-                // 위젯 생성
-                UUserWidget* CurrentOpeningWidget = CreateWidget<UUserWidget>(GetWorld(), OpeningWidgetClass);
-
-                if (CurrentOpeningWidget)
-                {
-                    // 화면에 표시
-                    CurrentOpeningWidget->AddToViewport(99);
-
-                    GI->bHasSeenOpening = true;
-                }
-
-
-
-                UE_LOG(LogTemp, Warning, TEXT("[Lobby] Successed Create Opening Widget"));
+                ScenarioManagerComp->StartScenario(GI->LastScenarioRowName);
             }
             else
             {
-                UE_LOG(LogTemp, Warning, TEXT("[Lobby] Failed Create Opening Widget"));
+                ScenarioManagerComp->StartScenario("Question_0");
             }
-            
-            
-            GI->bHasSeenOpening = true;
+                       
         }
-
-        // TODO:: GameInstance에서 로비에 적용할 적절한 시나리오 Name 가져오기
-        if (ScenarioManagerComp)
+        else
         {
-            ScenarioManagerComp->StartScenario(FName("Scenario_1"));
+            UE_LOG(LogTemp, Warning, TEXT("[Lobby] ScenarioManagerComp not found"));
         }
-
-
-       
-
     } 
     else
     {
@@ -92,10 +63,6 @@ void ALobbyGameModeBase::BeginPlay()
     }
 
 
-}
-
-void ALobbyGameModeBase::LobbyLoop()
-{
 }
 
 void ALobbyGameModeBase::ReadyComplete()
@@ -122,17 +89,6 @@ void ALobbyGameModeBase::ReadyComplete()
 }
 
 
-// TODO:: 시나리오 관리 작성 후 완전히 삭제 예정
-/*void ALobbyGameModeBase::LookAround()
-{
-    UE_LOG(LogTemp, Warning, TEXT("Called Look Around"));
-
-    if (LoreManagerComp)
-    {
-        FText SelectedLore = LoreManagerComp->GetRandomLoreText(0);
-        UE_LOG(LogTemp, Warning, TEXT("Selected Lore: %s"), *SelectedLore.ToString());
-    }
-}*/
 
 void ALobbyGameModeBase::GotoBattle()
 {
@@ -163,7 +119,6 @@ void ALobbyGameModeBase::GotoBattle()
             UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_Stage3"));
         }
     
-
         UE_LOG(LogTemp, Warning, TEXT("[Lobby] Current Won Battle Count: %d"), GI->GetWonBattleCount());
     }
     else

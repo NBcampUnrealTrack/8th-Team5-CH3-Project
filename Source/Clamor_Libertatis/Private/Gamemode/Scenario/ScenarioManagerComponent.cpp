@@ -2,6 +2,9 @@
 
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
 #include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
+#include "Gamemode/CLGameInstance.h"
+
 
 UScenarioManagerComponent::UScenarioManagerComponent()
 {
@@ -12,6 +15,18 @@ void UScenarioManagerComponent::StartScenario(FName RowName)
 {
     CurrentRowName = RowName;
 
+    FString Left, Right;
+    if (SplitRowNameFromEnd(RowName, Left, Right))
+    {
+        if (Right == TEXT("2") && Left.StartsWith(TEXT("Question")) && Left != TEXT("Question_6"))
+        {
+            if (UCLGameInstance* GI = Cast<UCLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
+            {
+                GI->RegisterViewedQuestion(Left);
+            }
+        }
+    }
+
     if (!CachedDialogueWidget && DialogueWidgetClass)
     {
 
@@ -19,8 +34,7 @@ void UScenarioManagerComponent::StartScenario(FName RowName)
         CachedDialogueWidget = CreateWidget<UUserWidget>(GetWorld(), DialogueWidgetClass);
         if (CachedDialogueWidget)
         {
-            CachedDialogueWidget->AddToViewport(98);
-            UE_LOG(LogTemp, Warning, TEXT("[ScenarioManager] Created Dialogue Widget"));                        
+            CachedDialogueWidget->AddToViewport(98);            
         }
     }
 
@@ -34,7 +48,6 @@ void UScenarioManagerComponent::RequestNextStep()
         OnScenarioEnded.Broadcast();
         return;
     }
-
     FScenarioData* CurrentData = ScenarioTable->FindRow<FScenarioData>(CurrentRowName, TEXT(""));
     if (!CurrentData)
     {
@@ -47,14 +60,13 @@ void UScenarioManagerComponent::RequestNextStep()
     if (CurrentData->NextID.IsNone())
     {
         FString Left, Right;
-        if (CurrentRowName.ToString().Split(TEXT("_"), &Left, &Right, ESearchCase::IgnoreCase, ESearchDir::FromEnd))
+        if (SplitRowNameFromEnd(CurrentRowName, Left, Right))
         {
             int32 NextNum = FCString::Atoi(*Right) + 1;
             NextRowName = FName(*FString::Printf(TEXT("%s_%d"), *Left, NextNum));
         }
         else
-        {
-            UE_LOG(LogTemp, Error, TEXT("[ScenarioManager] Not Allowed RowName : %s"), *CurrentRowName.ToString());
+        {            
             OnScenarioEnded.Broadcast();
             return;
         }
@@ -64,19 +76,34 @@ void UScenarioManagerComponent::RequestNextStep()
         NextRowName = CurrentData->NextID;
     }
 
+    if (NextRowName == FName("End"))
+    {
+        OnScenarioEnded.Broadcast();
+        return;
+    }
+
+    SaveLastRowName(CurrentRowName);
+
     FScenarioData* NextData = ScenarioTable->FindRow<FScenarioData>(NextRowName, TEXT(""));
     if (NextData)
     {
         CurrentRowName = NextRowName;
-        CachedChoiceList = BuildChoiceList(*NextData);
-        UE_LOG(LogTemp, Warning, TEXT("[ScenarioManager] Broadcast 직전 CachedChoiceList: %d개"), CachedChoiceList.Choices.Num());
-        OnScenarioStepUpdated.Broadcast(*NextData);
-        UE_LOG(LogTemp, Warning, TEXT("[ScenarioManager] Broadcast 직후 CachedChoiceList: %d개"), CachedChoiceList.Choices.Num());
+        OnScenarioStepUpdated.Broadcast(*NextData, BuildChoiceList(*NextData));
     }
     else
     {
         OnScenarioEnded.Broadcast();
     }
+}
+
+bool UScenarioManagerComponent::SplitRowNameFromEnd(FName InRowName, FString& OutLeft, FString& OutRight) const
+{
+    if (InRowName.IsNone())
+    {
+        return false;
+    }
+
+    return InRowName.ToString().Split(TEXT("_"), &OutLeft, &OutRight, ESearchCase::IgnoreCase, ESearchDir::FromEnd);
 }
 
 void UScenarioManagerComponent::UpdateDisplay()
@@ -89,24 +116,58 @@ void UScenarioManagerComponent::UpdateDisplay()
     FScenarioData* Data = ScenarioTable->FindRow<FScenarioData>(CurrentRowName, TEXT(""));
     if (Data)
     {
-        CachedChoiceList = BuildChoiceList(*Data);
-        OnScenarioStepUpdated.Broadcast(*Data);
+        OnScenarioStepUpdated.Broadcast(*Data, BuildChoiceList(*Data));
+        SaveLastRowName(CurrentRowName);
     }
 }
 
-FScenarioChoiceList UScenarioManagerComponent::BuildChoiceList(const FScenarioData& Data) const
+TArray<FScenarioData> UScenarioManagerComponent::BuildChoiceList(const FScenarioData& Data) const
 {
-    FScenarioChoiceList Result;
+    TArray<FScenarioData> Result;
+
     for (const FName& ChoiceID : Data.ChoiceIDs)
     {
         if (FScenarioData* ChoiceData = ScenarioTable->FindRow<FScenarioData>(ChoiceID, TEXT("")))
         {
-            FScenarioChoiceEntry Entry;
-            Entry.Dialogue = ChoiceData->Dialogue;
-            Entry.RowName  = ChoiceID;
-            Result.Choices.Add(Entry);
-            UE_LOG(LogTemp, Warning, TEXT("[ScenarioManager] %s 선택지 추가"), *ChoiceData->Dialogue.ToString());
+            Result.Add(*ChoiceData);            
         }
     }
     return Result;
+}
+
+void UScenarioManagerComponent::SaveLastRowName(FName RowName)
+{
+    if (UCLGameInstance* GI = GetWorld()->GetGameInstance<UCLGameInstance>())
+    {
+        GI->LastScenarioRowName = RowName;        
+    }
+}
+
+bool UScenarioManagerComponent::IsStepAlreadyReadQuestion(FName TargetRowName) const
+{
+    FString Left, Right;
+    if (SplitRowNameFromEnd(TargetRowName, Left, Right))
+    {
+        if (Right.Equals(TEXT("2")) && Left.StartsWith(TEXT("Question")))
+        {
+            if (UCLGameInstance* GI = Cast<UCLGameInstance>(UGameplayStatics::GetGameInstance(GetWorld())))
+            {
+                return GI->HasViewedQuestion(FName(*Left));
+            }
+        }
+    }
+    return false;
+}
+
+bool UScenarioManagerComponent::GetSkipQuestion(FScenarioData& Output) const
+{
+    FScenarioData* SkipQuestion = ScenarioTable->FindRow<FScenarioData>(FName("Question_6_1"), TEXT(""));
+    if (SkipQuestion)
+    {
+        Output = *SkipQuestion;
+        return true;
+    }
+
+    
+    return false;
 }

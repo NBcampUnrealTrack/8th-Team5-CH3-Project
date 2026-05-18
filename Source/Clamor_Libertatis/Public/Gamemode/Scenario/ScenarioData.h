@@ -4,13 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataTable.h"
+#include "Engine/Texture2D.h"
 #include "ScenarioData.generated.h"
 
 UENUM(BlueprintType)
 enum class ETalkType : uint8
 {
     Text    UMETA(DisplayName = "Text"),
-    Choice  UMETA(DisplayName = "Choice")
+    Choice  UMETA(DisplayName = "Choice"),
+    Question  UMETA(DisplayName = "Question"),
+    End     UMETA(DisplayName = "End"),
+};
+
+UENUM(BlueprintType)
+enum class EImageAction : uint8
+{
+    NoChange    UMETA(DisplayName = "NoChange"),
+    Show        UMETA(DisplayName = "Show"),
+    Hide        UMETA(DisplayName = "Hide")
 };
 
 
@@ -33,26 +44,13 @@ struct FScenarioData : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     FName ConditionFlag;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    EImageAction ImageAction = EImageAction::NoChange;
+
+    // ImageAction == Show일 때만 사용
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, meta = (EditCondition = "ImageAction == EImageAction::Show"))
+    TSoftObjectPtr<UTexture2D> Image;
 };
 
-// FTableRowBase 상속 없는 Blueprint 전용 선택지 데이터
-USTRUCT(BlueprintType)
-struct FScenarioChoiceEntry
-{
-    GENERATED_BODY()
 
-    UPROPERTY(BlueprintReadOnly)
-    FText Dialogue;
-
-    UPROPERTY(BlueprintReadOnly)
-    FName RowName;
-};
-
-USTRUCT(BlueprintType)
-struct FScenarioChoiceList
-{
-    GENERATED_BODY()
-
-    UPROPERTY(BlueprintReadOnly)
-    TArray<FScenarioChoiceEntry> Choices;
-};
