@@ -12,7 +12,7 @@ UTargetLockComponent::UTargetLockComponent()
     PrimaryComponentTick.bCanEverTick = true;
     PrimaryComponentTick.bStartWithTickEnabled = false;
 
-    TraceRadius = 150.f;
+    TraceRadius = 10.f;
     MaxLockDistsq = 1000.f * 1000.f * 1.3f;
 }
 
