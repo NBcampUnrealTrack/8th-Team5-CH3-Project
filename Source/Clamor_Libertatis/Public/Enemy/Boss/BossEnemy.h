@@ -17,6 +17,7 @@ public:
 
 	UAnimMontage* SkillAttackToPlayer();
 	UAnimMontage* PhaseSkillAttackToPlayer();
+	virtual UAnimMontage* DodgeBackward();
 
 	FORCEINLINE int32 GetNormalAttackCount() const { return Count_NormalAttack; }
 	FORCEINLINE bool IsPhase2() const { return bIsPhase2; }
@@ -30,6 +31,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Phase")
 	float Phase2HPThreshold;
+
+	UPROPERTY(EditAnywhere, Category = "Dodge", meta = (ClampMin = 0.f, ClampMax = 1.f))
+	float DodgeChance = 0.3f;
 
 private:
 	int32 Count_NormalAttack;
