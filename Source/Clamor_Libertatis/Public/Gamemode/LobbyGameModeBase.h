@@ -22,9 +22,6 @@ class ALobbyGameModeBase : public AGameModeBase
 protected:
 	virtual void BeginPlay() override;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario")
-	class UScenarioManagerComponent* ScenarioManagerComp;
-
 public:
 
 	ALobbyGameModeBase();
@@ -36,10 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category="GameLogic")
 	void ReadyComplete();	
 	
-	// TODO:: 시나리오 관리 업데이트 후 완전히 삭제 예정
-	/*UFUNCTION(BlueprintCallable, Category = "GameLogic")
-	void LookAround();*/
-
 	// 배틀로 진입함
 	UFUNCTION(BlueprintCallable, Category = "GameLogic")
 	void GotoBattle();
@@ -48,6 +41,9 @@ public:
 	// Opening Widget
 	UPROPERTY(EditAnywhere) 
 	TSubclassOf<UUserWidget> OpeningWidgetClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario")
+	class UScenarioManagerComponent* ScenarioManagerComp;
 
 
 private:

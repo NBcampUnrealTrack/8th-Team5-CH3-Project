@@ -23,10 +23,13 @@ void AStageGameModeBase::OnStageClear()
 
     UE_LOG(LogTemp, Warning, TEXT("Stage Win"));
 
+
     if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
     {
         PC->ShowVictoryUI();
     }
+
+    // TODO:: 보상처리
 
     GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
     {
