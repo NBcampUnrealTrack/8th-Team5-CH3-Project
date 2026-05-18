@@ -1,6 +1,8 @@
 #include "Enemy/Boss/BossEnemy_Mage.h"
 #include "Combat/BaseThrowMagic.h"
+#include "Components/BoxComponent.h"
 #include "Components/SphereComponent.h"
+#include "Enemy/BaseEnemy.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
@@ -8,6 +10,11 @@
 ABossEnemy_Mage::ABossEnemy_Mage()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	SummonSpawnBox = CreateDefaultSubobject<UBoxComponent>(TEXT("SummonSpawnBox"));
+	SummonSpawnBox->SetupAttachment(GetRootComponent());
+	SummonSpawnBox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	SummonSpawnBox->SetBoxExtent(FVector(300.f, 300.f, 50.f));
 }
 
 
@@ -195,6 +202,29 @@ void ABossEnemy_Mage::SpawnChargeProjectile(FName SocketName)
 		}
 
 		PendingProjectiles.Add(Projectile);
+	}
+}
+
+void ABossEnemy_Mage::SummonMinions()
+{
+	if (!SummonSpawnBox || SummonMinionClasses.IsEmpty()) return;
+
+	FVector BoxCenter = SummonSpawnBox->GetComponentLocation();
+	FVector BoxExtent = SummonSpawnBox->GetScaledBoxExtent();
+	FBox SpawnArea(BoxCenter - BoxExtent, BoxCenter + BoxExtent);
+	float SpawnZ = GetActorLocation().Z;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
+
+	for (TSubclassOf<ABaseEnemy> MinionClass : SummonMinionClasses)
+	{
+		if (!MinionClass) continue;
+
+		FVector RandomPoint = FMath::RandPointInBox(SpawnArea);
+		RandomPoint.Z = SpawnZ;
+
+		GetWorld()->SpawnActor<ABaseEnemy>(MinionClass, RandomPoint, FRotator::ZeroRotator, SpawnParams);
 	}
 }
 

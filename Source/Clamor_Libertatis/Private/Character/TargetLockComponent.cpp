@@ -1,4 +1,4 @@
-﻿// TargetLockComponent.cpp
+// TargetLockComponent.cpp
 
 #include "Character/TargetLockComponent.h"
 #include "Enemy/BaseEnemy.h"
@@ -12,8 +12,8 @@ UTargetLockComponent::UTargetLockComponent()
     PrimaryComponentTick.bCanEverTick = true;
     PrimaryComponentTick.bStartWithTickEnabled = false;
 
-    TraceRadius = 150.f;
-    MaxLockDistsq = 1000000.f;
+    TraceRadius = 10.f;
+    MaxLockDistsq = 1000.f * 1000.f * 1.3f;
 }
 
 
@@ -102,7 +102,7 @@ AActor* UTargetLockComponent::FindTarget()
     ActorsToIgnore.Add(OwnerCharacter);
 
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
     bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
         this,
@@ -161,7 +161,9 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
     TargetRotation.Pitch = -15.f;
 
-    OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
+    FRotator CurrentRotation = OwnerCharacter->GetController()->GetControlRotation();
+    FRotator NewRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 2.f);
+    OwnerCharacter->GetController()->SetControlRotation(NewRotation);
     if (!ValidateCurrentTarget())
     {
         EndLock();

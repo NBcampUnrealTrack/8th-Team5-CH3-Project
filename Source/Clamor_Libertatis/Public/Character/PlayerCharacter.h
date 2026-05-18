@@ -17,6 +17,7 @@ class AWeaponBase;
 struct FInputActionValue;
 class UHealthComponent;
 class UTargetLockComponent;
+class UNiagaraSystem;
 
 
 UENUM(BlueprintType)
@@ -84,6 +85,9 @@ public:
 	UHealthComponent* GetHealthComponent() const { return HealthComp; }
 	FVector2D CurrentMoveInput;
 
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UNiagaraSystem* HitEffect;
+
 	// 캐릭터 행동 입력
 	UFUNCTION()
 	void Move(const FInputActionValue& value);
@@ -130,6 +134,8 @@ public:
 	void HitAnimMontage();
 	void DeathAnimMontage();
 	void DodgeAnimMontage(EDodgeDirection DodgeDirection);
+
+	void SpawnHitEffect();
 
 	bool IsAvailable();
 

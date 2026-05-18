@@ -16,17 +16,25 @@ public:
 	virtual void AttackHitCheck() override;
 
 	UAnimMontage* SkillAttackToPlayer();
+	UAnimMontage* PhaseSkillAttackToPlayer();
 
 	FORCEINLINE int32 GetNormalAttackCount() const { return Count_NormalAttack; }
+	FORCEINLINE bool IsPhase2() const { return bIsPhase2; }
 	void ResetNormalAttackCount();
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnDead() override;
 	virtual float GetCurrentAttackDamage() const override;
+	virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+
+	UPROPERTY(EditAnywhere, Category = "Phase")
+	float Phase2HPThreshold;
 
 private:
 	int32 Count_NormalAttack;
+	bool bIsPhase2;
+
 public:
 	virtual void Tick(float DeltaTime) override;
 };
