@@ -23,7 +23,7 @@ AWeaponBase::AWeaponBase()
 	Hitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Hitbox->SetCollisionResponseToAllChannels(ECR_Ignore);
-	Hitbox->SetCollisionResponseToChannel(ECC_Pawn, ECR_Overlap);
+	Hitbox->SetCollisionResponseToChannel(ECC_GameTraceChannel1, ECR_Overlap);
 	Hitbox->SetGenerateOverlapEvents(false);
 	Hitbox->SetupAttachment(StaticMeshComponent);
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);

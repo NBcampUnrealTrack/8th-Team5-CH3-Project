@@ -102,7 +102,7 @@ AActor* UTargetLockComponent::FindTarget()
     ActorsToIgnore.Add(OwnerCharacter);
 
     TArray<TEnumAsByte<EObjectTypeQuery>> ObjectTypes;
-    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_Pawn));
+    ObjectTypes.Add(UEngineTypes::ConvertToObjectType(ECC_GameTraceChannel1));
 
     bool bHit = UKismetSystemLibrary::SphereTraceMultiForObjects(
         this,
