@@ -13,6 +13,7 @@ class UEnemyTrackerComponent;
 class USkillComponent;
 class UQuickSlotWidget;
 class UInventoryWidget;
+class UOpeningSequencer;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -89,11 +90,20 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	FORCEINLINE UPlayerHUDWidget* GetHUDWidget() const { return HUDWidgetRef; }
 
+	UPROPERTY(EditDefaultsOnly, Category = "Opening")
+	TObjectPtr<UDataTable> OpeningScenarioTable;
+
+	UPROPERTY(BlueprintReadOnly, Category = "Opening")
+	TObjectPtr<UOpeningSequencer> OpeningSequencer;
+
+	UFUNCTION(BlueprintCallable, Category = "Opening")
+	void OnStartButtonClicked();
+
+	UFUNCTION(BlueprintCallable, Category = "Opening")
+	void StartGame();
+
 private:
 	static constexpr int32 ZOrder_HUD = 0;
-	static constexpr int32 ZOrder_Victory = 10;
-	static constexpr int32 ZOrder_Death = 20;
-	static constexpr int32 ZOrder_MainMenu = 30;
 
 	UPROPERTY()
 	TObjectPtr<UPlayerHUDWidget> HUDWidgetRef;
@@ -108,4 +118,8 @@ private:
 	void UseQuickSlot2();
 	void UseQuickSlot3();
 	void UseQuickSlot4();
+
+	UFUNCTION()
+	void OnOpeningEnd();
+
 };
