@@ -177,9 +177,10 @@ void ABaseEnemy::AttackHitCheck()
 		FRotator HorizontalRot = FRotator(0.f, GetActorRotation().Yaw, 0.f);
 		FVector HorizontalForward = HorizontalRot.Vector();
 
+		FVector ActorLoc2D = FVector(GetActorLocation().X, GetActorLocation().Y, 0.f);
 		FVector StartPos = (SkillInfo && SkillInfo->bIsHoming && PlayerPawn)
 			? PlayerPawn->GetActorLocation()
-			: GetActorLocation() + (HorizontalForward * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
+			: ActorLoc2D + (HorizontalForward * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
 		FCollisionShape AttackCollision = Enemy_CombatComp->MakeAttackCollision(CurrentAttackData.Key,CurrentAttackData.Value);
 		FQuat Rotation = HorizontalRot.Quaternion();
 		

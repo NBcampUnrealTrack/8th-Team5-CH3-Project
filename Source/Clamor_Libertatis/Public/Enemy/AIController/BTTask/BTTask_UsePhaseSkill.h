@@ -6,6 +6,7 @@
 
 struct FUsePhaseSkillTaskMemory
 {
+	bool bShouldTrack;
 	UAnimMontage* CachedSkillMontage;
 };
 
