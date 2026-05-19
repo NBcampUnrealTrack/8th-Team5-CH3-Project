@@ -309,6 +309,9 @@ void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 {
 	if (Montage != GetCurrentAttackMontage())
 		return;
+	if (CurrentWeapon) {
+		CurrentWeapon->DisableHitbox();
+	}
 	//강제취소된경우
 	if (bInterrupted) {
 		EndAttack();
