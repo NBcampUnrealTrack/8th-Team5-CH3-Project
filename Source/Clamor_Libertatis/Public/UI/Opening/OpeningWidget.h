@@ -36,9 +36,6 @@ protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UTextBlock> Text_ClickHint;
 
-    UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UTextBlock> Text_Counter;
-
     UPROPERTY(Transient, meta = (BindWidgetAnim))
     TObjectPtr<UWidgetAnimation> Anim_FadeIn;
 
@@ -52,14 +49,11 @@ private:
     UPROPERTY()
     TObjectPtr<UOpeningSequencer> Sequencer;
 
-    int32 CurrentIndex = 0;
-    int32 TotalCount = 0;
-
-    FString  FullText;
-    int32    TypingIndex = 0;
+    FString      FullText;
+    int32        TypingIndex = 0;
     FTimerHandle TypingTimerHandle;
-    bool bIsTyping = false;
-    bool bCanAdvance = false;
+    bool         bIsTyping = false;
+    bool         bCanAdvance = false;
 
     UFUNCTION()
     void HandleRowReady(const FScenarioData& Row);
@@ -67,8 +61,6 @@ private:
     void StartTyping(const FText& InText);
     void TickTyping();
     void FinishTyping();
-
     void BuildChoiceButtons(const TArray<FName>& ChoiceIDs);
     void HandleImageAction(const FScenarioData& Row);
-    void UpdateCounter();
 };
