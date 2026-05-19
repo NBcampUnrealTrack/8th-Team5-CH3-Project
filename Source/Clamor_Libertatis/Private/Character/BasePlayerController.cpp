@@ -108,20 +108,13 @@ void ABasePlayerController::HideGameStartUI()
 
 void ABasePlayerController::OnStartButtonClicked()
 {
-    UE_LOG(LogTemp, Warning, TEXT("=== OnStartButtonClicked 호출됨 ==="));
+    UE_LOG(LogTemp, Warning, TEXT(" OnStartButtonClicked 호출됨"));
 
     HideGameStartUI();
 
-    if (!UIManager)
+    if (!UIManager || !OpeningScenarioTable)
     {
-        UE_LOG(LogTemp, Error, TEXT("UIManager 없음 → StartGame"));
-        StartGame();
-        return;
-    }
-
-    if (!OpeningScenarioTable)
-    {
-        UE_LOG(LogTemp, Error, TEXT("OpeningScenarioTable 없음 → StartGame"));
+        UE_LOG(LogTemp, Error, TEXT("UIManager 또는 OpeningScenarioTable 없음"));
         StartGame();
         return;
     }
@@ -139,7 +132,7 @@ void ABasePlayerController::OnStartButtonClicked()
         this, &ABasePlayerController::OnOpeningEnd);
 
     UOpeningWidget* OpeningWidget = Cast<UOpeningWidget>(
-        UIManager->GetWidget(EUIType::Opening));
+        UIManager->GetOrCreateWidget(EUIType::Opening));
 
     UE_LOG(LogTemp, Warning, TEXT("OpeningWidget 캐스트: %s"),
         OpeningWidget ? TEXT("성공") : TEXT("실패"));
@@ -148,7 +141,7 @@ void ABasePlayerController::OnStartButtonClicked()
         OpeningWidget->InitWidget(OpeningSequencer);
 
     UE_LOG(LogTemp, Warning, TEXT("StartSequence 호출 - Scenario_1"));
-    OpeningSequencer->StartSequence(FName("Scenario_1"));
+    OpeningSequencer->StartSequence(FName("Scenario_1")); 
 }
 
 void ABasePlayerController::OnOpeningEnd()

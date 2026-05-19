@@ -26,6 +26,10 @@ void UOpeningSequencer::Advance(const FName& NextRowID)
         if (FScenarioData* Current = ScenarioTable->FindRow<FScenarioData>(
             CurrentRowID, TEXT("")))
         {
+            
+            if (Current->Type == ETalkType::Choice)
+                return;
+
             TargetID = Current->NextID;
         }
     }
@@ -38,7 +42,6 @@ void UOpeningSequencer::Advance(const FName& NextRowID)
 
     ShowRow(TargetID);
 }
-
 void UOpeningSequencer::ShowRow(const FName& RowID)
 {
     FScenarioData* Row = ScenarioTable->FindRow<FScenarioData>(
