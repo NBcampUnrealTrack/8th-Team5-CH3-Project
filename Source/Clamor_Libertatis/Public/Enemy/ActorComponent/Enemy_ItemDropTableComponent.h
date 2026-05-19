@@ -12,6 +12,8 @@ class CLAMOR_LIBERTATIS_API UEnemy_ItemDropTableComponent : public UActorCompone
 
 public:
 	UEnemy_ItemDropTableComponent();
+	
+	void DropItem();
 protected:
 	virtual void BeginPlay() override;
 	
