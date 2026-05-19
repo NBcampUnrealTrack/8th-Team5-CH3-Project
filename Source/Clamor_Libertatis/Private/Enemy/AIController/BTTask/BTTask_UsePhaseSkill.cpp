@@ -9,7 +9,7 @@
 UBTTask_UsePhaseSkill::UBTTask_UsePhaseSkill()
 {
 	NodeName = TEXT("UsePhaseSkill");
-	MinTrackDistance = 150.f;
+	MinTrackDistance = 2.f;
 }
 
 EBTNodeResult::Type UBTTask_UsePhaseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -49,7 +49,7 @@ void UBTTask_UsePhaseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 	}
 
 	AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-	if (TrackTarget && FVector::Dist(Boss->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+	if (TrackTarget && FVector::Dist2D(Boss->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
 	{
 		FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(Boss->GetActorLocation(), TrackTarget->GetActorLocation());
 		FRotator NewRot = FMath::RInterpTo(Boss->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);

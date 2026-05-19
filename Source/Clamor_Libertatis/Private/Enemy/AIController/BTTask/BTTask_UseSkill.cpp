@@ -10,7 +10,7 @@ UBTTask_UseSkill::UBTTask_UseSkill()
 {
 	NodeName = TEXT("UseSkill");
 	MaxDeltaYaw = 5.f;
-	MinTrackDistance = 150.f;
+	MinTrackDistance = 2.f;
 }
 
 EBTNodeResult::Type UBTTask_UseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -50,7 +50,7 @@ void UBTTask_UseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	if (Memory->bSkillStarted)
 	{
 		AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-		if (TrackTarget && FVector::Dist(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+		if (TrackTarget && FVector::Dist2D(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
 		{
 			FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation());
 			FRotator NewRot = FMath::RInterpTo(OwnerPawn->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
