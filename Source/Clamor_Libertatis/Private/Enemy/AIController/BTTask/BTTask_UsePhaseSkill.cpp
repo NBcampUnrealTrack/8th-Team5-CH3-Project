@@ -4,10 +4,12 @@
 #include "Animation/AnimInstance.h"
 #include "BehaviorTree/BlackboardComponent.h"
 #include "Enemy/Boss/BossEnemy.h"
+#include "Kismet/KismetMathLibrary.h"
 
 UBTTask_UsePhaseSkill::UBTTask_UsePhaseSkill()
 {
 	NodeName = TEXT("UsePhaseSkill");
+	MinTrackDistance = 150.f;
 }
 
 EBTNodeResult::Type UBTTask_UsePhaseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -44,6 +46,14 @@ void UBTTask_UsePhaseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 	{
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
+	}
+
+	AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+	if (TrackTarget && FVector::Dist(Boss->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+	{
+		FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(Boss->GetActorLocation(), TrackTarget->GetActorLocation());
+		FRotator NewRot = FMath::RInterpTo(Boss->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
+		Boss->SetActorRotation(NewRot);
 	}
 
 	UAnimInstance* AnimInst = Boss->GetMesh()->GetAnimInstance();

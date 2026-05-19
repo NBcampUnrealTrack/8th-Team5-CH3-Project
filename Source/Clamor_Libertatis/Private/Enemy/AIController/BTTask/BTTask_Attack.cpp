@@ -11,6 +11,7 @@ UBTTask_Attack::UBTTask_Attack()
 {
 	NodeName = TEXT("NormalAttack");
 	MaxDeltaYaw = 5.f;
+	MinTrackDistance = 150.f;
 }
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -49,6 +50,14 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 	if (Memory->bAttackStarted)
 	{
+		AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+		if (TrackTarget && FVector::Dist(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+		{
+			FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation());
+			FRotator NewRot = FMath::RInterpTo(OwnerPawn->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
+			OwnerPawn->SetActorRotation(NewRot);
+		}
+
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(OwnerPawn))
 		{
 			UAnimInstance* AnimInst = MyOwner->GetMesh()->GetAnimInstance();
