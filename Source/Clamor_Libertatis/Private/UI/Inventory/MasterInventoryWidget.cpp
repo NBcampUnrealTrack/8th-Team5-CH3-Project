@@ -237,6 +237,25 @@ void UMasterInventoryWidget::RefreshStats()
     }
 }
 
+void UMasterInventoryWidget::UnequipSocketItemToInventory(FName ItemID)
+{
+    if (!WeaponRef) return;
+
+    for (EWeaponSocketType Type : {
+        EWeaponSocketType::Blade, EWeaponSocketType::Grip })
+    {
+        UWeaponSocketItemData* EquippedItem =
+            WeaponRef->GetEquippedSocketItem(Type);
+        if (EquippedItem && EquippedItem->InventoryItemID == ItemID)
+        {
+            WeaponRef->UnequipSocketItem(Type);
+            if (BladeSocketSlot) BladeSocketSlot->RefreshSlot();
+            if (GripSocketSlot) GripSocketSlot->RefreshSlot();
+            RefreshStats();
+            return;
+        }
+    }
+}
 void UMasterInventoryWidget::ShowItemInfo(const FName& ItemID)
 {
     if (!ItemInfoPanel || !SocketInventoryComp) return;

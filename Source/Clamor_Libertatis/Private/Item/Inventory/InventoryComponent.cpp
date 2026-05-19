@@ -150,6 +150,33 @@ void UInventoryComponent::ClearInventory()
     }
     OnInventoryChanged.Broadcast();
 }
+TArray<FInventorySlot> UInventoryComponent::GetAllItems() const
+{
+    TArray<FInventorySlot> Result;
+    for (const FInventorySlot& Slot : Slots)
+    {
+        if (!Slot.IsEmpty())
+            Result.Add(Slot);
+    }
+    return Result;
+}
+
+TArray<FInventorySlot> UInventoryComponent::GetAllSlots() const
+{
+    return Slots;
+}
+
+void UInventoryComponent::SetAllSlots(const TArray<FInventorySlot>& InSlots)
+{
+    Slots.SetNum(MaxSlots);
+
+    for (int32 i = 0; i < InSlots.Num() && i < Slots.Num(); i++)
+    {
+        Slots[i] = InSlots[i];
+    }
+
+    OnInventoryChanged.Broadcast();
+}
 
 int32 UInventoryComponent::FindSlotByID(FName ItemID) const
 {
