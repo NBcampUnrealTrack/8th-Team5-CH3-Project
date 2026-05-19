@@ -19,6 +19,7 @@ public:
 	float PeripheralVisionAngleDegrees;
 	float SightConfig_MaxAge;
 	float MaxChasingDistance;
+	FName EnemyName;
 	
 	bool SetHP(float DamageAmount)
 	{

@@ -36,6 +36,7 @@ void UEnemy_StatComponent::InitializeStat()
 			EnemyStat.PeripheralVisionAngleDegrees = EnemyStats->Enemy_PeripheralVisionAngleDegrees;
 			EnemyStat.SightConfig_MaxAge = EnemyStats->Enemy_SightConfig_MaxAge;
 			EnemyStat.MaxChasingDistance = EnemyStats->MaxChasingDistance;
+			EnemyStat.EnemyName = DT_EnemyRowHandle.RowName;
 			
 			if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(GetOwner()))
 			{

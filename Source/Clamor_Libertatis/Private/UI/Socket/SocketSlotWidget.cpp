@@ -75,17 +75,34 @@ void USocketSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry,
     UWeaponSocketItemData* EquippedItem = WeaponRef->GetEquippedSocketItem(SocketType);
     if (!EquippedItem) return;
 
-    WeaponRef->UnequipSocketItem(SocketType);
-    RefreshSlot();
-
-    if (MasterWidgetRef)
-        MasterWidgetRef->RefreshStats();
-
     UInventoryDragDropOperation* DragOp = NewObject<UInventoryDragDropOperation>(this);
     DragOp->ItemID = EquippedItem->InventoryItemID;
     DragOp->SourceInventorySlotIndex = -1;
     DragOp->SourceHotbarSlotIndex = -1;
     DragOp->Pivot = EDragPivot::CenterCenter;
+
+    if (DragVisualClass)
+    {
+        UUserWidget* DragVisual = CreateWidget<UUserWidget>(
+            GetOwningPlayer(), DragVisualClass);
+        if (DragVisual)
+        {
+            UImage* DragIcon = Cast<UImage>(
+                DragVisual->GetWidgetFromName(TEXT("DragIcon")));
+            if (DragIcon && ItemIcon)
+            {
+                UTexture2D* Icon = Cast<UTexture2D>(
+                    ItemIcon->GetBrush().GetResourceObject());
+                if (Icon)
+                {
+                    DragIcon->SetBrushFromTexture(Icon);
+                    DragIcon->SetColorAndOpacity(
+                        FLinearColor(1.f, 1.f, 1.f, 0.8f));
+                }
+            }
+            DragOp->DefaultDragVisual = DragVisual;
+        }
+    }
 
     OutOperation = DragOp;
 }

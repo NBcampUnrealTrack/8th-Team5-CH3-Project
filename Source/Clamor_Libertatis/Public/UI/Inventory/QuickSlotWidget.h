@@ -14,8 +14,6 @@ public:
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void InitQuickSlot(UConsumableInventoryComponent* InInventory);
 
-    // 인벤토리 슬롯 0~3번이 퀵슬롯 1~4번에 자동 연동됨
-    // AssignToQuickSlot은 인벤토리 창에서 드래그 드롭 용도로만 남김
     UFUNCTION(BlueprintCallable, Category = "QuickSlot")
     void AssignToQuickSlot(int32 SlotIndex, FName ItemID);
 

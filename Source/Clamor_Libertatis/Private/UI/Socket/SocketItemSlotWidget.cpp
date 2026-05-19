@@ -17,6 +17,7 @@ void USocketItemSlotWidget::InitSlot(UMasterInventoryWidget* InParentWidget,
 void USocketItemSlotWidget::UpdateSlot(FName InItemID, UTexture2D* Icon)
 {
     CachedItemID = InItemID;
+    CachedIcon = Icon; 
 
     if (ItemIcon)
     {
@@ -41,6 +42,7 @@ void USocketItemSlotWidget::UpdateSlot(FName InItemID, UTexture2D* Icon)
 void USocketItemSlotWidget::ClearSlot()
 {
     CachedItemID = NAME_None;
+    CachedIcon = nullptr;
     if (ItemIcon) ItemIcon->SetVisibility(ESlateVisibility::Hidden);
     if (ItemNameText) ItemNameText->SetText(FText::GetEmpty());
 }
@@ -77,6 +79,24 @@ void USocketItemSlotWidget::NativeOnDragDetected(const FGeometry& InGeometry,
     DragOp->SourceHotbarSlotIndex = -1;
     DragOp->Pivot = EDragPivot::CenterCenter;
 
+    if (DragVisualClass && CachedIcon)
+    {
+        UUserWidget* DragVisual = CreateWidget<UUserWidget>(
+            GetOwningPlayer(), DragVisualClass);
+        if (DragVisual)
+        {
+            UImage* DragIcon = Cast<UImage>(
+                DragVisual->GetWidgetFromName(TEXT("DragIcon")));
+            if (DragIcon)
+            {
+                DragIcon->SetBrushFromTexture(CachedIcon);
+                DragIcon->SetColorAndOpacity(
+                    FLinearColor(1.f, 1.f, 1.f, 0.8f));
+            }
+            DragOp->DefaultDragVisual = DragVisual;
+        }
+    }
+
     OutOperation = DragOp;
 }
 
@@ -91,6 +111,9 @@ bool USocketItemSlotWidget::NativeOnDrop(const FGeometry& InGeometry,
     if (DragOp->SourceInventorySlotIndex == -1 &&
         DragOp->SourceHotbarSlotIndex == -1)
     {
+        if (ParentWidgetRef)
+            ParentWidgetRef->UnequipSocketItemToInventory(DragOp->ItemID);
+
         InventoryCompRef->AddItem(DragOp->ItemID, 1);
         InventoryCompRef->OnInventoryChanged.Broadcast();
         return true;
