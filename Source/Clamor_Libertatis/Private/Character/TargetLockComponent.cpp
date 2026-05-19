@@ -6,6 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Engine/EngineTypes.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "Components/WidgetComponent.h"
 
 UTargetLockComponent::UTargetLockComponent()
 {
@@ -14,6 +15,11 @@ UTargetLockComponent::UTargetLockComponent()
 
     TraceRadius = 150.f;
     MaxLockDistsq = 1000.f * 1000.f * 1.3f;
+
+    LockOnWidgetComp = CreateDefaultSubobject<UWidgetComponent>(TEXT("LockOnWidgetComp"));
+    LockOnWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
+    LockOnWidgetComp->SetDrawAtDesiredSize(true);
+    LockOnWidgetComp->bHiddenInGame = true;
 }
 
 
@@ -22,6 +28,12 @@ void UTargetLockComponent::BeginPlay()
     Super::BeginPlay();
 
     OwnerCharacter = Cast<ACharacter>(GetOwner());
+
+    if (LockOnWidgetComp && LockOnWidgetClass && OwnerCharacter)
+    {
+        LockOnWidgetComp->SetWidgetClass(LockOnWidgetClass);
+        LockOnWidgetComp->AttachToComponent(OwnerCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+    }
 }
 
 void UTargetLockComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -72,6 +84,12 @@ void UTargetLockComponent::StartLock()
         }
         SetComponentTickEnabled(true);
         OnLockTargetChanged.Broadcast(CurrentTarget);
+
+        if (LockOnWidgetComp)
+        {
+            LockOnWidgetComp->AttachToComponent(CurrentTarget->GetRootComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+            LockOnWidgetComp->SetHiddenInGame(false);
+        }
     }
 }
 
@@ -88,6 +106,15 @@ void UTargetLockComponent::EndLock()
         }
     }
     SetComponentTickEnabled(false);
+
+    if (LockOnWidgetComp)
+    {
+        LockOnWidgetComp->SetHiddenInGame(true);
+        if (OwnerCharacter)
+        {
+            LockOnWidgetComp->AttachToComponent(OwnerCharacter->GetRootComponent(), FAttachmentTransformRules::KeepRelativeTransform);
+        }
+    }
 }
 
 AActor* UTargetLockComponent::FindTarget()
@@ -159,7 +186,9 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     FVector Start = OwnerCharacter->GetActorLocation();
     FVector End = CurrentTarget->GetActorLocation();
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
-    TargetRotation.Pitch = -15.f;
+
+    TargetRotation.Pitch = -12.f + (TargetRotation.Pitch * 0.4f);
+
     OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
     if (!ValidateCurrentTarget())
     {
