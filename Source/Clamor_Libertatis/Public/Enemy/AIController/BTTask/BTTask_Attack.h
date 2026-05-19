@@ -7,6 +7,7 @@
 struct FAttackTaskMemory
 {
 	bool bAttackStarted;
+	bool bShouldTrack;
 	UAnimMontage* CachedAttackMontage;
 };
 
