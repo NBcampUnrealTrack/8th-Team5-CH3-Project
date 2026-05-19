@@ -5,7 +5,7 @@
 UConsumableInventoryComponent::UConsumableInventoryComponent()
 {
     AllowedItemType = EItemType::Consumable;
-    MaxSlots = 20;
+    MaxSlots = 12;
 
     static ConstructorHelpers::FObjectFinder<UDataTable> DTFinder(
         TEXT("/Game/Item/DT_ItemTable.DT_ItemTable"));

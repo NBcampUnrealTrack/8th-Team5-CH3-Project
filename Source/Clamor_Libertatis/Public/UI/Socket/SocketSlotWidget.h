@@ -23,6 +23,8 @@ public:
 
     void SetMasterWidget(UMasterInventoryWidget* InMasterWidget) { MasterWidgetRef = InMasterWidget; }
 
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DragDrop")
+    TSubclassOf<UUserWidget> DragVisualClass;
 protected:
     UPROPERTY(meta = (BindWidget))
     UImage* ItemIcon;

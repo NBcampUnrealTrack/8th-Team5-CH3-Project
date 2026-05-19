@@ -36,6 +36,7 @@ public:
     void HideConsumableItemInfo();
 
     void RefreshStats();
+    void UnequipSocketItemToInventory(FName ItemID);
 
 protected:
     virtual void NativeConstruct() override;

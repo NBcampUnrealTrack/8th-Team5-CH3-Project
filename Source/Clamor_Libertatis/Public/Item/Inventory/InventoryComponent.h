@@ -69,6 +69,18 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Inventory")
     void ClearInventory();
 
+    //아이템 배열 반환 - 비어있는 슬롯 제외, 전체 아이템 목록 만들 때 사용 예정
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    TArray<FInventorySlot> GetAllItems() const;
+
+    // 슬롯 위치 포함 전체 저장
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    TArray<FInventorySlot> GetAllSlots() const;
+
+    // 슬롯 위치 포함 전체 복원
+    UFUNCTION(BlueprintCallable, Category = "Inventory")
+    void SetAllSlots(const TArray<FInventorySlot>& InSlots);
+
 protected:
     virtual void BeginPlay() override;
     bool ValidateUseItem(FName ItemID, int32 Quantity, int32& OutSlotIdx);

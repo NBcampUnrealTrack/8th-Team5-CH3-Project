@@ -20,6 +20,8 @@ public:
     void ClearSlot();
 
     int32 SlotIndex = 0;
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "DragDrop")
+    TSubclassOf<UUserWidget> DragVisualClass;
 
 protected:
     UPROPERTY(meta = (BindWidget))
@@ -43,5 +45,7 @@ private:
     UMasterInventoryWidget* ParentWidgetRef;
     UPROPERTY()
     USocketItemInventoryComponent* InventoryCompRef;
+    UPROPERTY()
+    UTexture2D* CachedIcon = nullptr;
     
 };
