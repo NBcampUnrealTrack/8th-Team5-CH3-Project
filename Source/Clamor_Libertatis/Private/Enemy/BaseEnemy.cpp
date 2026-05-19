@@ -133,7 +133,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 void ABaseEnemy::BeginMontageAttack(UAnimMontage* Montage)
 {
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &ABaseEnemy::OnAttackMontageEnded);
@@ -218,7 +218,6 @@ void ABaseEnemy::ApplyStun(float Duration)
 		false
 	);
 }
-
 
 const FEnemySkillInfo* ABaseEnemy::GetCurrentSkillInfo() const
 {
