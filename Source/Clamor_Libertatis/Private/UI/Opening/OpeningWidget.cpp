@@ -1,4 +1,4 @@
-#include "UI/Opening/OpeningWidget.h"
+ï»¿#include "UI/Opening/OpeningWidget.h"
 #include "UI/Opening/OpeningSequencer.h"
 #include "Components/TextBlock.h"
 #include "Components/Image.h"
@@ -12,21 +12,17 @@ void UOpeningWidget::NativeConstruct()
 {
     Super::NativeConstruct();
 
+    SetIsFocusable(true);
+
     if (Text_Dialogue)  Text_Dialogue->SetText(FText::GetEmpty());
     if (Text_ClickHint) Text_ClickHint->SetVisibility(ESlateVisibility::Hidden);
     if (Box_Choices)    Box_Choices->SetVisibility(ESlateVisibility::Collapsed);
-    if (Text_Counter)   Text_Counter->SetText(FText::GetEmpty());
 }
 
 void UOpeningWidget::InitWidget(UOpeningSequencer* InSequencer)
 {
     if (!InSequencer) return;
-
     Sequencer = InSequencer;
-
-    if (Sequencer->ScenarioTable)
-        TotalCount = Sequencer->ScenarioTable->GetRowNames().Num();
-
     Sequencer->OnRowReady.AddDynamic(this, &UOpeningWidget::HandleRowReady);
 }
 
@@ -53,16 +49,19 @@ FReply UOpeningWidget::NativeOnMouseButtonDown(
 
 void UOpeningWidget::HandleRowReady(const FScenarioData& Row)
 {
-    CurrentIndex++;
-    UpdateCounter();
     HandleImageAction(Row);
 
     if (Row.Type == ETalkType::Choice)
     {
+        GetWorld()->GetTimerManager().ClearTimer(TypingTimerHandle);
+        bIsTyping = false;
+        bCanAdvance = false;
+
         if (Text_Dialogue)
             Text_Dialogue->SetText(FText::GetEmpty());
         if (Text_ClickHint)
             Text_ClickHint->SetVisibility(ESlateVisibility::Hidden);
+
         BuildChoiceButtons(Row.ChoiceIDs);
         return;
     }
@@ -73,12 +72,12 @@ void UOpeningWidget::HandleRowReady(const FScenarioData& Row)
         return;
     }
 
-    // Text / Question
     if (Box_Choices)
     {
         Box_Choices->ClearChildren();
         Box_Choices->SetVisibility(ESlateVisibility::Collapsed);
     }
+
     StartTyping(Row.Dialogue);
 }
 
@@ -179,11 +178,4 @@ void UOpeningWidget::HandleImageAction(const FScenarioData& Row)
     default:
         break;
     }
-}
-
-void UOpeningWidget::UpdateCounter()
-{
-    if (!Text_Counter) return;
-    Text_Counter->SetText(FText::FromString(
-        FString::Printf(TEXT("¾À %d / %d"), CurrentIndex, TotalCount)));
 }
