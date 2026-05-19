@@ -130,7 +130,7 @@ void UCombatComponent::EndAttack()
 
 	UE_LOG(LogCombat, Warning, TEXT("EndAttack-process"));
 	//몽타주에서 섹션 연결을 끊어야함
-	//OwnerCharacter->GetMesh()->GetAnimInstance()->Montage_Stop(0.2f, BasicAttackAnimMontage);
+	//OwnerCharacter->GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
 }
 void UCombatComponent::HitReact(bool bActive)
 {
@@ -233,7 +233,9 @@ void UCombatComponent::SetCombatState(ECombatEnumState NewState)
 {
 	if (CombatState == ECombatEnumState::Dead && NewState != ECombatEnumState::Dead)
 		return;
-
+	const UEnum* EnumPtr = StaticEnum<ECombatEnumState>();
+	FString EnumName = EnumPtr->GetNameStringByValue(static_cast<int64>(NewState));
+	UE_LOG(LogCombat, Log, TEXT("Combat State : %s"), *EnumName);
 	CombatState = NewState;
 }
 
@@ -309,6 +311,9 @@ void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterru
 {
 	if (Montage != GetCurrentAttackMontage())
 		return;
+	if (CurrentWeapon) {
+		CurrentWeapon->DisableHitbox();
+	}
 	//강제취소된경우
 	if (bInterrupted) {
 		EndAttack();

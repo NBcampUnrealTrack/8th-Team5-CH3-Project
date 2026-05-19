@@ -18,7 +18,7 @@ AWeaponBase::AWeaponBase()
 	StaticMeshComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	SetRootComponent(StaticMeshComponent);
 	StaticMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
+	StaticMeshComponent->SetCollisionResponseToAllChannels(ECR_Overlap);
 
 	Hitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("Hitbox"));
 	Hitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
