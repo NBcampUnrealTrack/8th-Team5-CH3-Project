@@ -396,6 +396,7 @@ void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
 {
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     if (!AnimInstance) return;
+    AnimInstance->StopAllMontages(0.f);
     switch (DodgeDirection)
     {
     case EDodgeDirection::Forward:
