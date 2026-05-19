@@ -66,6 +66,8 @@ public:
 	float SpreadAngle = 0.f;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Projectile")
 	bool bIsHoming = false;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Rotation")
+	bool bTrackPlayerDuringAttack = true;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType")
 	bool bIsLaserAttack = false;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SkillType|Laser",

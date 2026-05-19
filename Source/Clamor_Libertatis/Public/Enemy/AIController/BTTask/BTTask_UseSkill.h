@@ -7,6 +7,7 @@
 struct FUseSkillTaskMemory
 {
 	bool bSkillStarted;
+	bool bShouldTrack;
 	UAnimMontage* CachedSkillMontage;
 };
 

@@ -11,7 +11,7 @@ UBTTask_Attack::UBTTask_Attack()
 {
 	NodeName = TEXT("NormalAttack");
 	MaxDeltaYaw = 5.f;
-	MinTrackDistance = 150.f;
+	MinTrackDistance = 2.f;
 }
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -20,6 +20,7 @@ EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerCom
 
 	FAttackTaskMemory* Memory = reinterpret_cast<FAttackTaskMemory*>(NodeMemory);
 	Memory->bAttackStarted = false;
+	Memory->bShouldTrack = true;
 	Memory->CachedAttackMontage = nullptr;
 
 	AAIController* AIC = OwnerComp.GetAIOwner();
@@ -50,12 +51,15 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 
 	if (Memory->bAttackStarted)
 	{
-		AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
-		if (TrackTarget && FVector::Dist(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+		if (Memory->bShouldTrack)
 		{
-			FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation());
-			FRotator NewRot = FMath::RInterpTo(OwnerPawn->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
-			OwnerPawn->SetActorRotation(NewRot);
+			AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+			if (TrackTarget && FVector::Dist2D(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+			{
+				FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation());
+				FRotator NewRot = FMath::RInterpTo(OwnerPawn->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
+				OwnerPawn->SetActorRotation(NewRot);
+			}
 		}
 
 		if (ABaseEnemy* MyOwner = Cast<ABaseEnemy>(OwnerPawn))
@@ -98,6 +102,10 @@ void UBTTask_Attack::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemo
 			if (Memory->CachedAttackMontage)
 			{
 				Memory->bAttackStarted = true;
+				if (const FEnemySkillInfo* SkillInfo = MyOwner->GetCurrentSkillInfo())
+				{
+					Memory->bShouldTrack = SkillInfo->bTrackPlayerDuringAttack;
+				}
 			}
 			else
 			{
