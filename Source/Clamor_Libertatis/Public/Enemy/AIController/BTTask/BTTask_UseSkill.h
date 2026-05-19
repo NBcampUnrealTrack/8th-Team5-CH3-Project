@@ -26,4 +26,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
 	float MaxDeltaYaw;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
+	float MinTrackDistance;
 };

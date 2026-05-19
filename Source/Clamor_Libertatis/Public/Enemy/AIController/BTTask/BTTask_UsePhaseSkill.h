@@ -16,6 +16,9 @@ class CLAMOR_LIBERTATIS_API UBTTask_UsePhaseSkill : public UBTTaskNode
 public:
 	UBTTask_UsePhaseSkill();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
+	float MinTrackDistance;
+
 	virtual uint16 GetInstanceMemorySize() const override { return sizeof(FUsePhaseSkillTaskMemory); }
 
 protected:
