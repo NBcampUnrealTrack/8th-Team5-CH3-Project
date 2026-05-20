@@ -96,6 +96,8 @@ public:
 	TArray<FEnemySkillInfo> Array_Skill_PhaseAttack;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|Dead")
 	TObjectPtr<UAnimMontage> AM_Dead;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|Dead")
+	TObjectPtr<UNiagaraSystem> DeadVFX;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|HitReaction")
 	TObjectPtr<UAnimMontage> AM_HitReaction;
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="AnimMontage|Dodge")

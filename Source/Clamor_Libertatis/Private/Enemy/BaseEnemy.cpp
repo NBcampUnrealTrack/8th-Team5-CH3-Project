@@ -283,8 +283,11 @@ void ABaseEnemy::OnDead()
 		UE_LOG(LogTemp,Warning,TEXT("PlayDeadMontage"));
 	}
 	
+	GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	GetMesh()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
 	ReceiveOnDead();
-	
+
 	SetLifeSpan(3.5f);
 }
 

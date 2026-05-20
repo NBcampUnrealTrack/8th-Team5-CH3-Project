@@ -7,6 +7,7 @@
 #include "Enemy/AIController/Enemy_AIController.h"
 #include "Enemy/DataTable/DA_BaseEnemySkill.h"
 #include "BehaviorTree/BlackboardComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 ABossEnemy::ABossEnemy()
 {
@@ -35,6 +36,16 @@ void ABossEnemy::OnDead()
 		FVector SpawnLocation = GetActorLocation();
 		SpawnLocation.Z -= GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
 		ItemDropComp->DropItem(SpawnLocation);
+	}
+
+	if (Enemy_CombatComp && Enemy_CombatComp->DA_EnemySkill && Enemy_CombatComp->DA_EnemySkill->DeadVFX)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+			GetWorld(),
+			Enemy_CombatComp->DA_EnemySkill->DeadVFX,
+			GetActorLocation(),
+			GetActorRotation()
+		);
 	}
 
 	Super::OnDead();
