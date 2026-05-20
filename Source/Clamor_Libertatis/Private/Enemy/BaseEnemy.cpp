@@ -14,6 +14,8 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
 
+#include "Components/BoxComponent.h"
+
 ABaseEnemy::ABaseEnemy()
 {
 	PrimaryActorTick.bCanEverTick = true;
@@ -98,15 +100,41 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 	
 	if (DamageTextActorClass)
 	{
-		FVector SpawnLocation = GetActorLocation()
-			+ GetActorForwardVector() * 50.f
-			+ FVector(0.f, 0.f, 100.f);
+		FVector SpawnLocation = GetActorLocation() + FVector(0.f, 0.f, 100.f);
 
+		if (DamageCauser)
+		{
+			// DamageCauser(플레이어)가 가진 무기의 히트박스 위치 찾기
+			TArray<UBoxComponent*> BoxComps;
+			DamageCauser->GetComponents<UBoxComponent>(BoxComps);
+
+			if (BoxComps.Num() > 0)
+			{
+				// 무기 히트박스 중 몬스터와 가장 가까운 것
+				FVector ClosestPoint = BoxComps[0]->GetComponentLocation();
+				float MinDist = FVector::Dist(ClosestPoint, GetActorLocation());
+
+				for (UBoxComponent* Box : BoxComps)
+				{
+					float Dist = FVector::Dist(
+						Box->GetComponentLocation(), GetActorLocation());
+					if (Dist < MinDist)
+					{
+						MinDist = Dist;
+						ClosestPoint = Box->GetComponentLocation();
+					}
+				}
+				SpawnLocation = ClosestPoint + FVector(0.f, 0.f, 30.f);
+			}
+			else
+			{
+				// 히트박스 못 찾으면 플레이어 위치 사용
+				SpawnLocation = DamageCauser->GetActorLocation()
+					+ FVector(0.f, 0.f, 80.f);
+			}
+		}
 		AActor* DamageActor = GetWorld()->SpawnActor<AActor>(
-			DamageTextActorClass,
-			SpawnLocation,
-			FRotator::ZeroRotator
-		);
+			DamageTextActorClass, SpawnLocation, FRotator::ZeroRotator);
 
 		if (DamageActor)
 		{
@@ -115,19 +143,14 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 			if (WidgetComp)
 			{
 				UDamageTextWidget* DamageWidget =
-					Cast<UDamageTextWidget>(
-						WidgetComp->GetUserWidgetObject()
-					);
-
+					Cast<UDamageTextWidget>(WidgetComp->GetUserWidgetObject());
 				if (DamageWidget)
-				{
 					DamageWidget->InitDamageText(DamageAmount);
-				}
 			}
-
 			DamageActor->SetLifeSpan(2.f);
 		}
 	}
+
 	return DamageAmount;
 }
 

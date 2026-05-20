@@ -26,3 +26,9 @@ void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
         UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 질문 기록 완료: %s"), *PrefixKey);
     }
 }
+void UCLGameInstance::ResetGame()
+{
+    WonBattleCount = 0;
+    LastScenarioRowName = FName("Scenario_1");
+    ViewedQuestions.Empty();
+}

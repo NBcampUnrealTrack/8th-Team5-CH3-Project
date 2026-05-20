@@ -30,6 +30,9 @@ public:
 
 	FName LastScenarioRowName;
 
+	//restart ¹öÆ°¿ë
+	void ResetGame();
+
 private:
 	int32 WonBattleCount;	
 
