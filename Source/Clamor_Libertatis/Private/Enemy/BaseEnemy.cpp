@@ -260,6 +260,8 @@ void ABaseEnemy::OnDead()
 		UE_LOG(LogTemp,Warning,TEXT("PlayDeadMontage"));
 	}
 	
+	ReceiveOnDead();
+	
 	SetLifeSpan(3.5f);
 }
 
