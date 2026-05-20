@@ -27,6 +27,14 @@ void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
     }
 }
 
+void UCLGameInstance::ResetGame()
+{
+    WonBattleCount = 0;
+    LastScenarioRowName = FName("Scenario_1");
+    ViewedQuestions.Empty();
+}
+
+
 void UCLGameInstance::SaveInventory(const TArray<FInventorySlot>& Slots)
 {
     SavedInventorySlots = Slots;

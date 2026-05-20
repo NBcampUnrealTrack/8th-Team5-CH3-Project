@@ -122,4 +122,7 @@ private:
 	UFUNCTION()
 	void OnOpeningEnd();
 
+	void ToggleMainMenu();
+	void ToggleMasterInventory();
+
 };

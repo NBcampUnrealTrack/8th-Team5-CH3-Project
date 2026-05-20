@@ -9,6 +9,8 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/BoxComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NiagaraFunctionLibrary.h"
+#include "NiagaraComponent.h"
 
 
 // Sets default values
@@ -187,6 +189,19 @@ UNiagaraSystem* AWeaponBase::GetWeaponTrailNiagara() const
 	return TrailNiagara;
 }
 
+UNiagaraSystem* AWeaponBase::GetWeaponHitNiagara() const
+{
+
+	for (const FWeaponSocketSlot& Slot : SocketSlots)
+	{
+		if (Slot.EquippedItem && Slot.EquippedItem->HitNiagaraOverride)
+		{
+			return Slot.EquippedItem->HitNiagaraOverride;
+		}
+	}
+	return HitNiagara;
+}
+
 bool AWeaponBase::EquipSocketItem(UWeaponSocketItemData* SocketItem, EWeaponSocketType SocketTag)
 {
 	if (!CanEquipSocketItem(SocketItem, SocketTag))
@@ -296,7 +311,7 @@ TArray<const UWeaponSocketItemData*> AWeaponBase::GetEquippedSocketItems() const
 	return EquippedItems;
 }
 
-void AWeaponBase::PlayHitSound(const FHitResult& SweepResult, const AActor* HitActor) const
+void AWeaponBase::PlayHitFX(const FHitResult& SweepResult, const AActor* HitActor) const
 {
 	if (!HitSound)
 	{
@@ -319,6 +334,16 @@ void AWeaponBase::PlayHitSound(const FHitResult& SweepResult, const AActor* HitA
 		PlayLocation,
 		HitSoundVolume,
 		HitSoundPitch
+	);
+	UNiagaraComponent* NiagaraComp = nullptr;
+	NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		GetWorld(),
+		GetWeaponHitNiagara(),
+		PlayLocation,
+		FRotator::ZeroRotator,
+		FVector(1.f),
+		true,
+		true
 	);
 }
 
@@ -373,6 +398,6 @@ void AWeaponBase::OnHitboxBeginOverlap(
 
 	if (AppliedDamage > 0.0f)
 	{
-		PlayHitSound(SweepResult, OtherActor);
+		PlayHitFX(SweepResult, OtherActor);
 	}
 }

@@ -80,6 +80,9 @@ public:
 
 	UFUNCTION(BlueprintPure, Category="Weapon|VFX")
 	UNiagaraSystem* GetWeaponTrailNiagara() const;
+
+	UFUNCTION(BlueprintPure, Category="Weapon|VFX")
+	UNiagaraSystem* GetWeaponHitNiagara() const;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category="Weapon")
 	UBoxComponent* Hitbox;
@@ -105,6 +108,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX")
 	TObjectPtr<UNiagaraSystem> TrailNiagara;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX")
+	TObjectPtr<UNiagaraSystem> HitNiagara;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX")
 	TObjectPtr<USoundBase> HitSound;
 
@@ -122,7 +128,7 @@ private:
 
 	TArray<const UWeaponSocketItemData*> GetEquippedSocketItems() const;
 
-	void PlayHitSound(const FHitResult& SweepResult, const AActor* HitActor) const;
+	void PlayHitFX(const FHitResult& SweepResult, const AActor* HitActor) const;
 
 	UFUNCTION()
 	void OnHitboxBeginOverlap(

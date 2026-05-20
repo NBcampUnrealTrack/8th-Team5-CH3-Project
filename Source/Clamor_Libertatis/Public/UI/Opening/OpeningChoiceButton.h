@@ -17,12 +17,14 @@ public:
         const FName& InChoiceID,
         UOpeningSequencer* InSequencer);
 
+
+    UPROPERTY(meta = (BindWidget), BlueprintReadOnly)
+    TObjectPtr<UTextBlock> Text_Choice;
+
 protected:
     UPROPERTY(meta = (BindWidget))
     TObjectPtr<UButton> Btn_Choice;
 
-    UPROPERTY(meta = (BindWidget))
-    TObjectPtr<UTextBlock> Text_Choice;
 
 private:
     FName ChoiceID;
