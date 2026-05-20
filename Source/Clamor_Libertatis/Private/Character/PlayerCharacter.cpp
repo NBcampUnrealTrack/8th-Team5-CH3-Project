@@ -555,3 +555,26 @@ void APlayerCharacter::SpawnHitEffect()
         );
     }
 }
+
+bool APlayerCharacter::TryPickupItem(class AActor* Item)
+{
+    if (!Item) return false;
+    FName TargetItemID = Item->GetFName();
+
+    if (ConsumableInventory)
+    {
+        if (ConsumableInventory->AddItem(TargetItemID, 1) == EAddItemResult::Success)
+        {
+            return true;
+        }
+    }
+
+    if (SocketItemInventory)
+    {
+        if (SocketItemInventory->AddItem(TargetItemID, 1) == EAddItemResult::Success)
+        {
+            return true;
+        }
+    }
+    return false;
+}
