@@ -159,17 +159,17 @@ FName ABossEnemy_Mage::GetProjectileSpawnSocket() const
 	return FName("MagicSocket");
 }
 
-void ABossEnemy_Mage::Destroyed()
+void ABossEnemy_Mage::OnDead()
 {
-	for (auto Minions : SummonMinionsArray)
+	for (ABaseEnemy* Minion : SummonMinionsArray)
 	{
-		if (Minions)
+		if (Minion)
 		{
-			Minions->Destroy();
+			Minion->Destroy();
 		}
 	}
-	
-	Super::Destroyed();
+
+	Super::OnDead();
 }
 
 UAnimMontage* ABossEnemy_Mage::DodgeBackward()
@@ -225,10 +225,9 @@ void ABossEnemy_Mage::SummonMinions()
 {
 	if (!SummonSpawnBox || SummonMinionClasses.IsEmpty()) return;
 
-	FVector BoxCenter = SummonSpawnBox->GetComponentLocation();
+	FVector ActorLocation = GetActorLocation();
 	FVector BoxExtent = SummonSpawnBox->GetScaledBoxExtent();
-	FBox SpawnArea(BoxCenter - BoxExtent, BoxCenter + BoxExtent);
-	float SpawnZ = GetActorLocation().Z;
+	float SpawnZ = ActorLocation.Z;
 
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
@@ -237,7 +236,13 @@ void ABossEnemy_Mage::SummonMinions()
 	{
 		if (!MinionClass) continue;
 
-		FVector RandomPoint = FMath::RandPointInBox(SpawnArea);
+		// 액터 로컬 공간 기준으로 정면(X+) 방향에서만 랜덤 오프셋 생성
+		float ForwardOffset = FMath::RandRange(50.f, (float)BoxExtent.X);
+		float RightOffset   = FMath::RandRange(-(float)BoxExtent.Y, (float)BoxExtent.Y);
+
+		FVector RandomPoint = ActorLocation
+			+ GetActorForwardVector() * ForwardOffset
+			+ GetActorRightVector()   * RightOffset;
 		RandomPoint.Z = SpawnZ;
 
 		ABaseEnemy* SummonedEnemy = GetWorld()->SpawnActor<ABaseEnemy>(MinionClass, RandomPoint, FRotator::ZeroRotator, SpawnParams);

@@ -13,6 +13,7 @@ class USkillCooldownWidget;
 UENUM(BlueprintType)
 enum class EUIType : uint8
 {
+	Opening, 
 	GameStart,
 	Lobby,
 	Death,

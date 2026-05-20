@@ -2,8 +2,6 @@
 #include "Character/PlayerCharacter.h"
 #include "Combat/HealthComponent.h"
 #include "EnhancedInputSubsystems.h"
-
-//UI
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Kismet/KismetSystemLibrary.h"
@@ -14,105 +12,150 @@
 #include "UI/Inventory/QuickSlotWidget.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "UI/Inventory/MasterInventoryWidget.h"
-
+#include "UI/Opening/OpeningSequencer.h"
+#include "UI/Opening/OpeningWidget.h"
 
 ABasePlayerController::ABasePlayerController()
-	: InputMappingContext(nullptr)
-	, MoveAction(nullptr)
-	, JumpAction(nullptr)
-	, LookAction(nullptr)
-	, SprintAction(nullptr)
-	, BasicAttackAction(nullptr)
-	, DodgeAction(nullptr)
-	, ActiveSkillAction(nullptr)
-	, LockAction(nullptr)
-	, UIManager(nullptr)
-	, EnemyTracker(nullptr)
-	, HUDWidgetRef(nullptr)
+    : InputMappingContext(nullptr)
+    , MoveAction(nullptr)
+    , JumpAction(nullptr)
+    , LookAction(nullptr)
+    , SprintAction(nullptr)
+    , BasicAttackAction(nullptr)
+    , DodgeAction(nullptr)
+    , ActiveSkillAction(nullptr)
+    , LockAction(nullptr)
+    , UIManager(nullptr)
+    , EnemyTracker(nullptr)
+    , HUDWidgetRef(nullptr)
+    , OpeningSequencer(nullptr)
 {
 }
 
 void ABasePlayerController::BeginPlay()
 {
-	Super::BeginPlay();
+    Super::BeginPlay();
+    InitializeInput();
 
-	InitializeInput();
+    if (UIManager)
+        UIManager->Initialize(this);
 
-	if (UIManager)
-	{
-		UIManager->Initialize(this);
-	}
+    if (EnemyTracker)
+    {
+        EnemyTracker->Initialize(this);
+        EnemyTracker->StartTracking();
+    }
 
-	if (EnemyTracker)
-	{
-		EnemyTracker->Initialize(this);
-		EnemyTracker->StartTracking();
-	}
-
-	ShowGameStartUI();
+    ShowGameStartUI();
 }
 
 void ABasePlayerController::SetupInputComponent()
 {
-	Super::SetupInputComponent();
-
-	InputComponent->BindKey(EKeys::One, IE_Pressed, this, &ABasePlayerController::UseQuickSlot1);
-	InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ABasePlayerController::UseQuickSlot2);
-	InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ABasePlayerController::UseQuickSlot3);
-	InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ABasePlayerController::UseQuickSlot4);
+    Super::SetupInputComponent();
+    InputComponent->BindKey(EKeys::One, IE_Pressed, this, &ABasePlayerController::UseQuickSlot1);
+    InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ABasePlayerController::UseQuickSlot2);
+    InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ABasePlayerController::UseQuickSlot3);
+    InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ABasePlayerController::UseQuickSlot4);
 }
 
 void ABasePlayerController::InitializeInput()
 {
-	ULocalPlayer* LocalPlayer = GetLocalPlayer();
-	if (!LocalPlayer) return;
+    ULocalPlayer* LocalPlayer = GetLocalPlayer();
+    if (!LocalPlayer) return;
 
-	auto* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
-	if (Subsystem && InputMappingContext)
-	{
-		Subsystem->AddMappingContext(InputMappingContext, 0);
-	}
+    auto* Subsystem = LocalPlayer->GetSubsystem<UEnhancedInputLocalPlayerSubsystem>();
+    if (Subsystem && InputMappingContext)
+        Subsystem->AddMappingContext(InputMappingContext, 0);
 }
 
 void ABasePlayerController::SetStageState(ECheckStageResult NewState)
 {
-	if (!UIManager) return;
+    if (!UIManager) return;
 
-	UIManager->HideWidget(EUIType::Death);
-	UIManager->HideWidget(EUIType::Victory);
+    UIManager->HideWidget(EUIType::Death);
+    UIManager->HideWidget(EUIType::Victory);
 
-	switch (NewState)
-	{
-	case ECheckStageResult::NotEnd:
-		InitHUDWidget();
-		if (HUDWidgetRef) HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
-		break;
-	case ECheckStageResult::Win:
-		ShowVictoryUI();
-		break;
-	case ECheckStageResult::Defeat:
-		ShowDeathUI();
-		break;
-	}
+    switch (NewState)
+    {
+    case ECheckStageResult::NotEnd:
+        InitHUDWidget();
+        if (HUDWidgetRef) HUDWidgetRef->SetVisibility(ESlateVisibility::Visible);
+        break;
+    case ECheckStageResult::Win:
+        ShowVictoryUI();
+        break;
+    case ECheckStageResult::Defeat:
+        ShowDeathUI();
+        break;
+    }
 }
 
 void ABasePlayerController::ShowGameStartUI()
 {
-	if (!UIManager) return;
-	UIManager->ShowWidget(EUIType::GameStart);
-	if (EnemyTracker) EnemyTracker->SetSuppressed(true);
-	SetInputMode(FInputModeUIOnly{});
-	bShowMouseCursor = true;
+    if (!UIManager) return;
+    UIManager->ShowWidget(EUIType::GameStart);
+    if (EnemyTracker) EnemyTracker->SetSuppressed(true);
+    SetInputMode(FInputModeUIOnly{});
+    bShowMouseCursor = true;
 }
 
 void ABasePlayerController::HideGameStartUI()
 {
-	if (!UIManager) return;
-	UIManager->HideWidget(EUIType::GameStart);
-	if (EnemyTracker) EnemyTracker->SetSuppressed(false);
-	
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
+    if (!UIManager) return;
+    UIManager->HideWidget(EUIType::GameStart);
+    
+}
+
+void ABasePlayerController::OnStartButtonClicked()
+{
+    UE_LOG(LogTemp, Warning, TEXT(" OnStartButtonClicked 호출됨"));
+
+    HideGameStartUI();
+
+    if (!UIManager || !OpeningScenarioTable)
+    {
+        UE_LOG(LogTemp, Error, TEXT("UIManager 또는 OpeningScenarioTable 없음"));
+        StartGame();
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("ShowWidget Opening 호출"));
+    UIManager->ShowWidget(EUIType::Opening);
+
+    if (EnemyTracker) EnemyTracker->SetSuppressed(true);
+    SetInputMode(FInputModeUIOnly{});
+    bShowMouseCursor = false;
+
+    OpeningSequencer = NewObject<UOpeningSequencer>(this);
+    OpeningSequencer->ScenarioTable = OpeningScenarioTable;
+    OpeningSequencer->OnOpeningEnd.AddDynamic(
+        this, &ABasePlayerController::OnOpeningEnd);
+
+    UOpeningWidget* OpeningWidget = Cast<UOpeningWidget>(
+        UIManager->GetOrCreateWidget(EUIType::Opening));
+
+    UE_LOG(LogTemp, Warning, TEXT("OpeningWidget 캐스트: %s"),
+        OpeningWidget ? TEXT("성공") : TEXT("실패"));
+
+    if (OpeningWidget)
+        OpeningWidget->InitWidget(OpeningSequencer);
+
+    UE_LOG(LogTemp, Warning, TEXT("StartSequence 호출 - Scenario_1"));
+    OpeningSequencer->StartSequence(FName("Scenario_1")); 
+}
+
+void ABasePlayerController::OnOpeningEnd()
+{
+    if (UIManager) UIManager->HideWidget(EUIType::Opening);
+    StartGame();
+}
+
+void ABasePlayerController::StartGame()
+{
+    if (EnemyTracker) EnemyTracker->SetSuppressed(false);
+    SetStageState(ECheckStageResult::NotEnd);
+    SetInputMode(FInputModeGameOnly{});
+    bShowMouseCursor = false;
 }
 
 void ABasePlayerController::ShowLobbyUI() { if (UIManager) UIManager->ShowWidget(EUIType::Lobby); }
@@ -124,123 +167,108 @@ void ABasePlayerController::HideVictoryUI() { if (UIManager) UIManager->HideWidg
 
 void ABasePlayerController::ShowMainMenu()
 {
-	if (!UIManager) return;
-	UIManager->ShowWidget(EUIType::MainMenu);
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-	SetInputMode(FInputModeUIOnly{});
-	bShowMouseCursor = true;
+    if (!UIManager) return;
+    UIManager->ShowWidget(EUIType::MainMenu);
+    UGameplayStatics::SetGamePaused(GetWorld(), true);
+    SetInputMode(FInputModeUIOnly{});
+    bShowMouseCursor = true;
 }
 
 void ABasePlayerController::ContinueGame()
 {
-	if (!UIManager) return;
-	UIManager->HideWidget(EUIType::MainMenu);
-	UGameplayStatics::SetGamePaused(GetWorld(), false);
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
+    if (!UIManager) return;
+    UIManager->HideWidget(EUIType::MainMenu);
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+    SetInputMode(FInputModeGameOnly{});
+    bShowMouseCursor = false;
 }
 
 void ABasePlayerController::RestartGame()
 {
-	UGameplayStatics::SetGamePaused(GetWorld(), false);
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
-	UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+    SetInputMode(FInputModeGameOnly{});
+    bShowMouseCursor = false;
+    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
 }
 
 void ABasePlayerController::QuitGame()
 {
-	UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
+    UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
 }
 
 void ABasePlayerController::ShowMasterInventory()
 {
-	UE_LOG(LogTemp, Warning, TEXT("ShowMasterInventory 호출됨"));
+    if (!UIManager) { UE_LOG(LogTemp, Error, TEXT("UIManager 없음")); return; }
 
-	if (!UIManager) { UE_LOG(LogTemp, Error, TEXT("UIManager 없음")); return; }
+    UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::MasterInventory);
+    UMasterInventoryWidget* MasterWidget = Cast<UMasterInventoryWidget>(RawWidget);
+    if (!MasterWidget) return;
 
-	UUserWidget* RawWidget = UIManager->GetOrCreateWidget(EUIType::MasterInventory);
-	UE_LOG(LogTemp, Warning, TEXT("RawWidget: %s"), RawWidget ? TEXT("있음") : TEXT("없음"));
+    APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+    if (!PlayerCharacter) return;
 
-	UMasterInventoryWidget* MasterWidget = Cast<UMasterInventoryWidget>(RawWidget);
-	UE_LOG(LogTemp, Warning, TEXT("MasterWidget 캐스트: %s"), MasterWidget ? TEXT("성공") : TEXT("실패"));
+    MasterWidget->InitWidget(
+        PlayerCharacter->ConsumableInventory,
+        PlayerCharacter->SocketItemInventory,
+        QuickSlotWidgetRef,
+        PlayerCharacter->SpawnedWeapon
+    );
 
-	if (!MasterWidget) return;
-
-	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-	UE_LOG(LogTemp, Warning, TEXT("PlayerCharacter: %s"), PlayerCharacter ? TEXT("있음") : TEXT("없음"));
-
-	if (!PlayerCharacter) return;
-
-	MasterWidget->InitWidget(
-		PlayerCharacter->ConsumableInventory,
-		PlayerCharacter->SocketItemInventory,
-		QuickSlotWidgetRef,
-		PlayerCharacter->SpawnedWeapon
-	);
-
-	UIManager->ShowWidget(EUIType::MasterInventory);
-	UGameplayStatics::SetGamePaused(GetWorld(), true);
-	SetInputMode(FInputModeUIOnly{});
-	bShowMouseCursor = true;
+    UIManager->ShowWidget(EUIType::MasterInventory);
+    UGameplayStatics::SetGamePaused(GetWorld(), true);
+    SetInputMode(FInputModeUIOnly{});
+    bShowMouseCursor = true;
 }
 
 void ABasePlayerController::HideMasterInventory()
 {
-	if (!UIManager) return;
-	UIManager->HideWidget(EUIType::MasterInventory);
-	UGameplayStatics::SetGamePaused(GetWorld(), false);
-	SetInputMode(FInputModeGameOnly{});
-	bShowMouseCursor = false;
+    if (!UIManager) return;
+    UIManager->HideWidget(EUIType::MasterInventory);
+    UGameplayStatics::SetGamePaused(GetWorld(), false);
+    SetInputMode(FInputModeGameOnly{});
+    bShowMouseCursor = false;
 }
 
 void ABasePlayerController::InitQuickSlotWidget()
 {
-	if (!UIManager) return;
+    if (!UIManager) return;
+    UIManager->ShowWidget(EUIType::QuickSlot);
 
-	UIManager->ShowWidget(EUIType::QuickSlot);
+    UQuickSlotWidget* QuickSlotWidget =
+        Cast<UQuickSlotWidget>(UIManager->GetWidget(EUIType::QuickSlot));
+    if (!QuickSlotWidget) return;
 
-	UQuickSlotWidget* QuickSlotWidget =
-		Cast<UQuickSlotWidget>(UIManager->GetWidget(EUIType::QuickSlot));
+    APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+    if (!PlayerCharacter) return;
 
-	UE_LOG(LogTemp, Log, TEXT("QuickSlotWidget 캐스트: %s"),
-		QuickSlotWidget ? TEXT("성공") : TEXT("실패"));
-
-	if (!QuickSlotWidget) return;
-
-	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-	if (!PlayerCharacter) return;
-
-	QuickSlotWidget->InitQuickSlot(PlayerCharacter->ConsumableInventory);
-
-	QuickSlotWidgetRef = QuickSlotWidget;
-
-	UE_LOG(LogTemp, Log, TEXT("QuickSlotWidgetRef 설정 완료: %s"),
-		QuickSlotWidgetRef ? TEXT("성공") : TEXT("실패"));
+    QuickSlotWidget->InitQuickSlot(PlayerCharacter->ConsumableInventory);
+    QuickSlotWidgetRef = QuickSlotWidget;
 }
 
 void ABasePlayerController::InitHUDWidget()
 {
-	if (HUDWidgetRef || !HUDWidgetClass) return;
+    if (HUDWidgetRef || !HUDWidgetClass) return;
 
-	HUDWidgetRef = CreateWidget<UPlayerHUDWidget>(this, HUDWidgetClass);
-	if (!HUDWidgetRef) return;
+    HUDWidgetRef = CreateWidget<UPlayerHUDWidget>(this, HUDWidgetClass);
+    if (!HUDWidgetRef) return;
 
-	HUDWidgetRef->AddToViewport(ZOrder_HUD);
+    HUDWidgetRef->AddToViewport(ZOrder_HUD);
 
-	APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
-	if (!PlayerCharacter) return;
+    APlayerCharacter* PlayerCharacter = Cast<APlayerCharacter>(GetPawn());
+    if (!PlayerCharacter) return;
 
-	UHealthComponent* HealthComp = PlayerCharacter->GetHealthComponent();
-	if (!HealthComp) return;
+    UHealthComponent* HealthComp = PlayerCharacter->GetHealthComponent();
+    if (!HealthComp) return;
 
-	HUDWidgetRef->InitWidget(HealthComp);
-	USkillComponent* SkillComp = PlayerCharacter->FindComponentByClass<USkillComponent>();
-	if (SkillComp)
-		HUDWidgetRef->InitSkillCooldown(SkillComp);
+    HUDWidgetRef->InitWidget(HealthComp);
 
-	InitQuickSlotWidget();
+    USkillComponent* SkillComp = PlayerCharacter->FindComponentByClass<USkillComponent>();
+    if (SkillComp)
+        HUDWidgetRef->InitSkillCooldown(SkillComp);
+
+    InitQuickSlotWidget();
 }
+
 void ABasePlayerController::UseQuickSlot1() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(0); }
 void ABasePlayerController::UseQuickSlot2() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(1); }
 void ABasePlayerController::UseQuickSlot3() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(2); }

@@ -7,6 +7,7 @@
 struct FUseSkillTaskMemory
 {
 	bool bSkillStarted;
+	bool bShouldTrack;
 	UAnimMontage* CachedSkillMontage;
 };
 
@@ -26,4 +27,7 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
 	float MaxDeltaYaw;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
+	float MinTrackDistance;
 };

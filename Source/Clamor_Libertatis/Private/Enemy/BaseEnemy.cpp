@@ -133,7 +133,7 @@ float ABaseEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 
 void ABaseEnemy::BeginMontageAttack(UAnimMontage* Montage)
 {
-	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Ignore);
+	GetCapsuleComponent()->SetCollisionResponseToChannel(ECC_Pawn, ECR_Block);
 
 	FOnMontageEnded EndDelegate;
 	EndDelegate.BindUObject(this, &ABaseEnemy::OnAttackMontageEnded);
@@ -177,9 +177,10 @@ void ABaseEnemy::AttackHitCheck()
 		FRotator HorizontalRot = FRotator(0.f, GetActorRotation().Yaw, 0.f);
 		FVector HorizontalForward = HorizontalRot.Vector();
 
+		FVector AttackOrigin = GetActorLocation() - FVector(0.f, 0.f, GetCapsuleComponent()->GetScaledCapsuleHalfHeight() * 0.5f);
 		FVector StartPos = (SkillInfo && SkillInfo->bIsHoming && PlayerPawn)
 			? PlayerPawn->GetActorLocation()
-			: GetActorLocation() + (HorizontalForward * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
+			: AttackOrigin + (HorizontalForward * Enemy_CombatComp->GetAttackDistance(CurrentAttackData.Key,CurrentAttackData.Value));
 		FCollisionShape AttackCollision = Enemy_CombatComp->MakeAttackCollision(CurrentAttackData.Key,CurrentAttackData.Value);
 		FQuat Rotation = HorizontalRot.Quaternion();
 		
@@ -218,7 +219,6 @@ void ABaseEnemy::ApplyStun(float Duration)
 		false
 	);
 }
-
 
 const FEnemySkillInfo* ABaseEnemy::GetCurrentSkillInfo() const
 {

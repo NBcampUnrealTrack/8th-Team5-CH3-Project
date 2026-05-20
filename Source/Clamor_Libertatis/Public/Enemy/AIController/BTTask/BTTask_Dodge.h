@@ -25,6 +25,9 @@ protected:
 	virtual void TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, float DeltaSeconds) override;
 	virtual void OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult) override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dodge")
+	float MaxDeltaYaw = 5.f;
+
 	// 마법사처럼 몽타주 없을 때 회피 지속 시간
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Dodge")
 	float DodgeDuration = 0.5f;

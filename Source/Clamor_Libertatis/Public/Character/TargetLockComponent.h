@@ -7,6 +7,8 @@
 #include "TargetLockComponent.generated.h"
 
 class ABaseEnemy;
+class UWidgetComponent;
+class UUserWidget;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnLockTargetChanged, ABaseEnemy*, NewTarget);
 
@@ -40,6 +42,11 @@ protected:
 	float MaxLockDistsq;
 	UPROPERTY(EditAnywhere, Category = "LockOn")
 	TEnumAsByte<ECollisionChannel> TargetChannel;
+
+	UPROPERTY(VisibleAnywhere, Category = "LockOn")
+	UWidgetComponent* LockOnWidgetComp;
+	UPROPERTY(EditAnywhere, Category = "LockOn")
+	TSubclassOf<UUserWidget> LockOnWidgetClass;
 
 	AActor* FindTarget();
 	void UpdateRotation(float DeltaTime);

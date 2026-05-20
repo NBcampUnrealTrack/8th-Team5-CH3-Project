@@ -10,6 +10,7 @@ UBTTask_UseSkill::UBTTask_UseSkill()
 {
 	NodeName = TEXT("UseSkill");
 	MaxDeltaYaw = 5.f;
+	MinTrackDistance = 2.f;
 }
 
 EBTNodeResult::Type UBTTask_UseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -18,6 +19,7 @@ EBTNodeResult::Type UBTTask_UseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerC
 
 	FUseSkillTaskMemory* Memory = reinterpret_cast<FUseSkillTaskMemory*>(NodeMemory);
 	Memory->bSkillStarted = false;
+	Memory->bShouldTrack = true;
 	Memory->CachedSkillMontage = nullptr;
 
 	AAIController* AIC = OwnerComp.GetAIOwner();
@@ -48,6 +50,17 @@ void UBTTask_UseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 
 	if (Memory->bSkillStarted)
 	{
+		if (Memory->bShouldTrack)
+		{
+			AActor* TrackTarget = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
+			if (TrackTarget && FVector::Dist2D(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation()) >= MinTrackDistance)
+			{
+				FRotator LookAt = UKismetMathLibrary::FindLookAtRotation(OwnerPawn->GetActorLocation(), TrackTarget->GetActorLocation());
+				FRotator NewRot = FMath::RInterpTo(OwnerPawn->GetActorRotation(), FRotator(0.f, LookAt.Yaw, 0.f), DeltaSeconds, 30.f);
+				OwnerPawn->SetActorRotation(NewRot);
+			}
+		}
+
 		if (ABossEnemy* Boss = Cast<ABossEnemy>(OwnerPawn))
 		{
 			UAnimInstance* AnimInst = Boss->GetMesh()->GetAnimInstance();
@@ -84,6 +97,10 @@ void UBTTask_UseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 			if (Memory->CachedSkillMontage)
 			{
 				Memory->bSkillStarted = true;
+				if (const FEnemySkillInfo* SkillInfo = Boss->GetCurrentSkillInfo())
+				{
+					Memory->bShouldTrack = SkillInfo->bTrackPlayerDuringAttack;
+				}
 			}
 			else
 			{
