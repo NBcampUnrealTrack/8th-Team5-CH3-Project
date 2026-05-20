@@ -4,6 +4,7 @@
 #include "Components/ActorComponent.h"
 #include "Enemy_ItemDropTableComponent.generated.h"
 
+class ABossDropItem;
 
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class CLAMOR_LIBERTATIS_API UEnemy_ItemDropTableComponent : public UActorComponent
@@ -12,14 +13,15 @@ class CLAMOR_LIBERTATIS_API UEnemy_ItemDropTableComponent : public UActorCompone
 
 public:
 	UEnemy_ItemDropTableComponent();
-	
-	void DropItem();
+
+	void DropItem(FVector SpawnLocation);
+
 protected:
 	virtual void BeginPlay() override;
-	
-	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="DataTable")
-	TObjectPtr<UDataTable> DT_ItemData;
-	
+
+	UPROPERTY(EditAnywhere, Category = "Drop")
+	TSubclassOf<ABossDropItem> BossDropItemClass;
+
 public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
 	                           FActorComponentTickFunction* ThisTickFunction) override;

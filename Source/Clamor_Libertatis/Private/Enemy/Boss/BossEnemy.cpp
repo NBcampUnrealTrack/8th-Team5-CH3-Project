@@ -1,4 +1,6 @@
 #include "Enemy/Boss/BossEnemy.h"
+#include "Enemy/ActorComponent/Enemy_ItemDropTableComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "Enemy/ActorComponent/Enemy_CombatComponent.h"
 #include "Enemy/ActorComponent/Enemy_StatComponent.h"
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
@@ -12,6 +14,8 @@ ABossEnemy::ABossEnemy()
 	Count_NormalAttack = 0;
 	bIsPhase2 = false;
 	Phase2HPThreshold = 0.5f;
+
+	ItemDropComp = CreateDefaultSubobject<UEnemy_ItemDropTableComponent>(TEXT("ItemDropTableComponent"));
 }
 
 void ABossEnemy::BeginPlay()
@@ -26,6 +30,13 @@ void ABossEnemy::Tick(float DeltaTime)
 
 void ABossEnemy::OnDead()
 {
+	if (ItemDropComp)
+	{
+		FVector SpawnLocation = GetActorLocation();
+		SpawnLocation.Z -= GetCapsuleComponent()->GetScaledCapsuleHalfHeight();
+		ItemDropComp->DropItem(SpawnLocation);
+	}
+
 	Super::OnDead();
 }
 

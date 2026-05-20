@@ -555,3 +555,20 @@ void APlayerCharacter::SpawnHitEffect()
         );
     }
 }
+
+void APlayerCharacter::PickupItem(struct FItemTableRow* ItemData)
+{
+    if (!ItemData) return;
+    FString ItemNameString = ItemData->ItemName.ToString();
+    FName TargetItemID = FName(*ItemNameString);
+
+    if (ConsumableInventory)
+    {
+        ConsumableInventory->AddItem(TargetItemID, 1);
+    }
+
+    if (SocketItemInventory)
+    {
+        SocketItemInventory->AddItem(TargetItemID, 1);
+    }
+}
