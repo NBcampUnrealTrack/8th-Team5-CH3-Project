@@ -94,6 +94,15 @@ private:
 	UPROPERTY()
 	AWeaponBase* CurrentWeapon;
 
+	UPROPERTY(EditAnywhere, Category="Combat|Debug")
+	bool bEquipTestSocketItemOnWeaponSet = false;
+
+	UPROPERTY(EditAnywhere, Category="Combat|Debug", meta=(EditCondition="bEquipTestSocketItemOnWeaponSet"))
+	FPrimaryAssetId TestSocketItemAssetId = FPrimaryAssetId(
+		FPrimaryAssetType(TEXT("WeaponSocketItem")),
+		FName(TEXT("1001"))
+	);
+
 	
 	void StartAttack();
 
