@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
+#include "Item/Inventory/InventoryComponent.h"
 #include "CLGameInstance.generated.h"
 
 /**
@@ -28,14 +29,19 @@ public:
 	void RegisterViewedQuestion(const FString& PrefixKey);
 	bool HasViewedQuestion(FName RowName) const { return ViewedQuestions.Contains(RowName); }
 
+	void SaveInventory(const TArray<FInventorySlot>& Slots);
+	const TArray<FInventorySlot>& GetSavedInventory() const { return SavedInventorySlots; }
+
 	FName LastScenarioRowName;
 
 	//restart ¹öÆ°¿ë
 	void ResetGame();
 
 private:
-	int32 WonBattleCount;	
+	int32 WonBattleCount;
 
 	UPROPERTY()
 	TSet<FName> ViewedQuestions;
+
+	TArray<FInventorySlot> SavedInventorySlots;
 };

@@ -42,6 +42,8 @@ private:
 	UFUNCTION()
 	void OnGameOver();
 
+	void SaveInventoryToGameInstance();
+
 	UPROPERTY()
 	TObjectPtr<class AGameStateBase> CachedGameState;
 

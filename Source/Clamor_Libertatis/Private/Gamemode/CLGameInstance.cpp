@@ -26,9 +26,17 @@ void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
         UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 질문 기록 완료: %s"), *PrefixKey);
     }
 }
+
 void UCLGameInstance::ResetGame()
 {
     WonBattleCount = 0;
     LastScenarioRowName = FName("Scenario_1");
     ViewedQuestions.Empty();
+}
+
+
+void UCLGameInstance::SaveInventory(const TArray<FInventorySlot>& Slots)
+{
+    SavedInventorySlots = Slots;
+    UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 인벤토리 저장 완료: %d 슬롯"), Slots.Num());
 }

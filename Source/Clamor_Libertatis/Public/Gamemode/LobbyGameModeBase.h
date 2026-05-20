@@ -10,6 +10,7 @@
 // class ULoreManagerComponent;
 
 class UScenarioManagerComponent;
+class UCraftingComponent;
 
 /**
  * 
@@ -31,19 +32,29 @@ public:
 	
 	// 준비를 마침
 	UFUNCTION(BlueprintCallable, Category="GameLogic")
-	void ReadyComplete();	
-	
-	// 배틀로 진입함
+	void ReadyComplete();
+
+	UFUNCTION(BlueprintCallable, Category="GameLogic")
+    void OpenCraftingWindow();
+
+    // 배틀로 진입함
 	UFUNCTION(BlueprintCallable, Category = "GameLogic")
 	void GotoBattle();
 
 
 	// Opening Widget
-	UPROPERTY(EditAnywhere) 
+	UPROPERTY(EditAnywhere)
 	TSubclassOf<UUserWidget> OpeningWidgetClass;
+
+	// 크래프팅 창 위젯 (에디터에서 WBP_CraftingWindow 연결)
+	UPROPERTY(EditAnywhere, Category = "Crafting")
+	TSubclassOf<UUserWidget> CraftingWindowClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario")
 	class UScenarioManagerComponent* ScenarioManagerComp;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crafting")
+	UCraftingComponent* CraftingComp;
 
 
 private:

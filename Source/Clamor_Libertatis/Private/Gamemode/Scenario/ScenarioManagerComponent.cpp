@@ -9,6 +9,7 @@
 UScenarioManagerComponent::UScenarioManagerComponent()
 {
 	PrimaryComponentTick.bCanEverTick = false;
+    bScenarioEnd = true;
 }
 
 // Called when Scenario starts First time or when Next Step is requested
