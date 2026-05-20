@@ -28,7 +28,11 @@ enum class EDodgeDirection : uint8
 	Forward,
 	Backward,
 	Left,
-	Right
+	Right,
+	ForwardLeft,
+	ForwardRight,
+	BackwardLeft,
+	BackwardRight
 };
 
 UCLASS()

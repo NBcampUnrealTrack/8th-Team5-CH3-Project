@@ -191,7 +191,7 @@ void UHealthComponent::ManaHeal(float Amount)
 		return;
 	if (Mana.Recover(Amount))
 	{
-		OnManaChanged.Broadcast(Health.CurrentValue, Health.MaxValue);
+		OnManaChanged.Broadcast(Mana.CurrentValue, Mana.MaxValue);
 	}
 }
 

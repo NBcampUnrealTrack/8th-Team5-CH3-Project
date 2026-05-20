@@ -172,7 +172,10 @@ void UCombatComponent::CheckCombo()
 void UCombatComponent::SetCurrentWeapon(AWeaponBase* NewWeapon)
 {
 	CurrentWeapon = NewWeapon;
-	EquipTestSocketItem();
+	if (bEquipTestSocketItemOnWeaponSet)
+	{
+		EquipTestSocketItem();
+	}
 }
 
 AWeaponBase* UCombatComponent::GetCurrentWeapon() const
@@ -265,6 +268,11 @@ void UCombatComponent::EndDodge()
 	UE_LOG(LogCombat, Warning, TEXT("Dodge End"));
 	
 	bIsInvincible = false;
+	if (!OwnerCharacter)
+	{
+		return;
+	}
+
 	UTargetLockComponent* LockOnComponent = OwnerCharacter->FindComponentByClass<UTargetLockComponent>();
 	if (LockOnComponent) {
 		LockOnComponent->ToggleCharacterRotationLock(true);
@@ -485,29 +493,28 @@ void UCombatComponent::EquipTestSocketItem()
 		return;
 	}
 
+	if (!TestSocketItemAssetId.IsValid())
+	{
+		return;
+	}
+
 	UAssetManager& AssetManager = UAssetManager::Get();
-
-	const FPrimaryAssetId AssetId(
-		FPrimaryAssetType(TEXT("WeaponSocketItem")),
-		FName(TEXT("1001"))
-	);
-
 	AssetManager.LoadPrimaryAsset(
-		AssetId,
+		TestSocketItemAssetId,
 		TArray<FName>(),
-		FStreamableDelegate::CreateWeakLambda(this, [this, AssetId]()
+		FStreamableDelegate::CreateWeakLambda(this, [this]()
 			{
 				if (!CurrentWeapon)
 				{
 					return;
 				}
 
-				UObject* LoadedObject = UAssetManager::Get().GetPrimaryAssetObject(AssetId);
+				UObject* LoadedObject = UAssetManager::Get().GetPrimaryAssetObject(TestSocketItemAssetId);
 				UWeaponSocketItemData* SocketItem = Cast<UWeaponSocketItemData>(LoadedObject);
 
 				if (!SocketItem)
 				{
-					UE_LOG(LogCombat, Warning, TEXT("Failed to load socket item: %s"), *AssetId.ToString());
+					UE_LOG(LogCombat, Warning, TEXT("Failed to load socket item: %s"), *TestSocketItemAssetId.ToString());
 					return;
 				}
 
