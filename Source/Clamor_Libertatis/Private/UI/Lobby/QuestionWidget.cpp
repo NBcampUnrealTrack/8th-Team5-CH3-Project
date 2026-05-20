@@ -1,4 +1,4 @@
-#include "UI/Lobby/QuestionWidget.h"
+﻿#include "UI/Lobby/QuestionWidget.h"
 #include "UI/Lobby/QuestionChoiceButton.h"
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
 #include "Components/VerticalBox.h"
@@ -30,6 +30,20 @@ void UQuestionWidget::ShowChoices(const TArray<FScenarioData>& Choices)
         Button->InitButton(Data, bRead);
         Button->OnChoiceClicked.AddDynamic(this, &UQuestionWidget::HandleChoiceClicked);
         Box_Choices->AddChild(Button);
+    }
+    UQuestionChoiceButton* SkipButton =
+        CreateWidget<UQuestionChoiceButton>(this, ChoiceButtonClass);
+    if (SkipButton)
+    {
+        FScenarioData SkipData;
+        SkipData.Dialogue = FText::FromString(TEXT("질문하지 않는다."));
+        SkipData.NextID = FName("SkipQuestion");
+        SkipData.Type = ETalkType::Choice;
+
+        SkipButton->InitButton(SkipData, false);
+        SkipButton->OnChoiceClicked.AddDynamic(
+            this, &UQuestionWidget::HandleChoiceClicked);
+        Box_Choices->AddChild(SkipButton);
     }
 }
 

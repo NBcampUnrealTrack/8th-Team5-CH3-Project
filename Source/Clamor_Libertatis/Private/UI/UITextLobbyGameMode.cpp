@@ -18,7 +18,7 @@ void AUITextLobbyGameMode::BeginPlay()
 {
     Super::BeginPlay();
 
-    UE_LOG(LogTemp, Warning, TEXT("=== UITextLobbyGameMode BeginPlay ==="));
+    UE_LOG(LogTemp, Warning, TEXT(" UITextLobbyGameMode BeginPlay"));
 
     UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
 
@@ -147,6 +147,11 @@ void AUITextLobbyGameMode::ShowLobbyPhase()
 
 void AUITextLobbyGameMode::OnQuestionSelected(FName NextID)
 {
+    if (NextID == FName("SkipQuestion"))
+    {
+        ShowLobbyPhase();
+        return;
+    }
     if (ScenarioManagerComp)
         ScenarioManagerComp->StartScenario(NextID);
 }
@@ -177,6 +182,19 @@ void AUITextLobbyGameMode::GotoBattle()
     if (!GI) return;
 
     int32 Count = GI->GetWonBattleCount();
+
+    if (Count >= 3)
+    {
+        // 엔딩 레벨 있으면, 엔딩을 2가지로 1번 엔딩
+        // UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_Ending"));
+
+        // 없으면 타이틀로
+        if (UCLGameInstance* GI2 = GetGameInstance<UCLGameInstance>())
+            GI2->ResetGame();
+        UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
+        return;
+    }
+
     FString Level =
         Count == 0 ? TEXT("/Game/Level/L_Stage1") :
         Count == 1 ? TEXT("/Game/Level/L_Stage2") :

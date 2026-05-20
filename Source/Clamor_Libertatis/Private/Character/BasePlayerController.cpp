@@ -62,11 +62,11 @@ void ABasePlayerController::BeginPlay()
     else
     {
         // 이후 레벨 진입
-        // 로비 레벨 → UITextLobbyGameMode가 질문 처리
-        // 전투 레벨 → StartGame으로 HUD 표시
+        // 로비 레벨 -> UITextLobbyGameMode가 질문 처리
+        // 전투 레벨 -> StartGame으로 HUD 표시
         if (!GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
         {
-            // 로비 GameMode 아니면 → 전투 레벨 → HUD 표시
+            // 로비 GameMode 아니면 -> 전투 레벨 -> HUD 표시
             StartGame();
         }
     }
@@ -81,7 +81,11 @@ void ABasePlayerController::SetupInputComponent()
     InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ABasePlayerController::UseQuickSlot2);
     InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ABasePlayerController::UseQuickSlot3);
     InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ABasePlayerController::UseQuickSlot4);
+
+    InputComponent->BindKey(EKeys::C, IE_Pressed, this, &ABasePlayerController::ToggleMainMenu);
+    InputComponent->BindKey(EKeys::V, IE_Pressed, this, &ABasePlayerController::ToggleMasterInventory);
 }
+
 
 void ABasePlayerController::InitializeInput()
 {
@@ -186,7 +190,7 @@ void ABasePlayerController::OnOpeningEnd()
         bShowMouseCursor = true;
         bEnableClickEvents = true;
         bEnableMouseOverEvents = true;
-        FInputModeUIOnly InputMode;
+        FInputModeGameAndUI InputMode;
         InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
         SetInputMode(InputMode);
 
@@ -215,8 +219,12 @@ void ABasePlayerController::ShowMainMenu()
     if (!UIManager) return;
     UIManager->ShowWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), true);
-    SetInputMode(FInputModeUIOnly{});
-    bShowMouseCursor = true;
+
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
+    bShowMouseCursor = true;;
 }
 
 void ABasePlayerController::ContinueGame()
@@ -264,7 +272,10 @@ void ABasePlayerController::ShowMasterInventory()
     );
 
     UIManager->ShowWidget(EUIType::MasterInventory);
-    SetInputMode(FInputModeUIOnly{});
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
     bShowMouseCursor = true;
 
     if (!GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
@@ -287,8 +298,9 @@ void ABasePlayerController::HideMasterInventory()
     if (GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
     {
         // 로비 -> UI 모드 유지
-        FInputModeUIOnly InputMode;
+        FInputModeGameAndUI InputMode;
         InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
         SetInputMode(InputMode);
         bShowMouseCursor = true;
     }
@@ -297,6 +309,7 @@ void ABasePlayerController::HideMasterInventory()
         // 전투 -> 게임 모드로 복귀
         UGameplayStatics::SetGamePaused(GetWorld(), false);
         SetInputMode(FInputModeGameOnly{});
+        bShowMouseCursor = false;
     }
 }
 
@@ -344,3 +357,21 @@ void ABasePlayerController::UseQuickSlot1() { if (QuickSlotWidgetRef) QuickSlotW
 void ABasePlayerController::UseQuickSlot2() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(1); }
 void ABasePlayerController::UseQuickSlot3() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(2); }
 void ABasePlayerController::UseQuickSlot4() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(3); }
+
+void ABasePlayerController::ToggleMasterInventory()
+{
+    if (!UIManager) return;
+    if (UIManager->IsWidgetVisible(EUIType::MasterInventory))
+        HideMasterInventory();
+    else
+        ShowMasterInventory();
+}
+
+void ABasePlayerController::ToggleMainMenu()
+{
+    if (!UIManager) return;
+    if (UIManager->IsWidgetVisible(EUIType::MainMenu))
+        ContinueGame();
+    else
+        ShowMainMenu();
+}
