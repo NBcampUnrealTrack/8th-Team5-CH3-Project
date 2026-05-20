@@ -556,19 +556,35 @@ void APlayerCharacter::SpawnHitEffect()
     }
 }
 
-void APlayerCharacter::PickupItem(struct FItemTableRow* ItemData)
+void APlayerCharacter::PickupItem(FItemTableRow* ItemData)
 {
     if (!ItemData) return;
-    FString ItemNameString = ItemData->ItemName.ToString();
-    FName TargetItemID = FName(*ItemNameString);
 
-    if (ConsumableInventory)
+    if (ItemData->ItemType == EItemType::Consumable && ConsumableInventory && ConsumableInventory->ItemDataTable)
     {
-        ConsumableInventory->AddItem(TargetItemID, 1);
+        TArray<FName> RowNames = ConsumableInventory->ItemDataTable->GetRowNames();
+        for (const FName& Name : RowNames)
+        {
+            if (ConsumableInventory->ItemDataTable->FindRow<FItemTableRow>(Name, TEXT("")) == ItemData)
+            {
+                ConsumableInventory->AddItem(Name, 1);
+                UE_LOG(LogTemp, Warning, TEXT("소비 아이템 획득: %s"), *Name.ToString());
+                return;
+            }
+        }
     }
 
-    if (SocketItemInventory)
+    else if (ItemData->ItemType == EItemType::SocketItem && SocketItemInventory && SocketItemInventory->ItemDataTable)
     {
-        SocketItemInventory->AddItem(TargetItemID, 1);
+        TArray<FName> RowNames = SocketItemInventory->ItemDataTable->GetRowNames();
+        for (const FName& Name : RowNames)
+        {
+            if (SocketItemInventory->ItemDataTable->FindRow<FItemTableRow>(Name, TEXT("")) == ItemData)
+            {
+                SocketItemInventory->AddItem(Name, 1);
+                UE_LOG(LogTemp, Warning, TEXT("소켓 아이템 획득: %s"), *Name.ToString());
+                return;
+            }
+        }
     }
 }
