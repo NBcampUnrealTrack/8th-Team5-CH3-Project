@@ -20,5 +20,5 @@ class CLAMOR_LIBERTATIS_API IPickupItemInterface
 	GENERATED_BODY()
 
 public:
-	virtual bool TryPickupItem(class AActor* Item) = 0;
+	virtual void PickupItem(struct FItemTableRow* ItemData) = 0;
 };
