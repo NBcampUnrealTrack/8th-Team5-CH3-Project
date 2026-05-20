@@ -4,9 +4,10 @@
 #include "Combat/Anim/AM_CharacterSuperarmor.h"
 #include "Combat/CombatComponent.h"
 
-void UAM_CharacterSuperarmor::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation, float TotalDuration)
+void UAM_CharacterSuperarmor::NotifyBegin(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+	float TotalDuration, const FAnimNotifyEventReference& EventReference)
 {
-	Super::NotifyBegin(MeshComp, Animation, TotalDuration);
+	Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
 	if (!MeshComp)
 	{
 		return;
@@ -24,10 +25,11 @@ void UAM_CharacterSuperarmor::NotifyBegin(USkeletalMeshComponent* MeshComp, UAni
 	}
 }
 
-void UAM_CharacterSuperarmor::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation)
+void UAM_CharacterSuperarmor::NotifyEnd(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
+	const FAnimNotifyEventReference& EventReference)
 {
-	Super::NotifyEnd(MeshComp, Animation);
-		if (!MeshComp)
+	Super::NotifyEnd(MeshComp, Animation, EventReference);
+	if (!MeshComp)
 	{
 		return;
 	}

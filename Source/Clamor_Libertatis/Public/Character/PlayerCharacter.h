@@ -6,6 +6,7 @@
 #include "GameFramework/Character.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/Inventory/SocketItemInventoryComponent.h"
+#include "Item/InterFace/PickupItemInterface.h"
 #include "PlayerCharacter.generated.h"
 
 class UCameraComponent;
@@ -28,11 +29,15 @@ enum class EDodgeDirection : uint8
 	Forward,
 	Backward,
 	Left,
-	Right
+	Right,
+	ForwardLeft,
+	ForwardRight,
+	BackwardLeft,
+	BackwardRight
 };
 
 UCLASS()
-class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter
+class CLAMOR_LIBERTATIS_API APlayerCharacter : public ACharacter, public IPickupItemInterface
 {
 	GENERATED_BODY()
 
@@ -152,4 +157,6 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Inventory")
 	TObjectPtr<USocketItemInventoryComponent> SocketItemInventory;
 
+	// 아이템 획득
+	virtual bool TryPickupItem(class AActor* Item) override;
 };

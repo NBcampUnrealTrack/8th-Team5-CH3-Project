@@ -304,9 +304,9 @@ void AWeaponBase::PlayHitSound(const FHitResult& SweepResult, const AActor* HitA
 	}
 
 	FVector PlayLocation = GetActorLocation();
-	if (SweepResult.bBlockingHit || SweepResult.Location != FVector::ZeroVector)
+	if (SweepResult.bBlockingHit || !SweepResult.ImpactPoint.IsNearlyZero())
 	{
-		PlayLocation = SweepResult.Location;
+		PlayLocation = SweepResult.ImpactPoint;
 	}
 	else if (HitActor)
 	{
@@ -351,13 +351,14 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	{
 		return;
 	}
-	HitActors.Add(OtherActor);
 
 	const float Damage = OwnerCombatComponent->GetCurrentAttackDamage();
 	if (Damage <= 0.0f)
 	{
 		return;
 	}
+
+	HitActors.Add(OtherActor);
 
 	APawn* OwnerPawn = Cast<APawn>(OwnerActor);
 	AController* InstigatorController = OwnerPawn ? OwnerPawn->GetController() : nullptr;

@@ -64,9 +64,8 @@ private:
 	bool CanActivateSkill(const UDA_SkillData* SkillData) const;
 	bool CommitSkillCost(const UDA_SkillData* SkillData) const;
 	void StartCooldown(const UDA_SkillData* SkillData);
-
-
-
+	void ExecuteAllSkillEvents(const UDA_SkillData* SkillData);
+	void SetLockOnRotationOverride(bool bEnable) const;
 
 	void ExecuteEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
 

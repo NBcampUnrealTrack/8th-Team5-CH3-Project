@@ -53,6 +53,8 @@ protected:
 
 	UFUNCTION()
 	void OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted);
+	UFUNCTION(BlueprintImplementableEvent, DisplayName= "OnDead")
+	void ReceiveOnDead();
 #pragma region Weapon
 	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="Weapon")
 	TSubclassOf<AActor> Enemy_WeaponClass;

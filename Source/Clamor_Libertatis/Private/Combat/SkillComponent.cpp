@@ -34,9 +34,6 @@ void USkillComponent::BeginPlay()
 	if (OwnerCharacter)
 	{
 		HealthComponent = OwnerCharacter->FindComponentByClass<UHealthComponent>();
-	}
-	if (OwnerCharacter)
-	{
 		LockOnComponent = OwnerCharacter->FindComponentByClass<UTargetLockComponent>();
 	}
 }
@@ -91,13 +88,14 @@ bool USkillComponent::TryActivateSkill(UDA_SkillData* SkillData)
 			PendingSkillData = nullptr;
 			return false;
 		}
-		LockOnComponent->ToggleCharacterRotationLock(false);
+		SetLockOnRotationOverride(false);
 		FOnMontageEnded MontageEndedDelegate;
 		MontageEndedDelegate.BindUObject(this, &USkillComponent::OnSkillMontageEnded);
 		AnimInstance->Montage_SetEndDelegate(MontageEndedDelegate, SkillData->CastMontage);
 		return true;
 	}
 
+	ExecuteAllSkillEvents(SkillData);
 	return true;
 }
 
@@ -178,12 +176,23 @@ bool USkillComponent::CommitSkillCost(const UDA_SkillData* SkillData) const
 	}
 
 
-	if (HealthComponent->GetCurrentStamina() > 0 && HealthComponent->GetCurrentMana() >= SkillData->ManaCost * ManaCostMultiplier) {
-		HealthComponent->ConsumeStamina(SkillData->StaminaCost);
-		HealthComponent->ConsumeMana(SkillData->ManaCost * ManaCostMultiplier);
-		return true;
+	const float ModifiedManaCost = SkillData->ManaCost * ManaCostMultiplier;
+	if (HealthComponent->GetCurrentMana() < ModifiedManaCost)
+	{
+		return false;
 	}
-	return false;
+
+	if (!HealthComponent->ConsumeStamina(SkillData->StaminaCost))
+	{
+		return false;
+	}
+
+	if (!HealthComponent->ConsumeMana(ModifiedManaCost))
+	{
+		return false;
+	}
+
+	return true;
 }
 
 void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
@@ -197,6 +206,27 @@ void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
 	{
 		SkillCooldownEndTime = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
 		OnSkillCooldownStart.Broadcast(SkillData->Cooldown);
+	}
+}
+
+void USkillComponent::ExecuteAllSkillEvents(const UDA_SkillData* SkillData)
+{
+	if (!SkillData)
+	{
+		return;
+	}
+
+	for (const FSkillEventData& EventData : SkillData->Events)
+	{
+		ExecuteEvent(SkillData, EventData);
+	}
+}
+
+void USkillComponent::SetLockOnRotationOverride(bool bEnable) const
+{
+	if (LockOnComponent && LockOnComponent->GetCurrentTarget())
+	{
+		LockOnComponent->ToggleCharacterRotationLock(bEnable);
 	}
 }
 
@@ -559,5 +589,5 @@ void USkillComponent::OnSkillMontageEnded(UAnimMontage* Montage, bool bInterrupt
 		}
 	}
 
-	LockOnComponent->ToggleCharacterRotationLock(true);
+	SetLockOnRotationOverride(true);
 }
