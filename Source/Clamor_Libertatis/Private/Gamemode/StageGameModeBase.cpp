@@ -33,7 +33,8 @@ void AStageGameModeBase::OnStageClear()
 
     GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
     {
-        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+        //UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/UI/L_UITestMap"));
     }, 5.f, false);
 }
 
@@ -51,7 +52,8 @@ void AStageGameModeBase::OnGameOver()
 
     GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
     {
-        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+        //UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
+        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/UI/L_UITestMap"));
     }, 5.f, false);
 }
 
