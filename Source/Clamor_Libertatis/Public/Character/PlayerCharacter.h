@@ -158,5 +158,5 @@ public:
 	TObjectPtr<USocketItemInventoryComponent> SocketItemInventory;
 
 	// 아이템 획득
-	virtual bool TryPickupItem(class AActor* Item) override;
+	virtual void PickupItem(struct FItemTableRow* ItemData) override;
 };
