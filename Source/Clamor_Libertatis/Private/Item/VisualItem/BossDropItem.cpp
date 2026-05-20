@@ -1,5 +1,6 @@
 #include "Item/VisualItem/BossDropItem.h"
 #include "NiagaraComponent.h"
+#include "Item/Interface/PickupItemInterface.h"
 
 ABossDropItem::ABossDropItem()
 {
@@ -67,12 +68,11 @@ void ABossDropItem::HandleItemOverlap(AActor* OtherActor)
 	
 	UE_LOG(LogTemp,Warning,TEXT("Item Overlap"));
 	
-	// TODO: 팀원이 구현할 인터페이스를 통해 RolledItems 전달
-	// IItemReceiverInterface* Receiver = Cast<IItemReceiverInterface>(OtherActor);
-	// if (Receiver)
-	// {
-	//     for (FItemTableRow* Item : RolledItems)
-	//         Receiver->ReceiveItem(Item);
-	//     Destroy();
-	// }
+	 IPickupItemInterface* Receiver = Cast<IPickupItemInterface>(OtherActor);
+	 if (Receiver)
+	 {
+	     for (FItemTableRow* Item : RolledItems)
+	         Receiver->PickupItem(Item);
+	     Destroy();
+	 }
 }

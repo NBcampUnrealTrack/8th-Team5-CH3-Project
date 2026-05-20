@@ -556,25 +556,19 @@ void APlayerCharacter::SpawnHitEffect()
     }
 }
 
-bool APlayerCharacter::TryPickupItem(class AActor* Item)
+void APlayerCharacter::PickupItem(struct FItemTableRow* ItemData)
 {
-    if (!Item) return false;
-    FName TargetItemID = Item->GetFName();
+    if (!ItemData) return;
+    FString ItemNameString = ItemData->ItemName.ToString();
+    FName TargetItemID = FName(*ItemNameString);
 
     if (ConsumableInventory)
     {
-        if (ConsumableInventory->AddItem(TargetItemID, 1) == EAddItemResult::Success)
-        {
-            return true;
-        }
+        ConsumableInventory->AddItem(TargetItemID, 1);
     }
 
     if (SocketItemInventory)
     {
-        if (SocketItemInventory->AddItem(TargetItemID, 1) == EAddItemResult::Success)
-        {
-            return true;
-        }
+        SocketItemInventory->AddItem(TargetItemID, 1);
     }
-    return false;
 }
