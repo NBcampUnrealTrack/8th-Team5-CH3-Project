@@ -4,6 +4,8 @@
 #include "Enemy/DataTable/DA_BaseEnemySkill.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/Character.h"
 
 void UAN_Boss_SkillVFX::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBase* Animation,
                                 const FAnimNotifyEventReference& EventReference)
@@ -18,12 +20,16 @@ void UAN_Boss_SkillVFX::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	
 	float AddDistanceToVFX = SkillInfo->AttackCollision.Distance;
 
+	auto GetFeetLocation = [](ACharacter* Char) -> FVector
+	{
+		return Char->GetActorLocation() - FVector(0.f, 0.f, Char->GetCapsuleComponent()->GetScaledCapsuleHalfHeight());
+	};
+
 	FVector SpawnLocation;
 	if (SkillInfo->bIsHoming)
 	{
-		APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(Enemy->GetWorld(), 0);
-		SpawnLocation = PlayerPawn ? PlayerPawn->GetActorLocation() : Enemy->GetActorLocation();
-		SpawnLocation.Z = 0.f;
+		ACharacter* PlayerChar = Cast<ACharacter>(UGameplayStatics::GetPlayerPawn(Enemy->GetWorld(), 0));
+		SpawnLocation = PlayerChar ? GetFeetLocation(PlayerChar) : GetFeetLocation(Enemy);
 	}
 	else if (MeshComp->DoesSocketExist(SpawnSocketName))
 	{
@@ -31,9 +37,7 @@ void UAN_Boss_SkillVFX::Notify(USkeletalMeshComponent* MeshComp, UAnimSequenceBa
 	}
 	else
 	{
-		FVector VFXSpawnLocation = Enemy->GetActorLocation() + Enemy->GetActorForwardVector() * AddDistanceToVFX;
-		VFXSpawnLocation.Z = 0.f;
-		SpawnLocation = VFXSpawnLocation;
+		SpawnLocation = GetFeetLocation(Enemy) + Enemy->GetActorForwardVector() * AddDistanceToVFX;
 	}
 	
 
