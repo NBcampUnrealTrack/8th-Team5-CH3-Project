@@ -4,6 +4,8 @@
 #include "Enemy/BaseEnemy.h"
 #include "BossEnemy.generated.h"
 
+class UEnemy_ItemDropTableComponent;
+
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABossEnemy : public ABaseEnemy
 {
@@ -34,6 +36,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, Category = "Dodge", meta = (ClampMin = 0.f, ClampMax = 1.f))
 	float DodgeChance = 0.3f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Component")
+	TObjectPtr<UEnemy_ItemDropTableComponent> ItemDropComp;
 
 private:
 	int32 Count_NormalAttack;
