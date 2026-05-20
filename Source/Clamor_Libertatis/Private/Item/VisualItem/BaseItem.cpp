@@ -18,7 +18,7 @@ void ABaseItem::BeginPlay()
 	}
 	for (auto it : ItemTableRowHandle)
 	{
-		UE_LOG(LogTemp,Warning,TEXT("Row Name : %s"),*it->ItemName.ToString());
+		// UE_LOG(LogTemp,Warning,TEXT("Row Name : %s"),*it->ItemName.ToString());
 	}
 }
 
