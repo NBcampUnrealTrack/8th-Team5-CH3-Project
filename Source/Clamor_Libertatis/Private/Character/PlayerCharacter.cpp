@@ -59,6 +59,7 @@ APlayerCharacter::APlayerCharacter()
     //인벤토리 컴포넌트 추가
     ConsumableInventory = CreateDefaultSubobject<UConsumableInventoryComponent>(TEXT("ConsumableInventory"));
     SocketItemInventory = CreateDefaultSubobject<USocketItemInventoryComponent>(TEXT("SocketItemInventory"));
+
 }
 
 void APlayerCharacter::BeginPlay()
@@ -319,7 +320,7 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
 
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
     CombatComp->SetInvincible(true);
-
+    
     DodgeAnimMontage(GetDirection());
 }
 
@@ -397,28 +398,53 @@ void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
     UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
     if (!AnimInstance) return;
     AnimInstance->StopAllMontages(0.f);
+
+    UAnimMontage* DodgeMontage = nullptr;
+    FRotator CurrentRotate = GetActorRotation();
+    float NewRotate = 0.f;
     switch (DodgeDirection)
     {
     case EDodgeDirection::Forward:
-        if (!ForwardDodgeReactMontage) return;
-        AnimInstance->Montage_Play(ForwardDodgeReactMontage);
+        DodgeMontage = ForwardDodgeReactMontage;
         break;
     case EDodgeDirection::Backward:
-        if (!BackwardDodgeReactMontage) return;
-        AnimInstance->Montage_Play(BackwardDodgeReactMontage);
+        DodgeMontage = BackwardDodgeReactMontage;
         break;
     case EDodgeDirection::Left:
-        if (!LeftDodgeReactMontage) return;
-        AnimInstance->Montage_Play(LeftDodgeReactMontage);
+        DodgeMontage = LeftDodgeReactMontage;
         break;
     case EDodgeDirection::Right:
-        if (!RightDodgeReactMontage) return;
-        AnimInstance->Montage_Play(RightDodgeReactMontage);
+        DodgeMontage = RightDodgeReactMontage;
+        break;
+    case EDodgeDirection::ForwardLeft:
+        NewRotate = 45.f;
+        DodgeMontage = LeftDodgeReactMontage;
+        break;
+    case EDodgeDirection::ForwardRight:
+        NewRotate = -45.f;
+        DodgeMontage = RightDodgeReactMontage;
+        break;
+    case EDodgeDirection::BackwardLeft:
+        NewRotate = 45.f;
+        DodgeMontage = BackwardDodgeReactMontage;
+        break;
+    case EDodgeDirection::BackwardRight:
+        NewRotate = -45.f;
+        DodgeMontage = BackwardDodgeReactMontage;
         break;
     default:
-        AnimInstance->Montage_Play(ForwardDodgeReactMontage);
+        DodgeMontage = BackwardDodgeReactMontage;
         break;
     }
+
+    if (!DodgeMontage)
+    {
+        return;
+    }
+    CurrentRotate.Yaw += NewRotate;
+    SetActorRotation(CurrentRotate);
+    AnimInstance->Montage_Play(DodgeMontage);
+
     if (TargetLockComp) {
         TargetLockComp->ToggleCharacterRotationLock(false);
     }
@@ -448,14 +474,49 @@ bool APlayerCharacter::IsAvailable()
 
 EDodgeDirection APlayerCharacter::GetDirection() const
 {
-    if (CurrentMoveInput.IsNearlyZero())  return EDodgeDirection::None;
-    if (FMath::Abs(CurrentMoveInput.X) >= FMath::Abs(CurrentMoveInput.Y))
-        if (CurrentMoveInput.X >= 0) return EDodgeDirection::Forward;
-        else return EDodgeDirection::Backward;
-    if (FMath::Abs(CurrentMoveInput.X) < FMath::Abs(CurrentMoveInput.Y))
-        if (CurrentMoveInput.Y >= 0) return EDodgeDirection::Right;
-        else return EDodgeDirection::Left;
-    return EDodgeDirection::None;
+    if (CurrentMoveInput.IsNearlyZero())
+    {
+        return EDodgeDirection::None;
+    }
+
+    const float DirectionAngle = FMath::RadiansToDegrees(FMath::Atan2(CurrentMoveInput.Y, CurrentMoveInput.X));
+    UE_LOG(LogTemp, Warning, TEXT("Dodge Angle : %f"), DirectionAngle);
+    if (TargetLockComp->GetCurrentTarget() == nullptr) {
+        //타겟이 없다면 원하는 방향으로 바라보고 이동하니 forward 방향 반환함.
+        return EDodgeDirection::Forward;
+    }
+
+
+    if (DirectionAngle >= -22.5f && DirectionAngle < 22.5f)
+    {
+        return EDodgeDirection::Forward;
+    }
+    if (DirectionAngle >= 22.5f && DirectionAngle < 67.5f)
+    {
+        return EDodgeDirection::ForwardRight;
+    }
+    if (DirectionAngle >= 67.5f && DirectionAngle < 112.5f)
+    {
+        return EDodgeDirection::Right;
+    }
+    if (DirectionAngle >= 112.5f && DirectionAngle < 157.5f)
+    {
+        return EDodgeDirection::BackwardRight;
+    }
+    if (DirectionAngle >= -67.5f && DirectionAngle < -22.5f)
+    {
+        return EDodgeDirection::ForwardLeft;
+    }
+    if (DirectionAngle >= -112.5f && DirectionAngle < -67.5f)
+    {
+        return EDodgeDirection::Left;
+    }
+    if (DirectionAngle >= -157.5f && DirectionAngle < -112.5f)
+    {
+        return EDodgeDirection::BackwardLeft;
+    }
+
+    return EDodgeDirection::Backward;
 }
 
 void APlayerCharacter::SpawnHitEffect()
