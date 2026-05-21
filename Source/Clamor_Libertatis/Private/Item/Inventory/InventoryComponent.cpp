@@ -3,6 +3,7 @@
 UInventoryComponent::UInventoryComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
+    Slots.SetNum(MaxSlots);
 }
 
 void UInventoryComponent::BeginPlay()
@@ -14,8 +15,6 @@ void UInventoryComponent::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("[%s] ItemDataTable이 연결되지 않았습니다."),
             *GetOwner()->GetName());
     }
-
-    Slots.SetNum(MaxSlots);
 }
 
 bool UInventoryComponent::ConsumeQuantity(int32 SlotIdx, int32 Quantity)
