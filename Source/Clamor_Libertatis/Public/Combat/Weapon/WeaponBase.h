@@ -111,8 +111,17 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX")
 	TObjectPtr<UNiagaraSystem> HitNiagara;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|VFX", meta=(ClampMin="0.0"))
+	float HitFXLifeTime = 2.0f;
+
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX")
 	TObjectPtr<USoundBase> HitSound;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|Camera")
+	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Weapon|Camera")
+	float HitCameraShakeScaleOffset = 20.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Weapon|SFX", meta=(ClampMin="0.0"))
 	float HitSoundVolume = 1.0f;
@@ -129,6 +138,8 @@ private:
 	TArray<const UWeaponSocketItemData*> GetEquippedSocketItems() const;
 
 	void PlayHitFX(const FHitResult& SweepResult, const AActor* HitActor) const;
+
+	void PlayCameraShake(float Damage);
 
 	UFUNCTION()
 	void OnHitboxBeginOverlap(

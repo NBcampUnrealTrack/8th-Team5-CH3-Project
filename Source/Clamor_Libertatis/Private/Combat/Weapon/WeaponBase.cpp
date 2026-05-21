@@ -4,6 +4,7 @@
 #include "Combat/Weapon/WeaponBase.h"
 #include "Combat/Weapon/WeaponAttackData.h"
 #include "Combat/CombatComponent.h"
+#include "Combat/CombatCameraShake.h"
 #include "GameFramework/Character.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
@@ -31,6 +32,8 @@ AWeaponBase::AWeaponBase()
 	Hitbox->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnHitboxBeginOverlap);
 
 	InitializeDefaultSocketSlots();
+
+	HitCameraShakeClass = UCombatCameraShake::StaticClass();
 }
 
 UAnimMontage* AWeaponBase::GetAttackMontage() const
@@ -313,11 +316,6 @@ TArray<const UWeaponSocketItemData*> AWeaponBase::GetEquippedSocketItems() const
 
 void AWeaponBase::PlayHitFX(const FHitResult& SweepResult, const AActor* HitActor) const
 {
-	if (!HitSound)
-	{
-		return;
-	}
-
 	FVector PlayLocation = GetActorLocation();
 	if (SweepResult.bBlockingHit || !SweepResult.ImpactPoint.IsNearlyZero())
 	{
@@ -328,23 +326,73 @@ void AWeaponBase::PlayHitFX(const FHitResult& SweepResult, const AActor* HitActo
 		PlayLocation = HitActor->GetActorLocation();
 	}
 
-	UGameplayStatics::PlaySoundAtLocation(
-		this,
-		HitSound,
-		PlayLocation,
-		HitSoundVolume,
-		HitSoundPitch
-	);
-	UNiagaraComponent* NiagaraComp = nullptr;
-	NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
-		GetWorld(),
-		GetWeaponHitNiagara(),
+	if (HitSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(
+			this,
+			HitSound,
+			PlayLocation,
+			HitSoundVolume,
+			HitSoundPitch
+		);
+	}
+
+	UNiagaraSystem* HitNiagaraSystem = GetWeaponHitNiagara();
+	UWorld* World = GetWorld();
+	if (!HitNiagaraSystem || !World)
+	{
+		return;
+	}
+
+	UNiagaraComponent* NiagaraComp = UNiagaraFunctionLibrary::SpawnSystemAtLocation(
+		World,
+		HitNiagaraSystem,
 		PlayLocation,
 		FRotator::ZeroRotator,
 		FVector(1.f),
 		true,
 		true
 	);
+
+	if (NiagaraComp)
+	{
+		NiagaraComp->SetAutoDestroy(true);
+
+		if (HitFXLifeTime > 0.0f)
+		{
+			FTimerHandle HitFXDestroyTimerHandle;
+			World->GetTimerManager().SetTimer(
+				HitFXDestroyTimerHandle,
+				FTimerDelegate::CreateWeakLambda(NiagaraComp, [NiagaraComp]()
+				{
+					if (IsValid(NiagaraComp))
+					{
+						NiagaraComp->Deactivate();
+						NiagaraComp->DestroyComponent();
+					}
+				}),
+				HitFXLifeTime,
+				false
+			);
+		}
+	}
+}
+
+void AWeaponBase::PlayCameraShake(float Damage)
+{
+	if (!HitCameraShakeClass) return;
+
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	APlayerController* PlayerController =
+		OwnerPawn ? Cast<APlayerController>(OwnerPawn->GetController()) : nullptr;
+
+	if (PlayerController && PlayerController->PlayerCameraManager)
+	{
+		PlayerController->PlayerCameraManager->StartCameraShake(
+			HitCameraShakeClass,
+			HitCameraShakeScaleOffset / Damage
+		);
+	}
 }
 
 void AWeaponBase::OnHitboxBeginOverlap(
@@ -399,5 +447,6 @@ void AWeaponBase::OnHitboxBeginOverlap(
 	if (AppliedDamage > 0.0f)
 	{
 		PlayHitFX(SweepResult, OtherActor);
+		PlayCameraShake(AppliedDamage);
 	}
 }
