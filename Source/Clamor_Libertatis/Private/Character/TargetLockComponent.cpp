@@ -20,6 +20,8 @@ UTargetLockComponent::UTargetLockComponent()
     LockOnWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
     LockOnWidgetComp->SetDrawAtDesiredSize(true);
     LockOnWidgetComp->bHiddenInGame = true;
+
+    LockOnSocketName = TEXT("pelvis");
 }
 
 
@@ -184,10 +186,15 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     if (!CurrentTarget || !OwnerCharacter || !OwnerCharacter->GetController()) return;
 
     FVector Start = OwnerCharacter->GetActorLocation();
-    FVector End = CurrentTarget->GetActorLocation();
+    Start.Z += 110.f; //플레이어 캐릭터 가슴쯤 높이
+    FVector End = GetTargetAimLocation();
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
 
-    TargetRotation.Pitch = -12.f + (TargetRotation.Pitch * 0.4f);
+    FRotator CurrentRotation =
+        OwnerCharacter->GetController()->GetControlRotation();
+
+    // 보간 함수 적용 (숫자 낮아질수록 부드러움)
+    FRotator SmoothedRotation = FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 6.f);
 
     OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
     if (!ValidateCurrentTarget())
@@ -210,6 +217,27 @@ bool UTargetLockComponent::ValidateCurrentTarget() const
         }
     }
     return false;
+}
+
+// CurrentTarget의 소켓 위치 접근
+FVector UTargetLockComponent::GetTargetAimLocation() const
+{
+    if (!CurrentTarget)
+    {
+        return FVector::ZeroVector;
+    }
+    if (ACharacter* TargetCharacter = Cast<ACharacter>(CurrentTarget))
+    {
+        if (USkeletalMeshComponent* TargetMesh = TargetCharacter->GetMesh())
+        {
+            if (TargetMesh->DoesSocketExist(LockOnSocketName))
+            {
+                return TargetMesh->GetSocketLocation(LockOnSocketName);
+            }
+        }
+    }
+    // fallback (캐스팅 실패하거나 소켓이 없으면 기존처럼 액터 중심점 반환)
+    return CurrentTarget->GetActorLocation();
 }
 
 ABaseEnemy* UTargetLockComponent::GetCurrentTarget() const
