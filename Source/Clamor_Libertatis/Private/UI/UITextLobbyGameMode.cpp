@@ -1,4 +1,4 @@
-#include "UI/UITextLobbyGameMode.h"
+ï»¿#include "UI/UITextLobbyGameMode.h"
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
 #include "Gamemode/CLGameInstance.h"
 #include "UI/Lobby/QuestionWidget.h"
@@ -24,7 +24,7 @@ void AUITextLobbyGameMode::BeginPlay()
 
     UE_LOG(LogTemp, Warning, TEXT("HasWatchedOpening: %s"),
         GI && GI->HasWatchedOpening() ? TEXT("true") : TEXT("false"));
-    // À§Á¬ »ı¼º
+    // ìœ„ì ¯ ìƒì„±
     if (QuestionWidgetClass)
     {
         QuestionWidget = CreateWidget<UQuestionWidget>(
@@ -65,7 +65,7 @@ void AUITextLobbyGameMode::BeginPlay()
         }
     }
 
-    // ScenarioManager ¹ÙÀÎµù
+    // ScenarioManager ë°”ì¸ë”©
     if (ScenarioManagerComp)
     {
         ScenarioManagerComp->OnScenarioStepUpdated.AddDynamic(
@@ -74,11 +74,11 @@ void AUITextLobbyGameMode::BeginPlay()
             this, &AUITextLobbyGameMode::HandleScenarioEnded);
     }
 
-    // ÃÖÃÊ ½ÇÇà -> GameStart UI (BasePlayerController°¡ Ã³¸®)
-    // ÀÌÈÄ ·Îºñ ÁøÀÔ -> ¹Ù·Î Áú¹® ½ÃÀÛ
+    // ìµœì´ˆ ì‹¤í–‰ -> GameStart UI (BasePlayerControllerê°€ ì²˜ë¦¬)
+    // ì´í›„ ë¡œë¹„ ì§„ì… -> ë°”ë¡œ ì§ˆë¬¸ ì‹œì‘
     if (GI && GI->HasWatchedOpening())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Áú¹® ½ÃÀÛ ½Ãµµ"));
+        UE_LOG(LogTemp, Warning, TEXT("ì§ˆë¬¸ ì‹œì‘ ì‹œë„"));
         SetMouseUI();
         if (ScenarioManagerComp)
         {
@@ -87,11 +87,11 @@ void AUITextLobbyGameMode::BeginPlay()
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("ScenarioManagerComp ¾øÀ½"));
+            UE_LOG(LogTemp, Error, TEXT("ScenarioManagerComp ì—†ìŒ"));
         }
     }
-    // ÃÖÃÊ ½ÇÇàÀº BasePlayerController::BeginPlay¿¡¼­
-    // ShowGameStartUI ->  Start ¹öÆ° -> ¿ÀÇÁ´× -> OnOpeningEnd -> Áú¹® ½ÃÀÛ
+    // ìµœì´ˆ ì‹¤í–‰ì€ BasePlayerController::BeginPlayì—ì„œ
+    // ShowGameStartUI ->  Start ë²„íŠ¼ -> ì˜¤í”„ë‹ -> OnOpeningEnd -> ì§ˆë¬¸ ì‹œì‘
 }
 
 void AUITextLobbyGameMode::HideAllWidgets()
@@ -134,11 +134,15 @@ void AUITextLobbyGameMode::ShowAnswerPhase(const FText& AnswerText)
 
 void AUITextLobbyGameMode::ShowLobbyPhase()
 {
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+
+    if (GI && GI->GetWonBattleCount() >= 3)
+        return;
+
     HideAllWidgets();
     SetMouseUI();
     if (LobbyWidget)
     {
-        UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
         int32 Count = GI ? GI->GetWonBattleCount() : 0;
         LobbyWidget->SetVisibility(ESlateVisibility::Visible);
         LobbyWidget->InitLobby(Count);
@@ -149,9 +153,22 @@ void AUITextLobbyGameMode::OnQuestionSelected(FName NextID)
 {
     if (NextID == FName("SkipQuestion"))
     {
+        UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+
+        // 3ìŠ¤í…Œì´ì§€ í´ë¦¬ì–´ í›„ ìŠ¤í‚µ -> ë°”ë¡œ ì—”ë”©
+        if (GI && GI->GetWonBattleCount() >= 3)
+        {
+            HideAllWidgets();
+            SetMouseGame();
+            UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestEndingMap"));
+            return;
+        }
+
+        // ë‚˜ë¨¸ì§€ -> ë¡œë¹„ UI
         ShowLobbyPhase();
         return;
     }
+
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
         GI->bHasSelectedQuestion = true;
 
@@ -167,10 +184,24 @@ void AUITextLobbyGameMode::OnAnswerFinished()
 
 void AUITextLobbyGameMode::HandleScenarioEnded()
 {
-    // Áú¹® ³¡ -> ·Îºñ UI
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+
+    UE_LOG(LogTemp, Warning, TEXT("HandleScenarioEnded - WonBattleCount: %d"),
+        GI ? GI->GetWonBattleCount() : -1);
+
+    if (GI && GI->GetWonBattleCount() >= 3)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("ì—”ë”©ìœ¼ë¡œ ì´ë™"));
+        HideAllWidgets();
+        SetMouseGame();
+        UGameplayStatics::OpenLevel(
+            this, FName("/Game/UI/L_UITestEndingMap"));
+        return;
+    }
+
+    UE_LOG(LogTemp, Warning, TEXT("ë¡œë¹„ UI í‘œì‹œ"));
     ShowLobbyPhase();
 }
-
 void AUITextLobbyGameMode::OnStartBattleClicked()
 {
     GotoBattle();
@@ -188,16 +219,10 @@ void AUITextLobbyGameMode::GotoBattle()
 
     if (Count >= 3)
     {
-        //¿£µù ·¹º§
-        UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestEndingMap"));
-
-        // ¿£µù ·¹º§ ¾øÀ¸¸é Å¸ÀÌÆ²·Î, ¿£µù·¹º§ »ı±â¸é Áö¿ì±â
-        //if (UCLGameInstance* GI2 = GetGameInstance<UCLGameInstance>())
-            //GI2->ResetGame();
-        //UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
-        //return;
+        UGameplayStatics::OpenLevel(
+            this, FName("/Game/UI/L_UITestEndingMap")); //ì—”ë”© ë ˆë²¨ë¡œ 
+        return;  // ë°˜ë“œì‹œ return
     }
-
     FString Level =
         Count == 0 ? TEXT("/Game/Level/L_Stage1") :
         Count == 1 ? TEXT("/Game/Level/L_Stage2") :

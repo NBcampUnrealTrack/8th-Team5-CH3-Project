@@ -45,8 +45,8 @@ void AUITestEndingGameMode::BeginPlay()
 
     UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
     FName StartRow = (GI && GI->bHasSelectedQuestion)
-        ? FName("EndingFail_1")// 한 번이라도 질문 선택
-        : FName("EndingClear_1");// 아무 질문 선택 안 함
+        ? FName("NormalEnding_1")// 한 번이라도 질문 선택
+        : FName("TrueEnding_1");// 아무 질문 선택 안 함
 
     EndingSequencer->StartSequence(StartRow);
 
