@@ -59,7 +59,7 @@ void UBTTask_BackStep::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 	// 플레이어 방향 기준 좌/우 스트레이프
 	FVector ToPlayer = (TargetActor->GetActorLocation() - OwnerPawn->GetActorLocation()).GetSafeNormal2D();
 	FVector StrafeDir = FVector::CrossProduct(FVector::UpVector, ToPlayer) * Memory->StepDirection;
-	OwnerPawn->AddMovementInput(StrafeDir, 1.f);
+	OwnerPawn->AddMovementInput(StrafeDir, ScaleValue);
 
 	Memory->ElapsedTime += DeltaSeconds;
 	if (Memory->ElapsedTime >= SideStepDuration)
