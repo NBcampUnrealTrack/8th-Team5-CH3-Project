@@ -19,6 +19,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SideStep")
 	float SideStepDuration;
+	UPROPERTY(EditAnywhere,BlueprintReadWrite,Category="SpeedValue")
+	float ScaleValue = 1.f;
 
 	virtual uint16 GetInstanceMemorySize() const override { return sizeof(FBackStepTaskMemory); }
 
