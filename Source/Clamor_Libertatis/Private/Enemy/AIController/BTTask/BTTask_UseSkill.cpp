@@ -11,6 +11,7 @@ UBTTask_UseSkill::UBTTask_UseSkill()
 	NodeName = TEXT("UseSkill");
 	MaxDeltaYaw = 5.f;
 	MinTrackDistance = 2.f;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTTask_UseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -121,4 +122,17 @@ void UBTTask_UseSkill::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* 
 	FUseSkillTaskMemory* Memory = reinterpret_cast<FUseSkillTaskMemory*>(NodeMemory);
 	Memory->bSkillStarted = false;
 	Memory->CachedSkillMontage = nullptr;
+
+	UE_LOG(LogTemp, Warning, TEXT("[BTTask_UseSkill] OnTaskFinished - TaskResult: %d (Succeeded=1, Failed=0, Aborted=2)"), (int32)TaskResult);
+
+	if (TaskResult == EBTNodeResult::Succeeded)
+	{
+		UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+		UE_LOG(LogTemp, Warning, TEXT("[BTTask_UseSkill] Succeeded 진입 - BlackboardComponent 유효: %s"), BB ? TEXT("true") : TEXT("false"));
+		if (BB)
+		{
+			BB->SetValueAsBool(TEXT("bCanPatrol"), true);
+			UE_LOG(LogTemp, Warning, TEXT("[BTTask_UseSkill] bCanPatrol 설정 후 값: %s"), BB->GetValueAsBool(TEXT("bCanPatrol")) ? TEXT("true") : TEXT("false"));
+		}
+	}
 }
