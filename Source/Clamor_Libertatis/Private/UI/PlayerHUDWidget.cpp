@@ -41,7 +41,7 @@ void UPlayerHUDWidget::InitSkillCooldown(USkillComponent* InSkillComp)
     if (!InSkillComp) return;
 
     if (SkillWidget0) SkillWidget0->InitWithSkillComponent(InSkillComp, "Fireball");
-    if (SkillWidget1) SkillWidget1->InitWithSkillComponent(InSkillComp, "LeapAttack");
+    if (SkillWidget1) SkillWidget1->InitWithSkillComponent(InSkillComp, "LeapStrike");
     if (SkillWidget2) SkillWidget2->InitWithSkillComponent(InSkillComp, "SpinSlash");
 }
 
