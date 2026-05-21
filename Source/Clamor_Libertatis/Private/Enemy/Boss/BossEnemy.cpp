@@ -40,12 +40,15 @@ void ABossEnemy::OnDead()
 
 	if (Enemy_CombatComp && Enemy_CombatComp->DA_EnemySkill && Enemy_CombatComp->DA_EnemySkill->DeadVFX)
 	{
+		UCapsuleComponent* Capsule = GetCapsuleComponent();
+		FVector SpawnVFXLocation = Capsule ? Capsule->GetComponentLocation() : GetActorLocation();
 		UNiagaraFunctionLibrary::SpawnSystemAtLocation(
 			GetWorld(),
 			Enemy_CombatComp->DA_EnemySkill->DeadVFX,
-			GetActorLocation(),
-			GetActorRotation()
+			SpawnVFXLocation,
+			Capsule ? Capsule->GetComponentRotation() : GetActorRotation()
 		);
+		UE_LOG(LogTemp,Warning,TEXT("SpawnVFX"));
 	}
 
 	Super::OnDead();
