@@ -85,6 +85,11 @@ float ABossEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent
 				{
 					BB->SetValueAsBool(TEXT("bShouldDodge"), true);
 				}
+
+				if (BB->GetValueAsBool(TEXT("bCanPatrol")))
+				{
+					BB->SetValueAsBool(TEXT("bCanPatrol"), false);
+				}
 			}
 		}
 	}
