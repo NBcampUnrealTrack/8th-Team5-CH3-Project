@@ -20,7 +20,7 @@ class UHealthComponent;
 class UTargetLockComponent;
 class UParticleSystem;
 class USoundBase;
-
+class UDA_SkillData;
 
 UENUM(BlueprintType)
 enum class EDodgeDirection : uint8
@@ -84,6 +84,10 @@ public:
 	UAnimMontage* LeftDodgeReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* RightDodgeReactMontage;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
+	TArray<TObjectPtr<UDA_SkillData>> SkillDatas;
+
 
 	UPROPERTY(EditAnywhere, Category = "Timer")
 	FTimerHandle DodgeTimerHandle;
@@ -159,4 +163,7 @@ public:
 
 	// 아이템 획득
 	virtual void PickupItem(struct FItemTableRow* ItemData) override;
+
+	private:
+		int32 CurrentSkillIndex = 0;
 };

@@ -146,9 +146,11 @@ bool USkillComponent::CanActivateSkill(const UDA_SkillData* SkillData) const
 		return false;
 	}
 
-	if (World->GetTimeSeconds() < SkillCooldownEndTime)
-	{
-		return false;
+	if (SkillCooldownList.Contains(SkillData->SkillName)) {
+		float CooldownEndTime = SkillCooldownList[SkillData->SkillName];
+		if (World->GetTimeSeconds() < CooldownEndTime){
+			return false;
+		}
 	}
 
 	return true;
@@ -204,7 +206,17 @@ void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
 
 	if (const UWorld* World = GetWorld())
 	{
-		SkillCooldownEndTime = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
+		if (SkillCooldownList.Contains(SkillData->SkillName)) {
+			SkillCooldownList[SkillData->SkillName] = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
+			OnMultiSkillCooldownStart.Broadcast(SkillData->SkillName, SkillData->Cooldown);
+		}
+		else {
+			SkillCooldownList.Add(SkillData->SkillName, World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown));
+			OnMultiSkillCooldownStart.Broadcast(SkillData->SkillName, SkillData->Cooldown);
+		}
+
+		//다음버전에 삭제
+// 		SkillCooldownEndTime = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
 		OnSkillCooldownStart.Broadcast(SkillData->Cooldown);
 	}
 }

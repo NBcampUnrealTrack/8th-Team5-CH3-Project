@@ -15,6 +15,7 @@ class UTargetLockComponent;
 DECLARE_LOG_CATEGORY_EXTERN(LogSkill, Log, All)
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillCooldownStart, float, Cooldown);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnMultiSkillCooldownStart, FName, SkillName , float, Cooldown);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -33,8 +34,9 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category="Skill")
 	void ExecuteSkillEvent(FName EventID);
-	
+
 	FOnSkillCooldownStart OnSkillCooldownStart;
+	FOnMultiSkillCooldownStart OnMultiSkillCooldownStart;
 
 protected:
 	virtual void BeginPlay() override;
@@ -59,7 +61,9 @@ private:
 	UPROPERTY()
 	TObjectPtr<UDA_SkillData> PendingSkillData;
 
-	float SkillCooldownEndTime = 0.0f;
+	//float SkillCooldownEndTime = 0.0f;
+
+	TMap<FName, float> SkillCooldownList;
 
 	bool CanActivateSkill(const UDA_SkillData* SkillData) const;
 	bool CommitSkillCost(const UDA_SkillData* SkillData) const;
