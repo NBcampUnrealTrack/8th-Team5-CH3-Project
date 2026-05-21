@@ -45,11 +45,6 @@ void USkillComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-void USkillComponent::ActiveSkill()
-{
-	TryActivateSkill(DefaultSkillData);
-}
-
 bool USkillComponent::TryActivateSkill(UDA_SkillData* SkillData)
 {
 	if (!CanActivateSkill(SkillData))

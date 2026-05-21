@@ -43,9 +43,6 @@ protected:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
-	TObjectPtr<UDA_SkillData> DefaultSkillData;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
 	FName SkillSpawnSocketName = TEXT("Hand_R_Weapon");//마법이 나갈 위치 소켓
 
 private:
@@ -61,14 +58,12 @@ private:
 	UPROPERTY()
 	TObjectPtr<UDA_SkillData> PendingSkillData;
 
-	//float SkillCooldownEndTime = 0.0f;
-
 	TMap<FName, float> SkillCooldownList;
 
 	bool CanActivateSkill(const UDA_SkillData* SkillData) const;
 	bool CommitSkillCost(const UDA_SkillData* SkillData) const;
 	void StartCooldown(const UDA_SkillData* SkillData);
-	void ExecuteAllSkillEvents(const UDA_SkillData* SkillData);
+	void ExecuteAllSkillEvents(const UDA_SkillData* SkillData);//스킬 몽타주가 없는, 즉발스킬
 	void SetLockOnRotationOverride(bool bEnable) const;
 
 	void ExecuteEvent(const UDA_SkillData* SkillData, const FSkillEventData& EventData);
