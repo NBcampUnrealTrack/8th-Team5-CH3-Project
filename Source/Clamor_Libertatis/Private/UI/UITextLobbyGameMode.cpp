@@ -152,6 +152,9 @@ void AUITextLobbyGameMode::OnQuestionSelected(FName NextID)
         ShowLobbyPhase();
         return;
     }
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+        GI->bHasSelectedQuestion = true;
+
     if (ScenarioManagerComp)
         ScenarioManagerComp->StartScenario(NextID);
 }
@@ -185,14 +188,14 @@ void AUITextLobbyGameMode::GotoBattle()
 
     if (Count >= 3)
     {
-        // 엔딩 레벨 있으면, 엔딩을 2가지로 1번 엔딩
-        // UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_Ending"));
+        //엔딩 레벨
+        UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestEndingMap"));
 
-        // 없으면 타이틀로
-        if (UCLGameInstance* GI2 = GetGameInstance<UCLGameInstance>())
-            GI2->ResetGame();
-        UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
-        return;
+        // 엔딩 레벨 없으면 타이틀로, 엔딩레벨 생기면 지우기
+        //if (UCLGameInstance* GI2 = GetGameInstance<UCLGameInstance>())
+            //GI2->ResetGame();
+        //UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
+        //return;
     }
 
     FString Level =
