@@ -33,6 +33,9 @@ public:
     const TArray<FItemQuantity>& GetItemBag() const { return ItemBag; }
 
     UFUNCTION(BlueprintCallable, Category = "Crafting")
+    void SetItemBag(const TArray<FItemQuantity>& InItems);
+
+    UFUNCTION(BlueprintCallable, Category = "Crafting")
     void RequestCraft(URecipeData* Recipe);
 
     UFUNCTION(BlueprintPure, Category = "Crafting")

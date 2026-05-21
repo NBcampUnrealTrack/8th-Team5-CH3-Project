@@ -1,17 +1,14 @@
-﻿// Fill out your copyright notice in the Description page of Project Settings.
-
+// Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Gamemode/LobbyGameModeBase.h"
-// TODO:: 더이상 쓰지 않음. 삭제 해야함
-// #include "Gamemode/LoreManagerComponent.h"
 #include "Gamemode/CLGameInstance.h"
-#include "GameFramework/PlayerController.h"
-#include "Kismet/GameplayStatics.h"
-#include "Blueprint/UserWidget.h"
-
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
-#include "Character/PlayerCharacter.h"
 #include "Crafting/CraftingComponent.h"
+#include "UI/Lobby/QuestionWidget.h"
+#include "UI/Lobby/QuestionAnswerWidget.h"
+#include "UI/Lobby/LobbyWidget.h"
+#include "Blueprint/UserWidget.h"
+#include "Kismet/GameplayStatics.h"
 
 
 ALobbyGameModeBase::ALobbyGameModeBase()
@@ -24,97 +21,176 @@ void ALobbyGameModeBase::BeginPlay()
 {
     Super::BeginPlay();
 
-    /*if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    if (QuestionWidgetClass)
     {
-        
+        QuestionWidget = CreateWidget<UQuestionWidget>(GetWorld(), QuestionWidgetClass);
+        if (QuestionWidget)
+        {
+            QuestionWidget->AddToViewport(10);
+            QuestionWidget->SetVisibility(ESlateVisibility::Collapsed);
+            QuestionWidget->InitWidget(ScenarioManagerComp);
+            QuestionWidget->OnQuestionSelected.AddDynamic(this, &ALobbyGameModeBase::OnQuestionSelected);
+        }
+    }
+
+    if (AnswerWidgetClass)
+    {
+        AnswerWidget = CreateWidget<UQuestionAnswerWidget>(GetWorld(), AnswerWidgetClass);
+        if (AnswerWidget)
+        {
+            AnswerWidget->AddToViewport(10);
+            AnswerWidget->SetVisibility(ESlateVisibility::Collapsed);
+            AnswerWidget->OnAnswerFinished.AddDynamic(this, &ALobbyGameModeBase::OnAnswerFinished);
+        }
+    }
+
+    if (LobbyWidgetClass)
+    {
+        LobbyWidget = CreateWidget<ULobbyWidget>(GetWorld(), LobbyWidgetClass);
+        if (LobbyWidget)
+        {
+            LobbyWidget->AddToViewport(10);
+            LobbyWidget->SetVisibility(ESlateVisibility::Collapsed);
+            LobbyWidget->OnStartBattleClicked.AddDynamic(this, &ALobbyGameModeBase::OnStartBattleClicked);
+        }
+    }
+
+    if (ScenarioManagerComp)
+    {
+        ScenarioManagerComp->OnScenarioStepUpdated.AddDynamic(this, &ALobbyGameModeBase::HandleScenarioStepUpdated);
+        ScenarioManagerComp->OnScenarioEnded.AddDynamic(this, &ALobbyGameModeBase::HandleScenarioEnded);
+    }
+
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+    if (GI && GI->HasWatchedOpening())
+    {
+        SetMouseUI();
         if (ScenarioManagerComp)
         {
-            if (!GI->HasWatchedOpening())
-            {
-                //ScenarioManagerComp->StartScenario(GI->LastScenarioRowName);
-            }
-            else
-            {
-                ScenarioManagerComp->StartScenario("Question_0");
-            }
-                       
+            ScenarioManagerComp->StartScenario("Question_0");
         }
-        else
+    }
+
+    if (GI && CraftingComp)
+    {
+        TArray<FItemQuantity> BagItems;
+        for (const FInventorySlot& Slot : GI->GetSavedInventory())
         {
-            UE_LOG(LogTemp, Warning, TEXT("[Lobby] ScenarioManagerComp not found"));
+            FItemQuantity Item;
+            Item.ItemID = Slot.ItemID;
+            Item.Amount = Slot.Quantity;
+            BagItems.Add(Item);
         }
-    } 
+        CraftingComp->SetItemBag(BagItems);
+    }
+}
+
+void ALobbyGameModeBase::HideAllWidgets()
+{
+    if (QuestionWidget)
+    {
+        QuestionWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
+    if (AnswerWidget)
+    {
+        AnswerWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
+    if (LobbyWidget)
+    {
+        LobbyWidget->SetVisibility(ESlateVisibility::Collapsed);
+    }
+}
+
+void ALobbyGameModeBase::ShowQuestionPhase(const TArray<FScenarioData>& Choices)
+{
+    HideAllWidgets();
+    //SetMouseUI();
+    if (QuestionWidget)
+    {
+        QuestionWidget->SetVisibility(ESlateVisibility::Visible);
+        QuestionWidget->ShowChoices(Choices);
+    }
+    SetMouseUI();
+
+}
+
+void ALobbyGameModeBase::ShowAnswerPhase(const FText& AnswerText)
+{
+    HideAllWidgets();
+    if (AnswerWidget)
+    {
+        AnswerWidget->SetVisibility(ESlateVisibility::Visible);
+        AnswerWidget->ShowAnswer(AnswerText);
+    }
+}
+
+void ALobbyGameModeBase::ShowLobbyPhase()
+{
+    HideAllWidgets();
+    SetMouseUI();
+    if (LobbyWidget)
+    {
+        UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+        int32 Count = GI ? GI->GetWonBattleCount() : 0;
+        LobbyWidget->SetVisibility(ESlateVisibility::Visible);
+        LobbyWidget->InitLobby(Count);
+    }
+}
+
+void ALobbyGameModeBase::HandleScenarioStepUpdated(const FScenarioData& MainData, const TArray<FScenarioData>& Choices)
+{
+    if (MainData.Type == ETalkType::Question)
+    {
+        ShowQuestionPhase(Choices);
+    }
     else
     {
-        UE_LOG(LogTemp, Warning, TEXT("[Lobby] Failed to get GameInstance"));
-    }*/
-
-    APlayerController* PC = GetWorld()->GetFirstPlayerController();
-
-    if (PC)
-    {
-        PC->bShowMouseCursor = true;
-        PC->bEnableClickEvents = true;
-        PC->bEnableMouseOverEvents = true;
-
-        FInputModeUIOnly InputModeData;
-        InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        PC->SetInputMode(InputModeData);
-
-        /*if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
-        {
-            APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(PC->GetPawn());
-            if (PlayerChar && PlayerChar->ConsumableInventory)
-            {
-                const TArray<FInventorySlot>& Saved = GI->GetSavedInventory();
-                if (Saved.Num() > 0)
-                {
-                    PlayerChar->ConsumableInventory->ClearInventory();
-                    for (const FInventorySlot& Slot : Saved)
-                    {
-                        if (!Slot.IsEmpty())
-                        {
-                            PlayerChar->ConsumableInventory->AddItem(Slot.ItemID, Slot.Quantity);
-                        }
-                    }
-                }
-            }
-        }*/
+        ShowAnswerPhase(MainData.Dialogue);
     }
+}
+
+void ALobbyGameModeBase::HandleScenarioEnded()
+{
+    ShowLobbyPhase();
+}
+
+void ALobbyGameModeBase::OnQuestionSelected(FName NextID)
+{
+    if (NextID == FName("SkipQuestion"))
+    {
+        ShowLobbyPhase();
+        return;
+    }
+    if (ScenarioManagerComp)
+    {
+        ScenarioManagerComp->StartScenario(NextID);
+    }
+}
+
+void ALobbyGameModeBase::OnAnswerFinished()
+{
+    if (ScenarioManagerComp)
+    {
+        ScenarioManagerComp->RequestNextStep();
+    }
+}
+
+void ALobbyGameModeBase::OnStartBattleClicked()
+{
+    GotoBattle();
 }
 
 void ALobbyGameModeBase::ReadyComplete()
 {
     if (!ScenarioManagerComp->IsScenarioEnd())
-    {
         return;
-    }
 
-    // 로비관련 UI 비활성화
     UE_LOG(LogTemp, Warning, TEXT("Called Ready Complete"));
-
-    APlayerController* PC = GetWorld()->GetFirstPlayerController();
-
-    if (PC)
-    {
-        PC->bShowMouseCursor = false;
-        FInputModeGameOnly InputModeData;
-        InputModeData.SetConsumeCaptureMouseDown(true);
-        PC->SetInputMode(InputModeData);
-    }
-
-
-
-    // 연출 후에, 
-    // Room Level 이 구현되지 않은 경우 바로 BattleMap으로 이동
     GotoBattle();
-    // Room Level 이 구축된 경우, 포탈과의 상호작용을 통해 이동    
 }
-
 
 void ALobbyGameModeBase::OpenCraftingWindow()
 {
-       // 크래프팅 창 즉시 표시
     if (CraftingWindowClass)
     {
         APlayerController* PC = GetWorld()->GetFirstPlayerController();
@@ -129,42 +205,66 @@ void ALobbyGameModeBase::OpenCraftingWindow()
     }
 }
 
-
 void ALobbyGameModeBase::GotoBattle()
 {
-    // TODO:: 고쳐야 할 코드
-    // Battle 장소로 이동할 때, 연출과 동작 방식 등을 아직 결정하지 못함.
-    // 지연 로딩을 통해 느낌만 부여함.
+    HideAllWidgets();
+    SetMouseGame();
 
-    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
-    {
-        //UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_MainStage"));
-
-        int32 count = GI->GetWonBattleCount();
-
-        if (count == 0)
-        {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_Stage1"));
-        }
-        else if (count == 1)
-        {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_Stage2"));
-        }
-        else if (count == 2)
-        {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_Stage3"));
-        }
-        else
-        {
-            UGameplayStatics::OpenLevel(GetWorld(), TEXT("/Game/Level/L_Stage3"));
-        }
-    
-        UE_LOG(LogTemp, Warning, TEXT("[Lobby] Current Won Battle Count: %d"), GI->GetWonBattleCount());
-    }
-    else
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+    if (!GI)
     {
         UE_LOG(LogTemp, Warning, TEXT("[Lobby] Failed to get GameInstance"));
+        return;
     }
 
-    
+    int32 Count = GI->GetWonBattleCount();
+    UE_LOG(LogTemp, Warning, TEXT("[Lobby] Current Won Battle Count: %d"), Count);
+
+    if (CraftingComp)
+    {
+        TArray<FInventorySlot> SlotsToSave;
+        for (const FItemQuantity& Item : CraftingComp->GetItemBag())
+        {
+            FInventorySlot Slot;
+            Slot.ItemID = Item.ItemID;
+            Slot.Quantity = Item.Amount;
+            SlotsToSave.Add(Slot);
+        }
+        GI->SaveInventory(SlotsToSave);
+    }
+
+    if (Count >= 3)
+    {
+        GI->ResetGame();
+        UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
+        return;
+    }
+
+    FString Level =
+        Count == 0 ? TEXT("/Game/Level/L_Stage1") :
+        Count == 1 ? TEXT("/Game/Level/L_Stage2") :
+                     TEXT("/Game/Level/L_Stage3");
+
+    UGameplayStatics::OpenLevel(this, FName(*Level));
+}
+
+void ALobbyGameModeBase::SetMouseUI()
+{
+    APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    if (!PC) return;
+    PC->bShowMouseCursor = true;
+    PC->bEnableClickEvents = true;
+    PC->bEnableMouseOverEvents = true;
+    FInputModeUIOnly InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    PC->SetInputMode(InputMode);
+}
+
+void ALobbyGameModeBase::SetMouseGame()
+{
+    APlayerController* PC = GetWorld()->GetFirstPlayerController();
+    if (!PC) return;
+    PC->bShowMouseCursor = false;
+    FInputModeGameOnly InputMode;
+    PC->SetInputMode(InputMode);
 }

@@ -34,7 +34,7 @@ public:
 
 	FName LastScenarioRowName;
 
-	//restart ¹öÆ°¿ë
+	//restart ï¿½ï¿½Æ°ï¿½ï¿½
 	void ResetGame();
 	bool bHasSelectedQuestion = false; //Áú¹® ¼±ÅÃ È®ÀÎ¿ë
 

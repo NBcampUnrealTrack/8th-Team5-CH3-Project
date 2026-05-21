@@ -33,6 +33,7 @@ void UCLGameInstance::ResetGame()
     LastScenarioRowName = FName("Scenario_1");
     ViewedQuestions.Empty();
     bHasSelectedQuestion = false;
+    SavedInventorySlots.Empty();
 }
 
 
@@ -41,3 +42,4 @@ void UCLGameInstance::SaveInventory(const TArray<FInventorySlot>& Slots)
     SavedInventorySlots = Slots;
     UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 인벤토리 저장 완료: %d 슬롯"), Slots.Num());
 }
+

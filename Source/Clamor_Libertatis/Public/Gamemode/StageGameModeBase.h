@@ -30,12 +30,10 @@ class  AStageGameModeBase : public AGameModeBase
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
+	virtual void PostLogin(APlayerController* NewPlayer);
 
 private:
-
-	UFUNCTION()
-	void HandleStageResult();
-
 	UFUNCTION()
 	void OnStageClear();
 
@@ -43,6 +41,7 @@ private:
 	void OnGameOver();
 
 	void SaveInventoryToGameInstance();
+	void LoadInventoryFromGameInstance(APlayerController* NewPlayer);
 
 	UPROPERTY()
 	TObjectPtr<class AGameStateBase> CachedGameState;

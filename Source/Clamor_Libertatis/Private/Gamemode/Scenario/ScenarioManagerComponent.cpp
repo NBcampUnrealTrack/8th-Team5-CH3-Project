@@ -30,17 +30,6 @@ void UScenarioManagerComponent::StartScenario(FName RowName)
         }
     }
 
-    if (!CachedDialogueWidget && DialogueWidgetClass)
-    {
-
-        // TODO:: Opening Widget 종료시 생성쪽이 더 올바름. 일단 임시
-        CachedDialogueWidget = CreateWidget<UUserWidget>(GetWorld(), DialogueWidgetClass);
-        if (CachedDialogueWidget)
-        {
-            CachedDialogueWidget->AddToViewport(98);            
-        }
-    }
-
     UpdateDisplay();
 }
 
@@ -184,4 +173,5 @@ bool UScenarioManagerComponent::GetSkipQuestion(FScenarioData& Output) const
 bool UScenarioManagerComponent::IsScenarioEnd() const
 {
     return bScenarioEnd;
+    //return true;
 }

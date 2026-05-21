@@ -48,6 +48,12 @@ void UCraftingComponent::RemoveItem(FName ItemID, int32 Amount)
     }
 }
 
+void UCraftingComponent::SetItemBag(const TArray<FItemQuantity>& InItems)
+{
+    ItemBag = InItems;
+    OnItemBagChanged.Broadcast();
+}
+
 int32 UCraftingComponent::GetItemAmount(FName ItemID) const
 {
     for (const FItemQuantity& Entry : ItemBag)
