@@ -38,8 +38,11 @@ void UPlayerHUDWidget::InitWidget(UHealthComponent* InHealthComp)
 
 void UPlayerHUDWidget::InitSkillCooldown(USkillComponent* InSkillComp)
 {
-    if (!InSkillComp || !SkillCooldownWidget) return;
-    SkillCooldownWidget->InitWithSkillComponent(InSkillComp);
+    if (!InSkillComp) return;
+
+    if (SkillWidget0) SkillWidget0->InitWithSkillComponent(InSkillComp, "Fireball");
+    if (SkillWidget1) SkillWidget1->InitWithSkillComponent(InSkillComp, "LeapAttack");
+    if (SkillWidget2) SkillWidget2->InitWithSkillComponent(InSkillComp, "SpinSlash");
 }
 
 void UPlayerHUDWidget::OnHealthChanged(float CurrentHealth, float MaxHealth)

@@ -32,6 +32,7 @@ void UCLGameInstance::ResetGame()
     WonBattleCount = 0;
     LastScenarioRowName = FName("Scenario_1");
     ViewedQuestions.Empty();
+    bHasSelectedQuestion = false;
 }
 
 
