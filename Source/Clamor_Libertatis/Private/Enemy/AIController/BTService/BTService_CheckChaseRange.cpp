@@ -43,13 +43,22 @@ void UBTService_CheckChaseRange::TickNode(UBehaviorTreeComponent& OwnerComp, uin
 		float Dist = FVector::Dist(OwnerPawn->GetActorLocation(), TargetActor->GetActorLocation());
 		if (Dist <= Memory->MaxChasingDistance)
 		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"),true);
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"),true);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"), true);
+
+			if (IEnemyHitReactable* HitReactable = Cast<IEnemyHitReactable>(OwnerPawn))
+			{
+				if (!HitReactable->IsInHitReaction())
+					OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), true);
+			}
+			else
+			{
+				OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), true);
+			}
 		}
 		else
 		{
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"),false);
-			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"),false);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bInRange"), false);
+			OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bCanAttack"), false);
 		}
 	}
 }

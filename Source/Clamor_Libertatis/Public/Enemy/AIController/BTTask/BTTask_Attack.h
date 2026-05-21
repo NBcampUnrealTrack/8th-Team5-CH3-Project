@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
+#include "Enemy/Interface/IEnemyHitReactable.h"
 #include "BTTask_Attack.generated.h"
 
 struct FAttackTaskMemory
