@@ -95,8 +95,6 @@ public:
 	class UParticleSystem* HitEffect;
 	UPROPERTY(EditAnywhere, Category = "CameraShake")
 	TSubclassOf<UCameraShakeBase> HitCameraShakeClass;
-	UPROPERTY(EditAnywhere, Category = "Sound")
-	USoundBase* HitSound;
 
 	// 캐릭터 행동 입력
 	UFUNCTION()

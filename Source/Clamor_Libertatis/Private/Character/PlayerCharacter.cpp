@@ -542,18 +542,6 @@ void APlayerCharacter::SpawnHitEffect()
             }
         }
     }
-
-    if (HitSound)
-    {
-        UGameplayStatics::PlaySoundAtLocation(
-            GetWorld(),
-            HitSound,
-            GetActorLocation(),
-            1.0f,
-            1.0f,
-            0.0f
-        );
-    }
 }
 
 void APlayerCharacter::PickupItem(FItemTableRow* ItemData)
