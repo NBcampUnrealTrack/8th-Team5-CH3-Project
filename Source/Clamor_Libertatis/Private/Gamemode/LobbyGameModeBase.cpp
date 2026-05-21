@@ -10,28 +10,28 @@
 #include "Blueprint/UserWidget.h"
 
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
+#include "Character/PlayerCharacter.h"
+#include "Crafting/CraftingComponent.h"
 
 
 ALobbyGameModeBase::ALobbyGameModeBase()
 {
     ScenarioManagerComp = CreateDefaultSubobject<UScenarioManagerComponent>(TEXT("ScenarioManagerComp"));
-    
+    CraftingComp = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComp"));
 }
 
 void ALobbyGameModeBase::BeginPlay()
 {
     Super::BeginPlay();
 
-    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    /*if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
         
         if (ScenarioManagerComp)
         {
-           
-
             if (!GI->HasWatchedOpening())
             {
-                ScenarioManagerComp->StartScenario(GI->LastScenarioRowName);
+                //ScenarioManagerComp->StartScenario(GI->LastScenarioRowName);
             }
             else
             {
@@ -47,7 +47,7 @@ void ALobbyGameModeBase::BeginPlay()
     else
     {
         UE_LOG(LogTemp, Warning, TEXT("[Lobby] Failed to get GameInstance"));
-    }
+    }*/
 
     APlayerController* PC = GetWorld()->GetFirstPlayerController();
 
@@ -60,9 +60,27 @@ void ALobbyGameModeBase::BeginPlay()
         FInputModeUIOnly InputModeData;
         InputModeData.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
         PC->SetInputMode(InputModeData);
+
+        /*if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+        {
+            APlayerCharacter* PlayerChar = Cast<APlayerCharacter>(PC->GetPawn());
+            if (PlayerChar && PlayerChar->ConsumableInventory)
+            {
+                const TArray<FInventorySlot>& Saved = GI->GetSavedInventory();
+                if (Saved.Num() > 0)
+                {
+                    PlayerChar->ConsumableInventory->ClearInventory();
+                    for (const FInventorySlot& Slot : Saved)
+                    {
+                        if (!Slot.IsEmpty())
+                        {
+                            PlayerChar->ConsumableInventory->AddItem(Slot.ItemID, Slot.Quantity);
+                        }
+                    }
+                }
+            }
+        }*/
     }
-
-
 }
 
 void ALobbyGameModeBase::ReadyComplete()
@@ -93,6 +111,23 @@ void ALobbyGameModeBase::ReadyComplete()
     // Room Level 이 구축된 경우, 포탈과의 상호작용을 통해 이동    
 }
 
+
+void ALobbyGameModeBase::OpenCraftingWindow()
+{
+       // 크래프팅 창 즉시 표시
+    if (CraftingWindowClass)
+    {
+        APlayerController* PC = GetWorld()->GetFirstPlayerController();
+        if (PC)
+        {
+            UUserWidget* CraftingWindow = CreateWidget<UUserWidget>(PC, CraftingWindowClass);
+            if (CraftingWindow)
+            {
+                CraftingWindow->AddToViewport(999);
+            }
+        }
+    }
+}
 
 
 void ALobbyGameModeBase::GotoBattle()

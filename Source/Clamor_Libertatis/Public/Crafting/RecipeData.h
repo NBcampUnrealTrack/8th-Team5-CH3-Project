@@ -12,11 +12,11 @@ struct FItemQuantity
 {
 	GENERATED_BODY()
 
-	// UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	// UItemData* ItemAsset;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FName ItemID;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 Amount;
+	int32 Amount = 1;
 };
 
 

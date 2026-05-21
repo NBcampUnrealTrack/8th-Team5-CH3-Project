@@ -15,6 +15,10 @@
 #include "UI/Opening/OpeningSequencer.h"
 #include "UI/Opening/OpeningWidget.h"
 
+#include "Gamemode/CLGameInstance.h"
+#include "UI/UITextLobbyGameMode.h"
+#include "Gamemode/Scenario/ScenarioManagerComponent.h"
+
 ABasePlayerController::ABasePlayerController()
     : InputMappingContext(nullptr)
     , MoveAction(nullptr)
@@ -46,8 +50,29 @@ void ABasePlayerController::BeginPlay()
         EnemyTracker->StartTracking();
     }
 
-    ShowGameStartUI();
+    //ShowGameStartUI();
+
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+    if (!GI || !GI->HasWatchedOpening())
+    {
+        // 최초 실행만 타이틀 표시
+        ShowGameStartUI();
+    }
+    // 이후 레벨 진입은 GameMode가 처리
+    else
+    {
+        // 이후 레벨 진입
+        // 로비 레벨 -> UITextLobbyGameMode가 질문 처리
+        // 전투 레벨 -> StartGame으로 HUD 표시
+        if (!GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+        {
+            // 로비 GameMode 아니면 -> 전투 레벨 -> HUD 표시
+            StartGame();
+        }
+    }
+
 }
+
 
 void ABasePlayerController::SetupInputComponent()
 {
@@ -56,7 +81,11 @@ void ABasePlayerController::SetupInputComponent()
     InputComponent->BindKey(EKeys::Two, IE_Pressed, this, &ABasePlayerController::UseQuickSlot2);
     InputComponent->BindKey(EKeys::Three, IE_Pressed, this, &ABasePlayerController::UseQuickSlot3);
     InputComponent->BindKey(EKeys::Four, IE_Pressed, this, &ABasePlayerController::UseQuickSlot4);
+
+    InputComponent->BindKey(EKeys::C, IE_Pressed, this, &ABasePlayerController::ToggleMainMenu);
+    InputComponent->BindKey(EKeys::V, IE_Pressed, this, &ABasePlayerController::ToggleMasterInventory);
 }
+
 
 void ABasePlayerController::InitializeInput()
 {
@@ -146,8 +175,28 @@ void ABasePlayerController::OnStartButtonClicked()
 
 void ABasePlayerController::OnOpeningEnd()
 {
+    //if (UIManager) UIManager->HideWidget(EUIType::Opening);
+    //StartGame();
+
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+        GI->LastScenarioRowName = FName("Scenario_End");
+
     if (UIManager) UIManager->HideWidget(EUIType::Opening);
-    StartGame();
+
+    // 오프닝 끝 -> 로비 UI 표시
+    if (AUITextLobbyGameMode* LobbyGM =
+        GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+    {
+        bShowMouseCursor = true;
+        bEnableClickEvents = true;
+        bEnableMouseOverEvents = true;
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        SetInputMode(InputMode);
+
+        // 질문 아니고 로비 바로 표시
+        LobbyGM->ShowLobbyPhase();
+    }
 }
 
 void ABasePlayerController::StartGame()
@@ -170,8 +219,12 @@ void ABasePlayerController::ShowMainMenu()
     if (!UIManager) return;
     UIManager->ShowWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), true);
-    SetInputMode(FInputModeUIOnly{});
-    bShowMouseCursor = true;
+
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
+    bShowMouseCursor = true;;
 }
 
 void ABasePlayerController::ContinueGame()
@@ -185,10 +238,14 @@ void ABasePlayerController::ContinueGame()
 
 void ABasePlayerController::RestartGame()
 {
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+        GI->ResetGame();
+
     UGameplayStatics::SetGamePaused(GetWorld(), false);
     SetInputMode(FInputModeGameOnly{});
     bShowMouseCursor = false;
-    UGameplayStatics::OpenLevel(this, FName(*GetWorld()->GetName()));
+    //UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap"));
+    UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
 }
 
 void ABasePlayerController::QuitGame()
@@ -215,18 +272,45 @@ void ABasePlayerController::ShowMasterInventory()
     );
 
     UIManager->ShowWidget(EUIType::MasterInventory);
-    UGameplayStatics::SetGamePaused(GetWorld(), true);
-    SetInputMode(FInputModeUIOnly{});
+    FInputModeGameAndUI InputMode;
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    InputMode.SetHideCursorDuringCapture(false);
+    SetInputMode(InputMode);
     bShowMouseCursor = true;
+
+    if (!GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+        UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
 void ABasePlayerController::HideMasterInventory()
 {
+    //if (!UIManager) return;
+    //UIManager->HideWidget(EUIType::MasterInventory);
+    //UGameplayStatics::SetGamePaused(GetWorld(), false);
+    //SetInputMode(FInputModeGameOnly{});
+    //bShowMouseCursor = false;
+
     if (!UIManager) return;
     UIManager->HideWidget(EUIType::MasterInventory);
-    UGameplayStatics::SetGamePaused(GetWorld(), false);
-    SetInputMode(FInputModeGameOnly{});
     bShowMouseCursor = false;
+
+    // 로비면 UI 모드 유지, 전투면 게임 모드로
+    if (GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+    {
+        // 로비 -> UI 모드 유지
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
+        SetInputMode(InputMode);
+        bShowMouseCursor = true;
+    }
+    else
+    {
+        // 전투 -> 게임 모드로 복귀
+        UGameplayStatics::SetGamePaused(GetWorld(), false);
+        SetInputMode(FInputModeGameOnly{});
+        bShowMouseCursor = false;
+    }
 }
 
 void ABasePlayerController::InitQuickSlotWidget()
@@ -273,3 +357,21 @@ void ABasePlayerController::UseQuickSlot1() { if (QuickSlotWidgetRef) QuickSlotW
 void ABasePlayerController::UseQuickSlot2() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(1); }
 void ABasePlayerController::UseQuickSlot3() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(2); }
 void ABasePlayerController::UseQuickSlot4() { if (QuickSlotWidgetRef) QuickSlotWidgetRef->UseQuickSlot(3); }
+
+void ABasePlayerController::ToggleMasterInventory()
+{
+    if (!UIManager) return;
+    if (UIManager->IsWidgetVisible(EUIType::MasterInventory))
+        HideMasterInventory();
+    else
+        ShowMasterInventory();
+}
+
+void ABasePlayerController::ToggleMainMenu()
+{
+    if (!UIManager) return;
+    if (UIManager->IsWidgetVisible(EUIType::MainMenu))
+        ContinueGame();
+    else
+        ShowMainMenu();
+}
