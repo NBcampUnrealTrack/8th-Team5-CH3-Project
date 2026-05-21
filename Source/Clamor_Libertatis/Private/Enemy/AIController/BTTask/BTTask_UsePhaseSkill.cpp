@@ -77,16 +77,16 @@ void UBTTask_UsePhaseSkill::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, ui
 {
 	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
 
-	UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] OnTaskFinished - TaskResult: %d (Succeeded=1, Failed=0, Aborted=2)"), (int32)TaskResult);
+	//UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] OnTaskFinished - TaskResult: %d (Succeeded=1, Failed=0, Aborted=2)"), (int32)TaskResult);
 
 	if (TaskResult == EBTNodeResult::Succeeded)
 	{
 		UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
-		UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] Succeeded 진입 - BlackboardComponent 유효: %s"), BB ? TEXT("true") : TEXT("false"));
+		//UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] Succeeded 진입 - BlackboardComponent 유효: %s"), BB ? TEXT("true") : TEXT("false"));
 		if (BB)
 		{
 			BB->SetValueAsBool(TEXT("bCanPatrol"), true);
-			UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] bCanPatrol 설정 후 값: %s"), BB->GetValueAsBool(TEXT("bCanPatrol")) ? TEXT("true") : TEXT("false"));
+			//UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] bCanPatrol 설정 후 값: %s"), BB->GetValueAsBool(TEXT("bCanPatrol")) ? TEXT("true") : TEXT("false"));
 		}
 	}
 }

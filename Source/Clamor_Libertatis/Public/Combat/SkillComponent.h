@@ -26,7 +26,8 @@ class CLAMOR_LIBERTATIS_API USkillComponent : public UActorComponent
 public:
 	USkillComponent();
 
-	UFUNCTION(BlueprintCallable, Category = "Skill")
+
+	UFUNCTION(BlueprintCallable, Category="Skill")
 	bool TryActivateSkill(UDA_SkillData* SkillData);
 
 	UFUNCTION(BlueprintCallable, Category = "Skill")

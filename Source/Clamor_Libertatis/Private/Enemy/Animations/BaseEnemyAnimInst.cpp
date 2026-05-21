@@ -1,6 +1,7 @@
 #include "Enemy/Animations/BaseEnemyAnimInst.h"
 
 #include "Enemy/BaseEnemy.h"
+#include "KismetAnimationLibrary.h"
 
 void UBaseEnemyAnimInst::NativeInitializeAnimation()
 {
@@ -20,6 +21,9 @@ void UBaseEnemyAnimInst::NativeUpdateAnimation(float DeltaSeconds)
 	
 	FVector Velocity = MyOwnerInst->GetVelocity();
 	Enemy_GroundSpeed = Velocity.Size2D();
-	FRotator OwnerRotation = MyOwnerInst ->GetActorRotation();
-	Enemy_RotationYaw = OwnerRotation.Yaw;
+	FRotator OwnerRotation = MyOwnerInst->GetActorRotation();
+	if (Enemy_GroundSpeed > KINDA_SMALL_NUMBER)
+		Enemy_RotationYaw = UKismetAnimationLibrary::CalculateDirection(Velocity, OwnerRotation);
+	else
+		Enemy_RotationYaw = 0.f;
 }
