@@ -12,6 +12,7 @@ UBTTask_Attack::UBTTask_Attack()
 	NodeName = TEXT("NormalAttack");
 	MaxDeltaYaw = 5.f;
 	MinTrackDistance = 2.f;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTTask_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -122,4 +123,17 @@ void UBTTask_Attack::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* No
 	FAttackTaskMemory* Memory = reinterpret_cast<FAttackTaskMemory*>(NodeMemory);
 	Memory->bAttackStarted = false;
 	Memory->CachedAttackMontage = nullptr;
+
+	UE_LOG(LogTemp, Warning, TEXT("[BTTask_Attack] OnTaskFinished - TaskResult: %d (Succeeded=1, Failed=0, Aborted=2)"), (int32)TaskResult);
+
+	if (TaskResult == EBTNodeResult::Succeeded)
+	{
+		UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+		UE_LOG(LogTemp, Warning, TEXT("[BTTask_Attack] Succeeded 진입 - BlackboardComponent 유효: %s"), BB ? TEXT("true") : TEXT("false"));
+		if (BB)
+		{
+			BB->SetValueAsBool(TEXT("bCanPatrol"), true);
+			UE_LOG(LogTemp, Warning, TEXT("[BTTask_Attack] bCanPatrol 설정 후 값: %s"), BB->GetValueAsBool(TEXT("bCanPatrol")) ? TEXT("true") : TEXT("false"));
+		}
+	}
 }
