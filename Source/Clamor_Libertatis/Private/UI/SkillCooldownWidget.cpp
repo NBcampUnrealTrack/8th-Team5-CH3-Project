@@ -1,14 +1,14 @@
 #include "UI/SkillCooldownWidget.h"
-#include "Combat/SkillComponent.h"  
-#include "Components/Image.h"         
-#include "Components/TextBlock.h"    
+#include "Combat/SkillComponent.h"
+#include "Components/Image.h"
 #include "Materials/MaterialInstanceDynamic.h"
 
-void USkillCooldownWidget::InitWithSkillComponent(USkillComponent* InSkillComponent)
+void USkillCooldownWidget::InitWithSkillComponent(USkillComponent* InSkillComponent, FName InSkillName)
 {
     if (!InSkillComponent) return;
-
     SkillComponent = InSkillComponent;
+    BoundSkillName = InSkillName;
+
     InSkillComponent->OnSkillCooldownStart.AddDynamic(
         this, &USkillCooldownWidget::OnCooldownStarted);
 
@@ -19,19 +19,14 @@ void USkillCooldownWidget::InitWithSkillComponent(USkillComponent* InSkillCompon
         CooldownMaterial->SetScalarParameterValue(TEXT("CooldownRatio"), 0.f);
         SkillIconImage->SetBrushFromMaterial(CooldownMaterial);
     }
-
-    //if (CooldownText)
-        //CooldownText->SetVisibility(ESlateVisibility::Hidden);
 }
 
-void USkillCooldownWidget::OnCooldownStarted(float Duration)
+void USkillCooldownWidget::OnCooldownStarted(FName SkillName, float Duration)
 {
+    if (SkillName != BoundSkillName) return;
     TotalCooldown = Duration;
-    RemainingCooldown = Duration;
+    CooldownStartTime = GetWorld()->GetTimeSeconds();
     bIsOnCooldown = true;
-
-    //if (CooldownText)
-        //CooldownText->SetVisibility(ESlateVisibility::Visible);
 }
 
 void USkillCooldownWidget::NativeTick(const FGeometry& MyGeometry, float InDeltaTime)
@@ -39,20 +34,15 @@ void USkillCooldownWidget::NativeTick(const FGeometry& MyGeometry, float InDelta
     Super::NativeTick(MyGeometry, InDeltaTime);
     if (!bIsOnCooldown || !CooldownMaterial) return;
 
-    RemainingCooldown = FMath::Max(0.f, RemainingCooldown - InDeltaTime);
+    const float Elapsed = GetWorld()->GetTimeSeconds() - CooldownStartTime;
+    RemainingCooldown = FMath::Max(0.f, TotalCooldown - Elapsed);
 
-    const float Ratio = (TotalCooldown > 0.f)? RemainingCooldown / TotalCooldown : 0.f;
-
+    const float Ratio = (TotalCooldown > 0.f) ? RemainingCooldown / TotalCooldown : 0.f;
     CooldownMaterial->SetScalarParameterValue(TEXT("CooldownRatio"), Ratio);
-
-    //const int32 DisplaySec = FMath::CeilToInt(RemainingCooldown);
-    //CooldownText->SetText(FText::AsNumber(DisplaySec));
 
     if (RemainingCooldown <= 0.f)
     {
         bIsOnCooldown = false;
-       // CooldownText->SetVisibility(ESlateVisibility::Hidden);
-
         CooldownMaterial->SetScalarParameterValue(TEXT("CooldownRatio"), 0.f);
     }
 }

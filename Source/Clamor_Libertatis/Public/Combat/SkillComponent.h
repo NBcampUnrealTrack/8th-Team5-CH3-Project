@@ -14,7 +14,7 @@ class UTargetLockComponent;
 
 DECLARE_LOG_CATEGORY_EXTERN(LogSkill, Log, All)
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnSkillCooldownStart, float, Cooldown);
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnSkillCooldownStart, FName, SkillName, float, Cooldown);
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )

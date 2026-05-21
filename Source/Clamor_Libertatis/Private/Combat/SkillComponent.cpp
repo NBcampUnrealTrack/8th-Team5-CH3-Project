@@ -205,7 +205,7 @@ void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
 	if (const UWorld* World = GetWorld())
 	{
 		SkillCooldownEndTime = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
-		OnSkillCooldownStart.Broadcast(SkillData->Cooldown);
+		OnSkillCooldownStart.Broadcast(SkillData->SkillName, SkillData->Cooldown);
 	}
 }
 

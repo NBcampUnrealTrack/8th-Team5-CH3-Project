@@ -42,7 +42,13 @@ protected:
     virtual void NativeConstruct() override;
 
     UPROPERTY(meta = (BindWidget))
-    USkillCooldownWidget* SkillCooldownWidget;
+    TObjectPtr<USkillCooldownWidget> SkillWidget0;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<USkillCooldownWidget> SkillWidget1;
+
+    UPROPERTY(meta = (BindWidget))
+    TObjectPtr<USkillCooldownWidget> SkillWidget2;
 
     UPROPERTY(meta = (BindWidget))
     UButton* StatButton;
