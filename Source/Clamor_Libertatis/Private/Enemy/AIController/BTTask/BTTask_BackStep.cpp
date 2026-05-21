@@ -43,7 +43,7 @@ void UBTTask_BackStep::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMe
 		FinishLatentTask(OwnerComp, EBTNodeResult::Failed);
 		return;
 	}
-
+	
 	AActor* TargetActor = Cast<AActor>(OwnerComp.GetBlackboardComponent()->GetValueAsObject(TEXT("TargetActor")));
 	if (!TargetActor)
 	{
