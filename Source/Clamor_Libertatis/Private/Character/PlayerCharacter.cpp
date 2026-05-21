@@ -331,8 +331,10 @@ void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
 {
     if (!IsAvailable()) return;
-
-    SkillComp->ActiveSkill();
+    if (SkillDatas.Num() >= 1) {
+        UDA_SkillData* SkillData = SkillDatas[0];
+        SkillComp->TryActivateSkill(SkillData);
+    }
 }
 
 void APlayerCharacter::Lock(const FInputActionValue& value)
