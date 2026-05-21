@@ -213,6 +213,7 @@ void USkillComponent::StartCooldown(const UDA_SkillData* SkillData)
 		//다음버전에 삭제
 // 		SkillCooldownEndTime = World->GetTimeSeconds() + FMath::Max(0.0f, SkillData->Cooldown);
 		OnSkillCooldownStart.Broadcast(SkillData->Cooldown);
+
 	}
 }
 

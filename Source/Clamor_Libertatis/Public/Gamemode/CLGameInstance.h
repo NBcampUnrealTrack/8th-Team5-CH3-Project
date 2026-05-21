@@ -36,6 +36,7 @@ public:
 
 	//restart 버튼용
 	void ResetGame();
+	bool bHasSelectedQuestion = false; //질문 선택 확인용
 
 private:
 	int32 WonBattleCount;
