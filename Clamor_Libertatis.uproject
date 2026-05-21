@@ -12,7 +12,8 @@
 				"Engine",
 				"UMG",
 				"CoreUObject",
-				"NiagaraAnimNotifies"
+				"NiagaraAnimNotifies",
+				"EngineCameras"
 			]
 		}
 	],
