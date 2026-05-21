@@ -137,8 +137,7 @@ void ABasePlayerController::HideGameStartUI()
 
 void ABasePlayerController::OnStartButtonClicked()
 {
-    UE_LOG(LogTemp, Warning, TEXT(" OnStartButtonClicked 호출됨"));
-
+    UE_LOG(LogTemp, Warning, TEXT("OnStartButtonClicked 호출됨"));
     HideGameStartUI();
 
     if (!UIManager || !OpeningScenarioTable)
@@ -148,12 +147,13 @@ void ABasePlayerController::OnStartButtonClicked()
         return;
     }
 
-    UE_LOG(LogTemp, Warning, TEXT("ShowWidget Opening 호출"));
     UIManager->ShowWidget(EUIType::Opening);
-
     if (EnemyTracker) EnemyTracker->SetSuppressed(true);
-    SetInputMode(FInputModeUIOnly{});
-    bShowMouseCursor = false;
+
+    bEnableClickEvents = false;
+    bEnableMouseOverEvents = false;
+    SetInputMode(FInputModeUIOnly{});  
+    bShowMouseCursor = false;          
 
     OpeningSequencer = NewObject<UOpeningSequencer>(this);
     OpeningSequencer->ScenarioTable = OpeningScenarioTable;
@@ -169,21 +169,16 @@ void ABasePlayerController::OnStartButtonClicked()
     if (OpeningWidget)
         OpeningWidget->InitWidget(OpeningSequencer);
 
-    UE_LOG(LogTemp, Warning, TEXT("StartSequence 호출 - Scenario_1"));
-    OpeningSequencer->StartSequence(FName("Scenario_1")); 
+    OpeningSequencer->StartSequence(FName("Scenario_1"));
 }
 
 void ABasePlayerController::OnOpeningEnd()
 {
-    //if (UIManager) UIManager->HideWidget(EUIType::Opening);
-    //StartGame();
-
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
         GI->LastScenarioRowName = FName("Scenario_End");
 
     if (UIManager) UIManager->HideWidget(EUIType::Opening);
 
-    // 오프닝 끝 -> 로비 UI 표시
     if (AUITextLobbyGameMode* LobbyGM =
         GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
     {
@@ -193,9 +188,12 @@ void ABasePlayerController::OnOpeningEnd()
         FInputModeGameAndUI InputMode;
         InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
         SetInputMode(InputMode);
-
-        // 질문 아니고 로비 바로 표시
         LobbyGM->ShowLobbyPhase();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("OnOpeningEnd: LobbyGameMode 아님 -> StartGame 호출"));
+        StartGame();
     }
 }
 
@@ -203,8 +201,11 @@ void ABasePlayerController::StartGame()
 {
     if (EnemyTracker) EnemyTracker->SetSuppressed(false);
     SetStageState(ECheckStageResult::NotEnd);
-    SetInputMode(FInputModeGameOnly{});
+
     bShowMouseCursor = false;
+    bEnableClickEvents = false;
+    bEnableMouseOverEvents = false;
+    SetInputMode(FInputModeGameOnly{});
 }
 
 void ABasePlayerController::ShowLobbyUI() { if (UIManager) UIManager->ShowWidget(EUIType::Lobby); }
@@ -232,8 +233,25 @@ void ABasePlayerController::ContinueGame()
     if (!UIManager) return;
     UIManager->HideWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), false);
-    SetInputMode(FInputModeGameOnly{});
-    bShowMouseCursor = false;
+
+    if (GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+    {
+        // 로비 -> UI 모드 유지
+        bShowMouseCursor = true;
+        bEnableClickEvents = true;
+        bEnableMouseOverEvents = true;
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        SetInputMode(InputMode);
+    }
+    else
+    {
+        // 전투 -> 게임 모드
+        bShowMouseCursor = false;
+        bEnableClickEvents = false;
+        bEnableMouseOverEvents = false;
+        SetInputMode(FInputModeGameOnly{});
+    }
 }
 
 void ABasePlayerController::RestartGame()
