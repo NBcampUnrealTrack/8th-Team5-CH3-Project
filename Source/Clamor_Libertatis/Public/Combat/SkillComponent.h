@@ -27,9 +27,6 @@ public:
 	USkillComponent();
 
 	UFUNCTION(BlueprintCallable, Category="Skill")
-	void ActiveSkill();
-
-	UFUNCTION(BlueprintCallable, Category="Skill")
 	bool TryActivateSkill(UDA_SkillData* SkillData);
 	
 	UFUNCTION(BlueprintCallable, Category="Skill")
