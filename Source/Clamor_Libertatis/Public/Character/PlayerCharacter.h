@@ -126,7 +126,13 @@ public:
 	UFUNCTION()
 	void StopDodge(UAnimMontage* Montage, bool bInterrupted);
 	UFUNCTION()
-	void StartActiveSkill(const FInputActionValue& value);
+	void StartActiveSkill_Q(const FInputActionValue& value);
+	UFUNCTION()
+	void StartActiveSkill_E(const FInputActionValue& value);
+	UFUNCTION()
+	void StartActiveSkill_F(const FInputActionValue& value);
+
+
 	UFUNCTION()
 	void Lock(const FInputActionValue& value);
 	UFUNCTION()
