@@ -9,7 +9,7 @@ void USkillCooldownWidget::InitWithSkillComponent(USkillComponent* InSkillCompon
     SkillComponent = InSkillComponent;
     BoundSkillName = InSkillName;
 
-    InSkillComponent->OnSkillCooldownStart.AddDynamic(
+    InSkillComponent->OnMultiSkillCooldownStart.AddDynamic(
         this, &USkillCooldownWidget::OnCooldownStarted);
 
     if (CooldownMaterialBase && SkillIconImage)
