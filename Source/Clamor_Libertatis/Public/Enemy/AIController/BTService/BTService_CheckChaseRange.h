@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTService.h"
+#include "Enemy/Interface/IEnemyHitReactable.h"
 #include "BTService_CheckChaseRange.generated.h"
 
 struct FCheckChaseRangeMemory

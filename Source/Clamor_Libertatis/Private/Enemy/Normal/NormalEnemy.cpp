@@ -41,11 +41,12 @@ float ANormalEnemy::TakeDamage(float DamageAmount, struct FDamageEvent const& Da
 void ANormalEnemy::HitReaction()
 {
 	UE_LOG(LogTemp,Warning,TEXT("HitReaction"));
+	bIsInHitReaction = true;
 	
 	if (AnimInst)
 	{
 		AnimInst->StopAllMontages(0.1f);
-		
+
 		if (UCharacterMovementComponent* MoveComp = GetCharacterMovement())
 		{
 			MoveComp->StopMovementImmediately();
@@ -59,9 +60,10 @@ void ANormalEnemy::HitReaction()
 	
 	if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
-		if (AIC->GetBlackboardComponent())
+		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
 		{
-			AIC->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanMove"),false);
+			BB->SetValueAsBool(TEXT("bCanMove"), false);
+			BB->SetValueAsBool(TEXT("bCanAttack"), false);
 		}
 	}
 	
@@ -82,6 +84,8 @@ void ANormalEnemy::HitReaction()
 
 void ANormalEnemy::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	bIsInHitReaction = false;
+
 	if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
 		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())

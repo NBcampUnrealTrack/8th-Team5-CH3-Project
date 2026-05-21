@@ -23,6 +23,8 @@ float ANormalEnemy_Mage::TakeDamage(float DamageAmount, struct FDamageEvent cons
 
 void ANormalEnemy_Mage::HitReaction()
 {
+	bIsInHitReaction = true;
+
 	if (AnimInst)
 	{
 		AnimInst->StopAllMontages(0.1f);
@@ -39,9 +41,10 @@ void ANormalEnemy_Mage::HitReaction()
 
 	if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
-		if (AIC->GetBlackboardComponent())
+		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
 		{
-			AIC->GetBlackboardComponent()->SetValueAsBool(TEXT("bCanMove"), false);
+			BB->SetValueAsBool(TEXT("bCanMove"), false);
+			BB->SetValueAsBool(TEXT("bCanAttack"), false);
 		}
 	}
 
@@ -62,6 +65,8 @@ void ANormalEnemy_Mage::HitReaction()
 
 void ANormalEnemy_Mage::OnHitMontageEnded(UAnimMontage* Montage, bool bInterrupted)
 {
+	bIsInHitReaction = false;
+
 	if (AAIController* AIC = Cast<AAIController>(GetController()))
 	{
 		if (UBlackboardComponent* BB = AIC->GetBlackboardComponent())
