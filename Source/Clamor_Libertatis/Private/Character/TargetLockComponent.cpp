@@ -20,6 +20,8 @@ UTargetLockComponent::UTargetLockComponent()
     LockOnWidgetComp->SetWidgetSpace(EWidgetSpace::Screen);
     LockOnWidgetComp->SetDrawAtDesiredSize(true);
     LockOnWidgetComp->bHiddenInGame = true;
+
+    LockOnSocketName = TEXT("pelvis");
 }
 
 
@@ -184,10 +186,13 @@ void UTargetLockComponent::UpdateRotation(float DeltaTime)
     if (!CurrentTarget || !OwnerCharacter || !OwnerCharacter->GetController()) return;
 
     FVector Start = OwnerCharacter->GetActorLocation();
-    FVector End = CurrentTarget->GetActorLocation();
+    Start.Z += 250.f;
+    FVector End = GetTargetAimLocation();
     FRotator TargetRotation = UKismetMathLibrary::FindLookAtRotation(Start, End);
+    //TargetRotation.Pitch = -12.f + (TargetRotation.Pitch * 0.4f);
 
-    TargetRotation.Pitch = -12.f + (TargetRotation.Pitch * 0.4f);
+    FRotator SmoothedRotation =
+        FMath::RInterpTo(CurrentRotation, TargetRotation, DeltaTime, 8.f);
 
     OwnerCharacter->GetController()->SetControlRotation(TargetRotation);
     if (!ValidateCurrentTarget())
@@ -210,6 +215,33 @@ bool UTargetLockComponent::ValidateCurrentTarget() const
         }
     }
     return false;
+}
+
+FVector UTargetLockComponent::GetTargetAimLocation() const
+{
+    if (!CurrentTarget)
+    {
+        return FVector::ZeroVector;
+    }
+
+    // TODO: ACharacter 타입 캐스팅 변수 선언
+    if (ACharacter* TargetCharacter = Cast<ACharacter>(CurrentTarget))
+    {
+        // TODO: 캐릭터의 메시 접근 코드 위치
+        if (USkeletalMeshComponent* TargetMesh = TargetCharacter->GetMesh())
+        {
+            // TODO: 메시 소켓 존재 여부 확인 위치
+            // 에디터에서 "pelvis"나 "spine_01" 등 하체/몸통 소켓을 지정하면 가깝든 멀든 부드럽게 돌아갑니다.
+            if (TargetMesh->DoesSocketExist(LockOnSocketName))
+            {
+                // TODO: 소켓 월드 위치 반환 코드 위치
+                return TargetMesh->GetSocketLocation(LockOnSocketName);
+            }
+        }
+    }
+
+    // fallback (캐스팅 실패하거나 소켓이 없으면 기존처럼 액터 중심점 반환)
+    return CurrentTarget->GetActorLocation();
 }
 
 ABaseEnemy* UTargetLockComponent::GetCurrentTarget() const
