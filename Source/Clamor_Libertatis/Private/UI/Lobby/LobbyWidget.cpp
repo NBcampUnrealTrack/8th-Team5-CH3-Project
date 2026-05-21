@@ -2,6 +2,7 @@
 #include "Character/BasePlayerController.h"
 #include "Components/TextBlock.h"
 #include "Components/Button.h"
+#include "Crafting/W_CraftingWindow.h"
 
 void ULobbyWidget::NativeConstruct()
 {
@@ -15,6 +16,10 @@ void ULobbyWidget::NativeConstruct()
     if (StatButton)
         StatButton->OnClicked.AddDynamic(
             this, &ULobbyWidget::OnStatButtonClicked);
+
+    if (CraftingButton) 
+        CraftingButton->OnClicked.AddDynamic(
+            this, &ULobbyWidget::OnCraftingButtonClicked);
 }
 
 void ULobbyWidget::InitLobby(int32 WonBattleCount)
@@ -57,4 +62,20 @@ void ULobbyWidget::OnStatButtonClicked()
 
     if (!PC) return;
     PC->ShowMasterInventory();
+}
+
+
+
+void ULobbyWidget::OnCraftingButtonClicked() 
+{
+    if (!CraftingWindowClass) return;
+
+    UW_CraftingWindow* CraftingWindow = 
+        CreateWidget<UW_CraftingWindow>(GetOwningPlayer(), CraftingWindowClass);
+    if (CraftingWindow)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("CraftingWindow 생성 성공, Viewport 추가"));
+        CraftingWindow->AddToViewport(10);
+        UE_LOG(LogTemp, Warning, TEXT("IsInViewport: %s"), CraftingWindow->IsInViewport() ? TEXT("true") : TEXT("false"));
+    }
 }

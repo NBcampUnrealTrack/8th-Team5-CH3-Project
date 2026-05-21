@@ -5,6 +5,7 @@
 
 class UTextBlock;
 class UButton;
+class UW_CraftingWindow;
 
 DECLARE_DYNAMIC_MULTICAST_DELEGATE(FOnStartBattleClicked);
 
@@ -18,6 +19,10 @@ public:
 
     UPROPERTY(BlueprintAssignable)
     FOnStartBattleClicked OnStartBattleClicked;
+
+    //크래프팅 윈도우 연결 필요
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "UI")
+    TSubclassOf<UW_CraftingWindow> CraftingWindowClass;
 
 protected:
     virtual void NativeConstruct() override;
@@ -40,6 +45,9 @@ protected:
     UPROPERTY(meta = (BindWidget))
     UButton* StatButton;
 
+    UPROPERTY(meta = (BindWidget))
+    UButton* CraftingButton;
+
 
 private:
     UFUNCTION()
@@ -47,4 +55,7 @@ private:
 
     UFUNCTION()
     void OnStatButtonClicked();
+
+    UFUNCTION()
+    void OnCraftingButtonClicked();
 };

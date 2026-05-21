@@ -203,13 +203,33 @@ void APlayerCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCom
                 //    &APlayerCharacter::StopDodge
                 //);
             }
-            if (PlayerController->ActiveSkillAction)
+            if (PlayerController->ActiveSkillAction_Q)
             {
                 EnhancedInput->BindAction(
-                    PlayerController->ActiveSkillAction,
+                    PlayerController->ActiveSkillAction_Q,
                     ETriggerEvent::Started,
                     this,
-                    &APlayerCharacter::StartActiveSkill
+                    &APlayerCharacter::StartActiveSkill_Q
+                );
+            }
+
+            if (PlayerController->ActiveSkillAction_E)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->ActiveSkillAction_E,
+                    ETriggerEvent::Started,
+                    this,
+                    &APlayerCharacter::StartActiveSkill_E
+                );
+            }
+
+            if (PlayerController->ActiveSkillAction_F)
+            {
+                EnhancedInput->BindAction(
+                    PlayerController->ActiveSkillAction_F,
+                    ETriggerEvent::Started,
+                    this,
+                    &APlayerCharacter::StartActiveSkill_F
                 );
             }
 
@@ -328,11 +348,27 @@ void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
 {
 }
 
-void APlayerCharacter::StartActiveSkill(const FInputActionValue& value)
+void APlayerCharacter::StartActiveSkill_Q(const FInputActionValue& value)
 {
     if (!IsAvailable()) return;
     if (SkillDatas.Num() >= 1) {
         UDA_SkillData* SkillData = SkillDatas[0];
+        SkillComp->TryActivateSkill(SkillData);
+    }
+}
+void APlayerCharacter::StartActiveSkill_E(const FInputActionValue& value)
+{
+    if (!IsAvailable()) return;
+    if (SkillDatas.Num() >= 1) {
+        UDA_SkillData* SkillData = SkillDatas[1];
+        SkillComp->TryActivateSkill(SkillData);
+    }
+}
+void APlayerCharacter::StartActiveSkill_F(const FInputActionValue& value)
+{
+    if (!IsAvailable()) return;
+    if (SkillDatas.Num() >= 1) {
+        UDA_SkillData* SkillData = SkillDatas[2];
         SkillComp->TryActivateSkill(SkillData);
     }
 }

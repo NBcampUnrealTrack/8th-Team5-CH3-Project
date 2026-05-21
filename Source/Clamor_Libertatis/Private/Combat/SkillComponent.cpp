@@ -130,7 +130,7 @@ void USkillComponent::ExecuteSkillEvent(FName EventID)
 
 bool USkillComponent::CanActivateSkill(const UDA_SkillData* SkillData) const
 {
-	if (!OwnerCharacter || !SkillData)
+	if (!OwnerCharacter || !SkillData || PendingSkillData)
 	{
 		return false;
 	}
