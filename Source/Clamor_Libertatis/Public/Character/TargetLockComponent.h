@@ -47,11 +47,14 @@ protected:
 	UWidgetComponent* LockOnWidgetComp;
 	UPROPERTY(EditAnywhere, Category = "LockOn")
 	TSubclassOf<UUserWidget> LockOnWidgetClass;
+	UPROPERTY(EditAnywhere, Category = "LockOn")
+	FName LockOnSocketName = NAME_None;
 
 	AActor* FindTarget();
 	void UpdateRotation(float DeltaTime);
 	bool IsValidTarget(AActor* Target) const;
 	bool ValidateCurrentTarget() const;
+	FVector GetTargetAimLocation() const;
 
 	void StartLock();
 	void EndLock();

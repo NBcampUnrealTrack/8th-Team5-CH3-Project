@@ -10,6 +10,7 @@ UBTTask_UsePhaseSkill::UBTTask_UsePhaseSkill()
 {
 	NodeName = TEXT("UsePhaseSkill");
 	MinTrackDistance = 2.f;
+	bNotifyTaskFinished = true;
 }
 
 EBTNodeResult::Type UBTTask_UsePhaseSkill::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
@@ -69,6 +70,24 @@ void UBTTask_UsePhaseSkill::TickTask(UBehaviorTreeComponent& OwnerComp, uint8* N
 	{
 		OwnerComp.GetBlackboardComponent()->SetValueAsBool(TEXT("bIsPhase2"), false);
 		FinishLatentTask(OwnerComp, EBTNodeResult::Succeeded);
+	}
+}
+
+void UBTTask_UsePhaseSkill::OnTaskFinished(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory, EBTNodeResult::Type TaskResult)
+{
+	Super::OnTaskFinished(OwnerComp, NodeMemory, TaskResult);
+
+	UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] OnTaskFinished - TaskResult: %d (Succeeded=1, Failed=0, Aborted=2)"), (int32)TaskResult);
+
+	if (TaskResult == EBTNodeResult::Succeeded)
+	{
+		UBlackboardComponent* BB = OwnerComp.GetBlackboardComponent();
+		UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] Succeeded 진입 - BlackboardComponent 유효: %s"), BB ? TEXT("true") : TEXT("false"));
+		if (BB)
+		{
+			BB->SetValueAsBool(TEXT("bCanPatrol"), true);
+			UE_LOG(LogTemp, Warning, TEXT("[BTTask_UsePhaseSkill] bCanPatrol 설정 후 값: %s"), BB->GetValueAsBool(TEXT("bCanPatrol")) ? TEXT("true") : TEXT("false"));
+		}
 	}
 }
 

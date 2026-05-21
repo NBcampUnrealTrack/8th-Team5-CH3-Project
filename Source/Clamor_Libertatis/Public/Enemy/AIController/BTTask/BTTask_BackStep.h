@@ -2,25 +2,25 @@
 
 #include "CoreMinimal.h"
 #include "BehaviorTree/BTTaskNode.h"
-#include "BTTask_UsePhaseSkill.generated.h"
+#include "BTTask_BackStep.generated.h"
 
-struct FUsePhaseSkillTaskMemory
+struct FBackStepTaskMemory
 {
-	bool bShouldTrack;
-	UAnimMontage* CachedSkillMontage;
+	float StepDirection; // 1.0 = 오른쪽, -1.0 = 왼쪽
+	float ElapsedTime;
 };
 
 UCLASS()
-class CLAMOR_LIBERTATIS_API UBTTask_UsePhaseSkill : public UBTTaskNode
+class CLAMOR_LIBERTATIS_API UBTTask_BackStep : public UBTTaskNode
 {
 	GENERATED_BODY()
 public:
-	UBTTask_UsePhaseSkill();
+	UBTTask_BackStep();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Sight")
-	float MinTrackDistance;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="SideStep")
+	float SideStepDuration;
 
-	virtual uint16 GetInstanceMemorySize() const override { return sizeof(FUsePhaseSkillTaskMemory); }
+	virtual uint16 GetInstanceMemorySize() const override { return sizeof(FBackStepTaskMemory); }
 
 protected:
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
