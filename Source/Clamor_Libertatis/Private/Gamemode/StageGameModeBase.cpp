@@ -15,10 +15,13 @@
 // Level에 배치된 단일 적 가정
 void AStageGameModeBase::OnStageClear()
 {
+    bool bGoToEnding = false;
+
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
         GI->CurrentStatus = ECheckStageResult::Win;
         GI->AddWonBattle();
+        bGoToEnding = (GI->GetWonBattleCount() >= 3);
     }
 
     if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
@@ -26,25 +29,32 @@ void AStageGameModeBase::OnStageClear()
         PC->ShowVictoryUI();
     }
 
-
-    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
+    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this, bGoToEnding]()
     {
         SaveInventoryToGameInstance();
 
-        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
-        //UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/UI/L_UITestMap"));
+        if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
+        {
+            if (bGoToEnding)
+            {
+                PC->GoToEnding();
+            }
+            else
+            {
+                PC->GoToLobby();
+            }
+        }
     }, 10.f, false);
 }
 
 // 플레이어 한명, 사망 가정
-// 게임 오버,
+// 게임 오버
 void AStageGameModeBase::OnGameOver()
 {
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
         GI->CurrentStatus = ECheckStageResult::Defeat;
     }
-
 
     UE_LOG(LogTemp, Warning, TEXT("Player Died"));
 
@@ -57,8 +67,10 @@ void AStageGameModeBase::OnGameOver()
     {
         SaveInventoryToGameInstance();
 
-        UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/Level/L_LobbyMap"));
-        //UGameplayStatics::OpenLevel(GetWorld(), FName("/Game/UI/L_UITestMap"));
+        if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
+        {
+            PC->GoToLobby();
+        }
     }, 5.f, false);
 }
 

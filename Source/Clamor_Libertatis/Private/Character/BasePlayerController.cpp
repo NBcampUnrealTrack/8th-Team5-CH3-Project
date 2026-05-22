@@ -21,7 +21,7 @@
 #include "Crafting/CraftingComponent.h"
 
 //UI Test용 게임 모드 완성시 삭제
-#include "UI/UITestEndingGameMode.h"
+#include "Gamemode/EndingModeBase.h"
 
 ABasePlayerController::ABasePlayerController()
     : InputMappingContext(nullptr)
@@ -72,7 +72,7 @@ void ABasePlayerController::BeginPlay()
         // 전투 레벨 -> StartGame으로 HUD 표시
         // 엔딩 레벨 -> UITestEndginGamemode로 엔딩 UI 띄우게
         bool bIsLobby = GetWorld()->GetAuthGameMode<ALobbyGameModeBase>() != nullptr; // 추후 진짜 로비 게임 모드로
-        bool bIsEnding = GetWorld()->GetAuthGameMode<AUITestEndingGameMode>() != nullptr; // 추후 진짜 엔딩 게임 모드
+        bool bIsEnding = GetWorld()->GetAuthGameMode<AEndingModeBase>() != nullptr; // 추후 진짜 엔딩 게임 모드
 
         if (!bIsLobby && !bIsEnding)
         {
@@ -272,13 +272,22 @@ void ABasePlayerController::RestartGame()
     UGameplayStatics::SetGamePaused(GetWorld(), false);
     SetInputMode(FInputModeGameOnly{});
     bShowMouseCursor = false;
-    //UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap")); //추후 진짜 게임 로비 모드로
-    UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap")); //추후 진짜 게임 로비 모드로
 }
 
 void ABasePlayerController::QuitGame()
 {
     UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
+}
+
+void ABasePlayerController::GoToLobby()
+{
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap"));
+}
+
+void ABasePlayerController::GoToEnding()
+{
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_Ending"));
 }
 
 void ABasePlayerController::ShowMasterInventory()

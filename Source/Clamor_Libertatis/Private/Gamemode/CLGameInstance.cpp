@@ -30,6 +30,7 @@ void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
     {
         ViewedQuestions.Add(KeyName);
         UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 질문 기록 완료: %s"), *PrefixKey);
+        bHasSelectedQuestion = true;
     }
 }
 

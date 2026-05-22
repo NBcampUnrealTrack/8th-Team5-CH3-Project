@@ -1,6 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
+
+#include "UI/UITestEndingGameMode.h"
+#include "UI/Opening/OpeningSequencer.h"
+#include "UI/Opening/OpeningWidget.h"
+#include "UI/AfterEndingWidget.h"
+
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Gamemode/CLGameInstance.h"

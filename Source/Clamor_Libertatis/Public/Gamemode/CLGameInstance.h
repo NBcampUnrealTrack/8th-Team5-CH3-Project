@@ -12,7 +12,7 @@ enum class ECheckStageResult : uint8
 {
 	Win,
 	Defeat,
-	NotEnd
+	NotEnd,
 };
 
 /**
@@ -34,7 +34,7 @@ public:
 	const TSet<FName>& GetAllViewedQuestions() const { return ViewedQuestions; }
 
 	bool HasWatchedOpening() const;
-	
+	bool IsGameOver() const;
 
 	void RegisterViewedQuestion(const FString& PrefixKey);
 	bool HasViewedQuestion(FName RowName) const { return ViewedQuestions.Contains(RowName); }

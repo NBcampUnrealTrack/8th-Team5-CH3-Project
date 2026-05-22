@@ -90,6 +90,12 @@ public:
 	void RestartGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Level")
+	void GoToLobby();
+
+	UFUNCTION(BlueprintCallable, Category = "Level")
+	void GoToEnding();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMasterInventory();
 	UFUNCTION(BlueprintCallable, Category = "UI")
