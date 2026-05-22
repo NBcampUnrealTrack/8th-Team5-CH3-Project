@@ -37,11 +37,6 @@ public:
 	void ShowLobbyPhase();
 	void ShowQuestionPhase(const TArray<FScenarioData>& Choices);
 
-	// Opening Widget
-	UPROPERTY(EditAnywhere)
-	TSubclassOf<UUserWidget> OpeningWidgetClass;
-
-	// 크래프팅 창 위젯 (에디터에서 WBP_CraftingWindow 연결)
 	UPROPERTY(EditAnywhere, Category = "Crafting")
 	TSubclassOf<UUserWidget> CraftingWindowClass;
 
@@ -54,11 +49,6 @@ public:
 	UPROPERTY(EditDefaultsOnly, Category = "UI|Lobby")
 	TSubclassOf<ULobbyWidget> LobbyWidgetClass;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Scenario")
-	class UScenarioManagerComponent* ScenarioManagerComp;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crafting")
-	UCraftingComponent* CraftingComp;
 
 private:
 
@@ -68,6 +58,9 @@ private:
 	TObjectPtr<UQuestionAnswerWidget> AnswerWidget;
 	UPROPERTY()
 	TObjectPtr<ULobbyWidget> LobbyWidget;
+	UPROPERTY()
+	TObjectPtr<UScenarioManagerComponent> ScenarioManagerComp;
+
 
 	UFUNCTION()
 	void OnQuestionSelected(FName NextID);

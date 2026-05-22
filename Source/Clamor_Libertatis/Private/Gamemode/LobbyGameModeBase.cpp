@@ -3,7 +3,6 @@
 #include "Gamemode/LobbyGameModeBase.h"
 #include "Gamemode/CLGameInstance.h"
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
-#include "Crafting/CraftingComponent.h"
 #include "UI/Lobby/QuestionWidget.h"
 #include "UI/Lobby/QuestionAnswerWidget.h"
 #include "UI/Lobby/LobbyWidget.h"
@@ -14,7 +13,6 @@
 ALobbyGameModeBase::ALobbyGameModeBase()
 {
     ScenarioManagerComp = CreateDefaultSubobject<UScenarioManagerComponent>(TEXT("ScenarioManagerComp"));
-    CraftingComp = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComp"));
 }
 
 void ALobbyGameModeBase::BeginPlay()
@@ -71,18 +69,6 @@ void ALobbyGameModeBase::BeginPlay()
         }
     }
 
-    if (GI && CraftingComp)
-    {
-        TArray<FItemQuantity> BagItems;
-        for (const FInventorySlot& Slot : GI->GetSavedInventory())
-        {
-            FItemQuantity Item;
-            Item.ItemID = Slot.ItemID;
-            Item.Amount = Slot.Quantity;
-            BagItems.Add(Item);
-        }
-        CraftingComp->SetItemBag(BagItems);
-    }
 }
 
 void ALobbyGameModeBase::HideAllWidgets()
@@ -220,18 +206,6 @@ void ALobbyGameModeBase::GotoBattle()
     int32 Count = GI->GetWonBattleCount();
     UE_LOG(LogTemp, Warning, TEXT("[Lobby] Current Won Battle Count: %d"), Count);
 
-    if (CraftingComp)
-    {
-        TArray<FInventorySlot> SlotsToSave;
-        for (const FItemQuantity& Item : CraftingComp->GetItemBag())
-        {
-            FInventorySlot Slot;
-            Slot.ItemID = Item.ItemID;
-            Slot.Quantity = Item.Amount;
-            SlotsToSave.Add(Slot);
-        }
-        GI->SaveInventory(SlotsToSave);
-    }
 
     if (Count >= 3)
     {

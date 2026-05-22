@@ -20,6 +20,18 @@ class UCraftingComponent : public UActorComponent
 public:
     UCraftingComponent();
 
+    UPROPERTY(BlueprintAssignable, Category = "Crafting")
+    FOnCraftingFinished OnCraftingFinished;
+
+    UPROPERTY(BlueprintAssignable, Category = "Crafting")
+    FOnStagedIngredientsChanged OnStagedIngredientsChanged;
+
+    UPROPERTY(BlueprintAssignable, Category = "Crafting")
+    FOnItemBagChanged OnItemBagChanged;
+
+    UPROPERTY(BlueprintAssignable, Category = "Crafting")
+    FOnRecipeModeChanged OnRecipeModeChanged;
+
     UFUNCTION(BlueprintCallable, Category = "Crafting")
     void AddItem(FName ItemID, int32 Amount = 1);
 
@@ -73,21 +85,14 @@ public:
     UFUNCTION(BlueprintPure, Category = "Crafting")
     const TArray<FItemQuantity>& GetStagedIngredients() const { return StagedIngredients; }
 
+
     // 레시피 테이블 (에디터에서 DT_CraftingRecipeRow 연결)
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Crafting")
     UDataTable* RecipeDataTable;
 
-    UPROPERTY(BlueprintAssignable, Category = "Crafting")
-    FOnCraftingFinished OnCraftingFinished;
-
-    UPROPERTY(BlueprintAssignable, Category = "Crafting")
-    FOnStagedIngredientsChanged OnStagedIngredientsChanged;
-
-    UPROPERTY(BlueprintAssignable, Category = "Crafting")
-    FOnItemBagChanged OnItemBagChanged;
-
-    UPROPERTY(BlueprintAssignable, Category = "Crafting")
-    FOnRecipeModeChanged OnRecipeModeChanged;
+protected:
+    virtual void BeginPlay() override;
+    virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;
 
 private:
     UPROPERTY(VisibleAnywhere, Category = "Crafting")
