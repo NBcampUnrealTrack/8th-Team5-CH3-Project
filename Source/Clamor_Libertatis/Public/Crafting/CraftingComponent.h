@@ -90,6 +90,10 @@ public:
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Crafting")
     UDataTable* RecipeDataTable;
 
+    // 아이템 이름/아이콘 조회용 테이블
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Crafting")
+    UDataTable* ItemDataTable;
+
 protected:
     virtual void BeginPlay() override;
     virtual void EndPlay(const EEndPlayReason::Type EndPlayReason) override;

@@ -338,10 +338,12 @@ void APlayerCharacter::StartDodge(const FInputActionValue& value)
     if (!IsAvailable() && !CombatComp->IsAttacking()) return;
     if (CombatComp->IsInvincible()) return;
 
+    EDodgeDirection DodgeDirection = GetDirection();
+
     CombatComp->SetCombatState(ECombatEnumState::Dodging);
     CombatComp->SetInvincible(true);
-    
-    DodgeAnimMontage(GetDirection());
+
+    DodgeAnimMontage(DodgeDirection);
 }
 
 void APlayerCharacter::StopDodge(UAnimMontage* Montage, bool bInterrupted)
@@ -389,7 +391,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         EventInstigator,
         DamageCauser
     );
-    
+
 
     if (HealthComp)
     {
@@ -399,7 +401,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
         }
 
         HealthComp->TakeDamageValue(ActualDamage);
-		UE_LOG(LogTemp, Warning, TEXT("Player Took Damage: %f, Current HP: %f"), ActualDamage, HealthComp->GetCurrentHealth());
+        UE_LOG(LogTemp, Warning, TEXT("Player Took Damage: %f, Current HP: %f"), ActualDamage, HealthComp->GetCurrentHealth());
 
         if (HealthComp->GetCurrentHealth() > 0.0f && CombatComp->IsSuperarmor() == false)
         {
@@ -518,13 +520,11 @@ EDodgeDirection APlayerCharacter::GetDirection() const
     }
 
     const float DirectionAngle = FMath::RadiansToDegrees(FMath::Atan2(CurrentMoveInput.Y, CurrentMoveInput.X));
-    UE_LOG(LogTemp, Warning, TEXT("Dodge Angle : %f"), DirectionAngle);
-    if (TargetLockComp->GetCurrentTarget() == nullptr) {
+    bool IsAttacking = CombatComp->IsAttacking();
+    if (TargetLockComp->GetCurrentTarget() == nullptr && !IsAttacking) {
         //타겟이 없다면 원하는 방향으로 바라보고 이동하니 forward 방향 반환함.
         return EDodgeDirection::Forward;
     }
-
-
     if (DirectionAngle >= -22.5f && DirectionAngle < 22.5f)
     {
         return EDodgeDirection::Forward;
