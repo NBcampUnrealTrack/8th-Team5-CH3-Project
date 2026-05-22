@@ -3,6 +3,7 @@
 #include "Crafting/RecipeData.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
+#include "Item/ItemTableRow.h"
 
 void UW_RecipeSlot::NativeConstruct()
 {
@@ -17,18 +18,31 @@ void UW_RecipeSlot::NativeConstruct()
 void UW_RecipeSlot::Init(URecipeData* InRecipe, UCraftingComponent* InComp)
 {
     CachedRecipe = InRecipe;
+    if (!InRecipe) return;
 
-    if (RecipeNameText && InRecipe)
+    UDataTable* ItemTable = InComp ? InComp->ItemDataTable : nullptr;
+
+    auto GetItemName = [ItemTable](FName ItemID) -> FString
     {
-        RecipeNameText->SetText(InRecipe->ResultItem.DisplayName);
+        if (ItemTable)
+        {
+            const FItemTableRow* Row = ItemTable->FindRow<FItemTableRow>(ItemID, TEXT(""));
+            if (Row) return Row->ItemName.ToString();
+        }
+        return ItemID.ToString();
+    };
+
+    if (RecipeNameText)
+    {
+        RecipeNameText->SetText(FText::FromString(GetItemName(InRecipe->ResultItem.ItemID)));
     }
 
-    if (IngredientsText && InRecipe)
+    if (IngredientsText)
     {
         FString IngredientStr;
         for (const FItemQuantity& Ing : InRecipe->Ingredients)
         {
-            IngredientStr += FString::Printf(TEXT("%s x%d  "), *Ing.DisplayName.ToString(), Ing.Amount);
+            IngredientStr += FString::Printf(TEXT("%s x%d  "), *GetItemName(Ing.ItemID), Ing.Amount);
         }
         IngredientsText->SetText(FText::FromString(IngredientStr.TrimEnd()));
     }
