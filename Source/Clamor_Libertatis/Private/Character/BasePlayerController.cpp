@@ -78,6 +78,12 @@ void ABasePlayerController::BeginPlay()
         {
             // 전투 레벨 -> HUD 표시
             StartGame();
+
+            // 텍스쳐 스트리밍 대기 시간 고려하여 페이드 인 처리
+            if (PlayerCameraManager)
+            {
+                PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 3.0f, FLinearColor::Black, false, false);
+            }
         }
     }
 

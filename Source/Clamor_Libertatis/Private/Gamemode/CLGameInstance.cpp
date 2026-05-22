@@ -41,6 +41,7 @@ void UCLGameInstance::ResetGame()
     ViewedQuestions.Empty();
     bHasSelectedQuestion = false;
     SavedInventorySlots.Empty();
+    CurrentStatus = ECheckStageResult::NotEnd;
 }
 
 

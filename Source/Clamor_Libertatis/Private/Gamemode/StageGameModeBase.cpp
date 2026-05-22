@@ -64,12 +64,10 @@ void AStageGameModeBase::OnGameOver()
     }
 
     GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
-    {
-        SaveInventoryToGameInstance();
-
+    {        
         if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
         {
-            PC->GoToLobby();
+            PC->RestartGame();
         }
     }, 5.f, false);
 }
