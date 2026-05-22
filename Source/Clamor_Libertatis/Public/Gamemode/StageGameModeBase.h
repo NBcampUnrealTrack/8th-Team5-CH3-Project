@@ -4,20 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
+#include "Gamemode/CLGameInstance.h"
 #include "StageGameModeBase.generated.h"
 
 class AGameStateBase;
 class ABaseEnemy;
-
-
-
-UENUM(BlueprintType)
-enum class ECheckStageResult : uint8
-{
-	Win,
-	Defeat,
-	NotEnd
-};
 
 
 
@@ -55,8 +46,6 @@ private:
 
 	UPROPERTY()
 	TObjectPtr<class AGameStateBase> CachedGameState;
-
-	ECheckStageResult CurrentStatus;
 
 	FTimerHandle ReturnToLobbyHandle;
 };

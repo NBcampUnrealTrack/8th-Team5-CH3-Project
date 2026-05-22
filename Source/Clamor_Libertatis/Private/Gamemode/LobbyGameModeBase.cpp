@@ -90,14 +90,12 @@ void ALobbyGameModeBase::HideAllWidgets()
 void ALobbyGameModeBase::ShowQuestionPhase(const TArray<FScenarioData>& Choices)
 {
     HideAllWidgets();
-    //SetMouseUI();
+    SetMouseUI();
     if (QuestionWidget)
     {
         QuestionWidget->SetVisibility(ESlateVisibility::Visible);
         QuestionWidget->ShowChoices(Choices);
     }
-    SetMouseUI();
-
 }
 
 void ALobbyGameModeBase::ShowAnswerPhase(const FText& AnswerText)

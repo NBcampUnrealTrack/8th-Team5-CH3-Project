@@ -15,11 +15,9 @@
 // Level에 배치된 단일 적 가정
 void AStageGameModeBase::OnStageClear()
 {
-    CurrentStatus = ECheckStageResult::Win;
-
-
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
+        GI->CurrentStatus = ECheckStageResult::Win;
         GI->AddWonBattle();
     }
 
@@ -42,7 +40,10 @@ void AStageGameModeBase::OnStageClear()
 // 게임 오버,
 void AStageGameModeBase::OnGameOver()
 {
-    CurrentStatus = ECheckStageResult::Defeat;
+    if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+    {
+        GI->CurrentStatus = ECheckStageResult::Defeat;
+    }
 
 
     UE_LOG(LogTemp, Warning, TEXT("Player Died"));
@@ -65,10 +66,9 @@ void AStageGameModeBase::BeginPlay()
 {
     Super::BeginPlay();
 
-    CurrentStatus = ECheckStageResult::NotEnd;
-
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
+        GI->CurrentStatus = ECheckStageResult::NotEnd;
         UE_LOG(LogTemp, Warning, TEXT("[GameStage] WonBattleCount: %d"), GI->GetWonBattleCount());
     }
 

@@ -7,8 +7,16 @@
 #include "Item/Inventory/InventoryComponent.h"
 #include "CLGameInstance.generated.h"
 
+UENUM(BlueprintType)
+enum class ECheckStageResult : uint8
+{
+	Win,
+	Defeat,
+	NotEnd
+};
+
 /**
- * 
+ *
  */
 UCLASS()
 class UCLGameInstance : public UGameInstance
@@ -17,6 +25,8 @@ class UCLGameInstance : public UGameInstance
 
 public:
 	UCLGameInstance();
+
+	ECheckStageResult CurrentStatus;
 
 	void AddWonBattle();
 	int32 GetWonBattleCount() const { return WonBattleCount; }
@@ -34,9 +44,8 @@ public:
 
 	FName LastScenarioRowName;
 
-	//restart ï¿½ï¿½Æ°ï¿½ï¿½
 	void ResetGame();
-	bool bHasSelectedQuestion = false; //Áú¹® ¼±ÅÃ È®ÀÎ¿ë
+	bool bHasSelectedQuestion = false;
 
 private:
 	int32 WonBattleCount;
