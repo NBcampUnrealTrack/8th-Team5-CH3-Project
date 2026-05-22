@@ -7,7 +7,14 @@
 		{
 			"Name": "Clamor_Libertatis",
 			"Type": "Runtime",
-			"LoadingPhase": "Default"
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"UMG",
+				"CoreUObject",
+				"NiagaraAnimNotifies",
+				"EngineCameras"
+			]
 		}
 	],
 	"Plugins": [

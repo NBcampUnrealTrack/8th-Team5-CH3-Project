@@ -1,0 +1,524 @@
+﻿// Fill out your copyright notice in the Description page of Project Settings.
+
+
+#include "Combat/CombatComponent.h"
+#include "Combat/Weapon/WeaponBase.h"
+#include "Combat/HealthComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "GameFramework/Character.h"
+
+#include "Engine/AssetManager.h"
+#include "Combat/Weapon/WeaponSocketItemData.h"
+#include <Character/TargetLockComponent.h>
+
+DEFINE_LOG_CATEGORY(LogCombat)
+
+UCombatComponent::UCombatComponent()
+{
+	PrimaryComponentTick.bCanEverTick = false;
+}
+
+
+void UCombatComponent::BeginPlay()
+{
+	Super::BeginPlay();
+	OwnerCharacter = Cast<ACharacter>(GetOwner());
+
+	if (OwnerCharacter)
+	{
+		HealthComponent = OwnerCharacter->FindComponentByClass<UHealthComponent>();
+	}
+
+
+	
+}
+
+
+void UCombatComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
+{
+	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
+
+}
+
+
+void UCombatComponent::BasicAttack()
+{
+	if (!OwnerCharacter || !CurrentWeapon)
+		return;
+	if (IsAttacking()) 
+	{
+		if (bIsComboEnabled && ComboIndex < GetMaxComboCount()) 
+		{
+			bComboInputBuffered = true;
+			return;
+		}
+		if (bIsLateComboWindowOpen && ComboIndex < GetMaxComboCount())
+		{
+			bComboInputBuffered = true;
+			TryAdvanceCombo();
+			return;
+		}
+		if (bIsAttackEnding)
+		{
+			bAttackInputBufferedDuringRecovery = true;
+			return;
+		}
+		return;
+	}
+	StartAttack();
+}
+
+void UCombatComponent::StartAttack()
+{
+	if (!OwnerCharacter || !CurrentWeapon)
+		return;
+
+	UAnimMontage* AttackMontage = GetCurrentAttackMontage();
+	if (!AttackMontage)
+		return;
+
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	if (!OwnerMesh)
+		return;
+
+	UAnimInstance* AnimInstance = OwnerMesh->GetAnimInstance();
+	if (!AnimInstance)
+		return;
+
+	const int32 FirstComboIndex = 1;
+	if (!CurrentWeapon->GetAttackData(FirstComboIndex))
+	{
+		return;
+	}
+
+	if (!TryConsumeAttackStamina(FirstComboIndex))
+	{
+		return;
+	}
+
+	//입력받을 세팅 초기화
+	SetCombatState(ECombatEnumState::Attacking);
+	bIsComboEnabled = false;//노티받고 진행
+	bComboInputBuffered = false;
+	bIsAttackEnding = false;
+	bIsLateComboWindowOpen = false;
+	bAttackInputBufferedDuringRecovery = false;
+	ClearLateComboWindow();
+
+	ComboIndex = FirstComboIndex;
+
+	AnimInstance->Montage_Play(AttackMontage, CurrentWeapon->GetAttackSpeedMultiplier());
+	//애님 종료시 안전장치
+	FOnMontageEnded EndDelegate;
+	EndDelegate.BindUObject(this, &UCombatComponent::OnAttackMontageEnded);
+	AnimInstance->Montage_SetEndDelegate(EndDelegate, AttackMontage);
+
+	JumpToComboSection(ComboIndex);
+}
+
+void UCombatComponent::EndAttack()
+{
+	DisableWeaponHitbox();
+	ClearLateComboWindow();
+	ComboIndex = 0;
+	SetCombatState(ECombatEnumState::Idle);
+	bComboInputBuffered = false;
+	bIsComboEnabled = false;
+	bIsAttackEnding = false;
+	bIsLateComboWindowOpen = false;
+	bAttackInputBufferedDuringRecovery = false;
+
+	UE_LOG(LogCombat, Warning, TEXT("EndAttack-process"));
+	//몽타주에서 섹션 연결을 끊어야함
+	//OwnerCharacter->GetMesh()->GetAnimInstance()->StopAllMontages(0.2f);
+}
+void UCombatComponent::HitReact(bool bActive)
+{
+	if (!OwnerCharacter)
+		return;
+	if (IsDead())
+		return;
+	if (bActive) {
+		SetCombatState(ECombatEnumState::HitReact);
+	}
+	else {
+		SetCombatState(ECombatEnumState::Idle);
+	}
+}
+void UCombatComponent::CheckCombo()
+{
+	UE_LOG(
+		LogCombat,
+		Warning,
+		TEXT("CheckCombo / IsAttacking=%d, ComboEnabled=%d, ComboBuffered=%d, ComboIndex=%d, MaxCombo=%d"),
+		IsAttacking(),
+		bIsComboEnabled,
+		bComboInputBuffered,
+		ComboIndex,
+		GetMaxComboCount()
+	);
+
+	if (IsAttacking() == false)
+		return;
+	bIsComboEnabled = false;
+
+	if (bComboInputBuffered && TryAdvanceCombo())
+	{
+		return;
+	}
+
+	OpenLateComboWindow();
+}
+void UCombatComponent::SetCurrentWeapon(AWeaponBase* NewWeapon)
+{
+	CurrentWeapon = NewWeapon;
+	if (bEquipTestSocketItemOnWeaponSet)
+	{
+		EquipTestSocketItem();
+	}
+}
+
+AWeaponBase* UCombatComponent::GetCurrentWeapon() const
+{
+	return CurrentWeapon;
+}
+
+int32 UCombatComponent::GetCurrentComboIndex() const
+{
+	return ComboIndex;
+}
+
+float UCombatComponent::GetCurrentAttackDamage() const
+{
+	if (!CurrentWeapon)
+		return 0.f;
+
+	return CurrentWeapon->GetAttackDamage(ComboIndex);
+}
+
+float UCombatComponent::GetCurrentAttackStaminaCost() const
+{
+	if (!CurrentWeapon)
+		return 1.f;
+
+	return CurrentWeapon->GetAttackStaminaCost(ComboIndex);
+}
+
+float UCombatComponent::GetBaseAttackDamage() const
+{
+	if (!CurrentWeapon) return 0.f;
+	return CurrentWeapon->GetAttackDamage(1);
+
+}
+
+float UCombatComponent::GetManaCostMultiplier() const
+{
+	if (!CurrentWeapon)
+		return 1.f;
+	//방어구 등 추가되면 여기서
+	return CurrentWeapon->GetManaCostMultiplier();
+
+}
+
+void UCombatComponent::SetSuperarmor(bool bEnable)
+{
+	if (IsDead())
+		return;
+	Superarmor = bEnable;
+}
+
+bool UCombatComponent::IsSuperarmor()
+{
+	return Superarmor;
+}
+
+void UCombatComponent::SetCombatState(ECombatEnumState NewState)
+{
+	if (CombatState == ECombatEnumState::Dead && NewState != ECombatEnumState::Dead)
+		return;
+	const UEnum* EnumPtr = StaticEnum<ECombatEnumState>();
+	FString EnumName = EnumPtr->GetNameStringByValue(static_cast<int64>(NewState));
+	UE_LOG(LogCombat, Log, TEXT("Combat State : %s"), *EnumName);
+	CombatState = NewState;
+}
+
+void UCombatComponent::SetInvincible(bool bEnable)
+{
+	if (CombatState == ECombatEnumState::Dead)
+	{
+		bIsInvincible = false;
+		return;
+	}
+	if (bEnable) {
+		UE_LOG(LogCombat, Warning, TEXT("Set Invincible True"));
+	}
+	else {
+		UE_LOG(LogCombat, Warning, TEXT("Set Invincible False"));
+	}
+	bIsInvincible = bEnable;
+
+}
+
+void UCombatComponent::EndDodge()
+{
+	if (CombatState == ECombatEnumState::Dodging)
+	{
+		SetCombatState(ECombatEnumState::Idle);
+	}
+	UE_LOG(LogCombat, Warning, TEXT("Dodge End"));
+	
+	bIsInvincible = false;
+	if (!OwnerCharacter)
+	{
+		return;
+	}
+
+	UTargetLockComponent* LockOnComponent = OwnerCharacter->FindComponentByClass<UTargetLockComponent>();
+	if (LockOnComponent) {
+		LockOnComponent->ToggleCharacterRotationLock(true);
+	}
+}
+
+void UCombatComponent::EnableCombo()
+{
+	if (!IsAttacking())
+		return;
+
+	bIsComboEnabled = true;
+}
+
+void UCombatComponent::DisableCombo()
+{
+	if (!IsAttacking())
+		return;
+
+	bIsComboEnabled = false;
+}
+
+
+
+void UCombatComponent::EnableWeaponHitbox()
+{
+	//공격 히트박스 On, 공격 기록 초기화
+	if (!CurrentWeapon)
+		return;
+
+	CurrentWeapon->EnableHitbox();
+}
+
+void UCombatComponent::DisableWeaponHitbox()
+{
+	//공격 히트박스 OFF
+	if (!CurrentWeapon)
+		return;
+
+	CurrentWeapon->DisableHitbox();
+}
+
+void UCombatComponent::OnAttackMontageEnded(UAnimMontage* Montage, bool bInterrupted)
+{
+	if (Montage != GetCurrentAttackMontage())
+		return;
+	if (CurrentWeapon) {
+		CurrentWeapon->DisableHitbox();
+	}
+	//강제취소된경우
+	if (bInterrupted) {
+		EndAttack();
+		return;
+	}
+
+	if (bAttackInputBufferedDuringRecovery) {
+		bAttackInputBufferedDuringRecovery = false;
+
+		EndAttack();
+		StartAttack();
+		return;
+	}
+
+	UE_LOG(LogCombat, Warning, TEXT("MontageEnded-EndAttack"));
+	EndAttack();
+}
+
+void UCombatComponent::JumpToComboSection(int32 InComboIndex)
+{
+	UAnimMontage* AttackMontage = GetCurrentAttackMontage();
+
+	if (!OwnerCharacter || !AttackMontage)
+		return;
+
+	USkeletalMeshComponent* OwnerMesh = OwnerCharacter->GetMesh();
+	if (!OwnerMesh)
+		return;
+
+	UAnimInstance* AnimInstance = OwnerMesh->GetAnimInstance();
+
+	if (!AnimInstance)
+		return;
+
+	const FName SectionName = GetComboSectionName(InComboIndex);
+
+	if (SectionName == NAME_None)
+		return;
+
+	AnimInstance->Montage_JumpToSection(SectionName, AttackMontage);
+}
+
+bool UCombatComponent::TryAdvanceCombo()
+{
+	if (!IsAttacking() || !CurrentWeapon || ComboIndex >= GetMaxComboCount())
+	{
+		return false;
+	}
+
+	const int32 NextComboIndex = ComboIndex + 1;
+	if (!CurrentWeapon->GetAttackData(NextComboIndex))
+	{
+		EndAttack();
+		return false;
+	}
+
+	if (!TryConsumeAttackStamina(NextComboIndex))
+	{
+		EndAttack();
+		return false;
+	}
+
+	ClearLateComboWindow();
+	ComboIndex = NextComboIndex;
+	bComboInputBuffered = false;
+	bIsAttackEnding = false;
+	JumpToComboSection(ComboIndex);
+	return true;
+}
+
+void UCombatComponent::OpenLateComboWindow()
+{
+	if (!IsAttacking() || ComboIndex >= GetMaxComboCount() || LateComboWindowDuration <= 0.0f)
+	{
+		CloseLateComboWindow();
+		return;
+	}
+
+	bIsLateComboWindowOpen = true;
+	bIsAttackEnding = false;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().SetTimer(
+			LateComboWindowTimerHandle,
+			this,
+			&UCombatComponent::CloseLateComboWindow,
+			LateComboWindowDuration,
+			false
+		);
+	}
+}
+
+void UCombatComponent::CloseLateComboWindow()
+{
+	ClearLateComboWindow();
+
+	if (IsAttacking())
+	{
+		UE_LOG(LogCombat, Warning, TEXT("LateComboWindow-EndAttack"));
+		bIsAttackEnding = true;
+	}
+}
+
+void UCombatComponent::ClearLateComboWindow()
+{
+	bIsLateComboWindowOpen = false;
+
+	if (UWorld* World = GetWorld())
+	{
+		World->GetTimerManager().ClearTimer(LateComboWindowTimerHandle);
+	}
+}
+
+bool UCombatComponent::TryConsumeAttackStamina(int32 InComboIndex) const
+{
+	if (!CurrentWeapon)
+	{
+		return false;
+	}
+
+	if (!HealthComponent)
+	{
+		return true;
+	}
+
+	float StaminaCost = CurrentWeapon->GetAttackStaminaCost(InComboIndex);
+
+	return HealthComponent->ConsumeStamina(StaminaCost);
+}
+
+UAnimMontage* UCombatComponent::GetCurrentAttackMontage() const
+{
+	if (!CurrentWeapon)
+	{
+		return nullptr;
+	}
+
+	return CurrentWeapon->GetAttackMontage();
+}
+
+int32 UCombatComponent::GetMaxComboCount() const 
+{
+	if (!CurrentWeapon)
+	{
+		return 0;
+	}
+
+	return CurrentWeapon->GetMaxComboCount();
+}
+
+FName UCombatComponent::GetComboSectionName(int32 InComboIndex) const
+{
+// 	FString BaseName = TEXT("Attack_");
+// 
+// 	return FName(*FString::Printf(TEXT("%s%d"), *BaseName, InComboIndex));
+	if (!CurrentWeapon)
+	{
+		return NAME_None;
+	}
+
+	return CurrentWeapon->GetAttackSectionName(InComboIndex);
+}
+
+void UCombatComponent::EquipTestSocketItem()
+{
+	if (!CurrentWeapon)
+	{
+		return;
+	}
+
+	if (!TestSocketItemAssetId.IsValid())
+	{
+		return;
+	}
+
+	UAssetManager& AssetManager = UAssetManager::Get();
+	AssetManager.LoadPrimaryAsset(
+		TestSocketItemAssetId,
+		TArray<FName>(),
+		FStreamableDelegate::CreateWeakLambda(this, [this]()
+			{
+				if (!CurrentWeapon)
+				{
+					return;
+				}
+
+				UObject* LoadedObject = UAssetManager::Get().GetPrimaryAssetObject(TestSocketItemAssetId);
+				UWeaponSocketItemData* SocketItem = Cast<UWeaponSocketItemData>(LoadedObject);
+
+				if (!SocketItem)
+				{
+					UE_LOG(LogCombat, Warning, TEXT("Failed to load socket item: %s"), *TestSocketItemAssetId.ToString());
+					return;
+				}
+
+				CurrentWeapon->EquipSocketItem(SocketItem, SocketItem->CompatibleSocketTag);
+			})
+	);
+}
