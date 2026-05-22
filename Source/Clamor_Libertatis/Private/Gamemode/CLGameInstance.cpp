@@ -3,7 +3,8 @@
 UCLGameInstance::UCLGameInstance()
 {
 	WonBattleCount = 0;
-	LastScenarioRowName = TEXT("Scenario_1");    
+	LastScenarioRowName = TEXT("Scenario_1");
+	CurrentStatus = ECheckStageResult::NotEnd;
 }
 
 void UCLGameInstance::AddWonBattle()
@@ -16,6 +17,11 @@ bool UCLGameInstance::HasWatchedOpening() const
 	return LastScenarioRowName != FName(TEXT("Scenario_1"));
 }
 
+bool UCLGameInstance::IsGameOver() const
+{
+    return CurrentStatus == ECheckStageResult::Defeat;
+}
+
 void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
 {
     FName KeyName = FName(*PrefixKey);
@@ -24,6 +30,7 @@ void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
     {
         ViewedQuestions.Add(KeyName);
         UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 질문 기록 완료: %s"), *PrefixKey);
+        bHasSelectedQuestion = true;
     }
 }
 
@@ -33,6 +40,7 @@ void UCLGameInstance::ResetGame()
     LastScenarioRowName = FName("Scenario_1");
     ViewedQuestions.Empty();
     bHasSelectedQuestion = false;
+    SavedInventorySlots.Empty();
 }
 
 
@@ -41,3 +49,4 @@ void UCLGameInstance::SaveInventory(const TArray<FInventorySlot>& Slots)
     SavedInventorySlots = Slots;
     UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 인벤토리 저장 완료: %d 슬롯"), Slots.Num());
 }
+

@@ -17,6 +17,9 @@ struct FItemQuantity
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	int32 Amount = 1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	FText DisplayName;
 };
 
 

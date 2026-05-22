@@ -4,24 +4,21 @@
 #include "Crafting/CraftingComponent.h"
 #include "Crafting/RecipeData.h"
 #include "Crafting/W_ScreenMessage.h"
-#include "Gamemode/LobbyGameModeBase.h"
 #include "Components/WrapBox.h"
 #include "Components/GridPanel.h"
 #include "Components/GridSlot.h"
 #include "Components/Overlay.h"
 #include "Components/Button.h"
 #include "Components/TextBlock.h"
-#include "Kismet/GameplayStatics.h"
 #include "Components/OverlaySlot.h"
 
 void UW_CraftingWindow::NativeConstruct()
 {
     Super::NativeConstruct();
 
-    ALobbyGameModeBase* GM = Cast<ALobbyGameModeBase>(UGameplayStatics::GetGameMode(GetWorld()));
-    if (GM)
+    if (APlayerController* PC = GetOwningPlayer())
     {
-        CraftingComp = GM->CraftingComp;
+        CraftingComp = PC->FindComponentByClass<UCraftingComponent>();
     }
 
     if (CraftingComp)

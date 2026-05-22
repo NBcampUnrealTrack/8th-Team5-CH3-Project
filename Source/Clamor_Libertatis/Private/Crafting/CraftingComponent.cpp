@@ -1,10 +1,54 @@
 #include "Crafting/CraftingComponent.h"
 #include "Crafting/RecipeData.h"
 #include "Crafting/FCraftingRecipeRow.h"
+#include "Gamemode/CLGameInstance.h"
+#include "Gamemode/LobbyGameModeBase.h"
+#include "Item/Inventory/InventoryComponent.h"
 
 UCraftingComponent::UCraftingComponent()
 {
     PrimaryComponentTick.bCanEverTick = false;
+}
+
+void UCraftingComponent::BeginPlay()
+{
+    Super::BeginPlay();
+
+    if (!GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) return;
+
+    UCLGameInstance* GI = GetWorld()->GetGameInstance<UCLGameInstance>();
+    if (!GI) return;
+
+    TArray<FItemQuantity> BagItems;
+    for (const FInventorySlot& Slot : GI->GetSavedInventory())
+    {
+        FItemQuantity Item;
+        Item.ItemID = Slot.ItemID;
+        Item.Amount = Slot.Quantity;
+        BagItems.Add(Item);
+    }
+    SetItemBag(BagItems);
+}
+
+void UCraftingComponent::EndPlay(const EEndPlayReason::Type EndPlayReason)
+{
+    if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>())
+    {
+        if (UCLGameInstance* GI = GetWorld()->GetGameInstance<UCLGameInstance>())
+        {
+            TArray<FInventorySlot> SlotsToSave;
+            for (const FItemQuantity& Item : ItemBag)
+            {
+                FInventorySlot Slot;
+                Slot.ItemID = Item.ItemID;
+                Slot.Quantity = Item.Amount;
+                SlotsToSave.Add(Slot);
+            }
+            GI->SaveInventory(SlotsToSave);
+        }
+    }
+
+    Super::EndPlay(EndPlayReason);
 }
 
 // ── 재료 풀 관리 ──────────────────────────────────────────────────────────────
@@ -46,6 +90,12 @@ void UCraftingComponent::RemoveItem(FName ItemID, int32 Amount)
             return;
         }
     }
+}
+
+void UCraftingComponent::SetItemBag(const TArray<FItemQuantity>& InItems)
+{
+    ItemBag = InItems;
+    OnItemBagChanged.Broadcast();
 }
 
 int32 UCraftingComponent::GetItemAmount(FName ItemID) const

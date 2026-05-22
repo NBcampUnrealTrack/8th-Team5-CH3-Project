@@ -40,7 +40,7 @@ void UW_RecipeSelectPopup::RefreshRecipeList()
         UW_RecipeSlot* SlotWidget = CreateWidget<UW_RecipeSlot>(this, RecipeSlotClass);
         if (!SlotWidget) continue;
 
-        SlotWidget->Init(Row->RecipeAsset, Row->RecipeDisplayName, CraftingComp);
+        SlotWidget->Init(Row->RecipeAsset, CraftingComp);
         SlotWidget->OnRecipeUseClicked.AddDynamic(this, &UW_RecipeSelectPopup::OnRecipeUseClicked);
         RecipeScrollBox->AddChild(SlotWidget);
     }

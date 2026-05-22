@@ -1,6 +1,12 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
+
+#include "UI/UITestEndingGameMode.h"
+#include "UI/Opening/OpeningSequencer.h"
+#include "UI/Opening/OpeningWidget.h"
+#include "UI/AfterEndingWidget.h"
+
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Gamemode/CLGameInstance.h"
@@ -27,17 +33,6 @@ void UScenarioManagerComponent::StartScenario(FName RowName)
             {
                 GI->RegisterViewedQuestion(Left);
             }
-        }
-    }
-
-    if (!CachedDialogueWidget && DialogueWidgetClass)
-    {
-
-        // TODO:: Opening Widget 종료시 생성쪽이 더 올바름. 일단 임시
-        CachedDialogueWidget = CreateWidget<UUserWidget>(GetWorld(), DialogueWidgetClass);
-        if (CachedDialogueWidget)
-        {
-            CachedDialogueWidget->AddToViewport(98);            
         }
     }
 
@@ -184,4 +179,5 @@ bool UScenarioManagerComponent::GetSkipQuestion(FScenarioData& Output) const
 bool UScenarioManagerComponent::IsScenarioEnd() const
 {
     return bScenarioEnd;
+    //return true;
 }

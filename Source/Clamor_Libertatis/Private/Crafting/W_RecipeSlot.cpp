@@ -14,27 +14,25 @@ void UW_RecipeSlot::NativeConstruct()
     }
 }
 
-void UW_RecipeSlot::Init(URecipeData* InRecipe, const FString& DisplayName, UCraftingComponent* InComp)
+void UW_RecipeSlot::Init(URecipeData* InRecipe, UCraftingComponent* InComp)
 {
     CachedRecipe = InRecipe;
 
-    if (RecipeNameText)
+    if (RecipeNameText && InRecipe)
     {
-        RecipeNameText->SetText(FText::FromString(DisplayName));
+        RecipeNameText->SetText(InRecipe->ResultItem.DisplayName);
     }
 
-    // 재료 목록 텍스트 (있는 경우)
     if (IngredientsText && InRecipe)
     {
         FString IngredientStr;
         for (const FItemQuantity& Ing : InRecipe->Ingredients)
         {
-            IngredientStr += FString::Printf(TEXT("%s x%d  "), *Ing.ItemID.ToString(), Ing.Amount);
+            IngredientStr += FString::Printf(TEXT("%s x%d  "), *Ing.DisplayName.ToString(), Ing.Amount);
         }
         IngredientsText->SetText(FText::FromString(IngredientStr.TrimEnd()));
     }
 
-    // 재료 충분 여부로 버튼 활성화
     if (UseButton && InComp)
     {
         UseButton->SetIsEnabled(InComp->CanCraft(InRecipe));

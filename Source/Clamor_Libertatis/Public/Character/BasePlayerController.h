@@ -14,6 +14,7 @@ class USkillComponent;
 class UQuickSlotWidget;
 class UInventoryWidget;
 class UOpeningSequencer;
+class UCraftingComponent;
 
 UCLASS()
 class CLAMOR_LIBERTATIS_API ABasePlayerController : public APlayerController
@@ -50,6 +51,9 @@ public:
 	UInputAction* LockAction;
 
 	//UI
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crafting")
+	TObjectPtr<UCraftingComponent> CraftingComp;
+
 	UPROPERTY(EditAnywhere, Instanced, Category = "UI")
 	TObjectPtr<UUIManager> UIManager;
 
@@ -86,6 +90,12 @@ public:
 	void RestartGame();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void QuitGame();
+
+	UFUNCTION(BlueprintCallable, Category = "Level")
+	void GoToLobby();
+
+	UFUNCTION(BlueprintCallable, Category = "Level")
+	void GoToEnding();
 	UFUNCTION(BlueprintCallable, Category = "UI")
 	void ShowMasterInventory();
 	UFUNCTION(BlueprintCallable, Category = "UI")

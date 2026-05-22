@@ -220,8 +220,8 @@ void AUITextLobbyGameMode::GotoBattle()
     if (Count >= 3)
     {
         UGameplayStatics::OpenLevel(
-            this, FName("/Game/UI/L_UITestEndingMap")); //엔딩 레벨로 
-        return;  // 반드시 return
+            this, FName("/Game/UI/L_UITestEndingMap")); //엔딩 레벨로
+        return;
     }
     FString Level =
         Count == 0 ? TEXT("/Game/Level/L_Stage1") :

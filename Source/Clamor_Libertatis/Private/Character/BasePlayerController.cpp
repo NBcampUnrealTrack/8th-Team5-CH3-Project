@@ -17,10 +17,11 @@
 
 #include "Gamemode/CLGameInstance.h"
 #include "Gamemode/Scenario/ScenarioManagerComponent.h"
+#include "Gamemode/LobbyGameModeBase.h"
+#include "Crafting/CraftingComponent.h"
 
 //UI Test용 게임 모드 완성시 삭제
-#include "UI/UITextLobbyGameMode.h"
-#include "UI/UITestEndingGameMode.h"
+#include "Gamemode/EndingModeBase.h"
 
 ABasePlayerController::ABasePlayerController()
     : InputMappingContext(nullptr)
@@ -38,7 +39,9 @@ ABasePlayerController::ABasePlayerController()
     , EnemyTracker(nullptr)
     , HUDWidgetRef(nullptr)
     , OpeningSequencer(nullptr)
+    , CraftingComp(nullptr)
 {
+    CraftingComp = CreateDefaultSubobject<UCraftingComponent>(TEXT("CraftingComp"));
 }
 
 void ABasePlayerController::BeginPlay()
@@ -68,8 +71,8 @@ void ABasePlayerController::BeginPlay()
         // 로비 레벨 -> UITextLobbyGameMode가 질문 처리
         // 전투 레벨 -> StartGame으로 HUD 표시
         // 엔딩 레벨 -> UITestEndginGamemode로 엔딩 UI 띄우게
-        bool bIsLobby = GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>() != nullptr; // 추후 진짜 로비 게임 모드로
-        bool bIsEnding = GetWorld()->GetAuthGameMode<AUITestEndingGameMode>() != nullptr; // 추후 진짜 엔딩 게임 모드
+        bool bIsLobby = GetWorld()->GetAuthGameMode<ALobbyGameModeBase>() != nullptr; // 추후 진짜 로비 게임 모드로
+        bool bIsEnding = GetWorld()->GetAuthGameMode<AEndingModeBase>() != nullptr; // 추후 진짜 엔딩 게임 모드
 
         if (!bIsLobby && !bIsEnding)
         {
@@ -186,8 +189,8 @@ void ABasePlayerController::OnOpeningEnd()
 
     if (UIManager) UIManager->HideWidget(EUIType::Opening);
 
-    if (AUITextLobbyGameMode* LobbyGM =
-        GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+    if (ALobbyGameModeBase* LobbyGM =
+        GetWorld()->GetAuthGameMode<ALobbyGameModeBase>())
     {
         bShowMouseCursor = true;
         bEnableClickEvents = true;
@@ -241,7 +244,7 @@ void ABasePlayerController::ContinueGame()
     UIManager->HideWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), false);
 
-    if (GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>())
+    if (GetWorld()->GetAuthGameMode<AStageGameModeBase>())
     {
         // 로비 -> UI 모드 유지
         bShowMouseCursor = true;
@@ -269,13 +272,22 @@ void ABasePlayerController::RestartGame()
     UGameplayStatics::SetGamePaused(GetWorld(), false);
     SetInputMode(FInputModeGameOnly{});
     bShowMouseCursor = false;
-    //UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap")); //추후 진짜 게임 로비 모드로
-    UGameplayStatics::OpenLevel(this, FName("/Game/UI/L_UITestMap"));
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap")); //추후 진짜 게임 로비 모드로
 }
 
 void ABasePlayerController::QuitGame()
 {
     UKismetSystemLibrary::QuitGame(this, this, EQuitPreference::Quit, false);
+}
+
+void ABasePlayerController::GoToLobby()
+{
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_LobbyMap"));
+}
+
+void ABasePlayerController::GoToEnding()
+{
+    UGameplayStatics::OpenLevel(this, FName("/Game/Level/L_Ending"));
 }
 
 void ABasePlayerController::ShowMasterInventory()
@@ -303,7 +315,7 @@ void ABasePlayerController::ShowMasterInventory()
     SetInputMode(InputMode);
     bShowMouseCursor = true;
 
-    if (!GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>()) //추후 진짜 로비 게임 모드로
+    if (!GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) //추후 진짜 로비 게임 모드로
         UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
@@ -314,7 +326,7 @@ void ABasePlayerController::HideMasterInventory()
     bShowMouseCursor = false;
 
     // 로비면 UI 모드 유지, 전투면 게임 모드로
-    if (GetWorld()->GetAuthGameMode<AUITextLobbyGameMode>()) // 추후 진짜 게임 모드로 변경
+    if (GetWorld()->GetAuthGameMode<AStageGameModeBase>()) // 추후 진짜 게임 모드로 변경
     {
         // 로비 -> UI 모드 유지
         FInputModeGameAndUI InputMode;
