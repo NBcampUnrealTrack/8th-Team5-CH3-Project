@@ -8,7 +8,6 @@
 #include "LobbyGameModeBase.generated.h"
 
 class UScenarioManagerComponent;
-class UCraftingComponent;
 class UQuestionWidget;
 class UQuestionAnswerWidget;
 class ULobbyWidget;
@@ -34,6 +33,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "GameLogic")
 	void GotoBattle();
 
+	UFUNCTION()
 	void ShowLobbyPhase();
 	void ShowQuestionPhase(const TArray<FScenarioData>& Choices);
 
@@ -68,10 +68,6 @@ private:
 	void OnAnswerFinished();
 	UFUNCTION()
 	void HandleScenarioStepUpdated(const FScenarioData& MainData, const TArray<FScenarioData>& Choices);
-	UFUNCTION()
-	void HandleScenarioEnded();
-	UFUNCTION()
-	void OnStartBattleClicked();
 
 	void ShowAnswerPhase(const FText& AnswerText);
 	void HideAllWidgets();

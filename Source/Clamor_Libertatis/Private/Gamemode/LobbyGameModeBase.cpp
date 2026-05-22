@@ -49,27 +49,32 @@ void ALobbyGameModeBase::BeginPlay()
         {
             LobbyWidget->AddToViewport(10);
             LobbyWidget->SetVisibility(ESlateVisibility::Collapsed);
-            LobbyWidget->OnStartBattleClicked.AddDynamic(this, &ALobbyGameModeBase::OnStartBattleClicked);
+            LobbyWidget->OnStartBattleClicked.AddDynamic(this, &ALobbyGameModeBase::GotoBattle);
         }
     }
 
     if (ScenarioManagerComp)
     {
         ScenarioManagerComp->OnScenarioStepUpdated.AddDynamic(this, &ALobbyGameModeBase::HandleScenarioStepUpdated);
-        ScenarioManagerComp->OnScenarioEnded.AddDynamic(this, &ALobbyGameModeBase::HandleScenarioEnded);
+        ScenarioManagerComp->OnScenarioEnded.AddDynamic(this, &ALobbyGameModeBase::ShowLobbyPhase);
     }
 
     UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
-    if (GI && GI->HasWatchedOpening())
+    if (GI)
     {
         SetMouseUI();
-        if (ScenarioManagerComp)
-        {
-            ScenarioManagerComp->StartScenario("Question_0");
-        }
-    }
 
+        if (GI->IsGameOver()) 
+        {
+            ShowLobbyPhase();
+        }
+        else if (GI->HasWatchedOpening() && ScenarioManagerComp)
+        {                        
+            ScenarioManagerComp->StartScenario("Question_0");            
+        }
+     }
 }
+
 
 void ALobbyGameModeBase::HideAllWidgets()
 {
@@ -133,11 +138,6 @@ void ALobbyGameModeBase::HandleScenarioStepUpdated(const FScenarioData& MainData
     }
 }
 
-void ALobbyGameModeBase::HandleScenarioEnded()
-{
-    ShowLobbyPhase();
-}
-
 void ALobbyGameModeBase::OnQuestionSelected(FName NextID)
 {
     if (NextID == FName("SkipQuestion"))
@@ -157,11 +157,6 @@ void ALobbyGameModeBase::OnAnswerFinished()
     {
         ScenarioManagerComp->RequestNextStep();
     }
-}
-
-void ALobbyGameModeBase::OnStartBattleClicked()
-{
-    GotoBattle();
 }
 
 void ALobbyGameModeBase::ReadyComplete()

@@ -17,6 +17,11 @@ bool UCLGameInstance::HasWatchedOpening() const
 	return LastScenarioRowName != FName(TEXT("Scenario_1"));
 }
 
+bool UCLGameInstance::IsGameOver() const
+{
+    return CurrentStatus == ECheckStageResult::Defeat;
+}
+
 void UCLGameInstance::RegisterViewedQuestion(const FString& PrefixKey)
 {
     FName KeyName = FName(*PrefixKey);

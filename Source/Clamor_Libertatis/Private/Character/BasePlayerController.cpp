@@ -306,7 +306,7 @@ void ABasePlayerController::ShowMasterInventory()
     SetInputMode(InputMode);
     bShowMouseCursor = true;
 
-    if (!GetWorld()->GetAuthGameMode<AStageGameModeBase>()) //추후 진짜 로비 게임 모드로
+    if (!GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) //추후 진짜 로비 게임 모드로
         UGameplayStatics::SetGamePaused(GetWorld(), true);
 }
 
