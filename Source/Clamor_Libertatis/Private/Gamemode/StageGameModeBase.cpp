@@ -8,6 +8,7 @@
 #include "Gamemode/CLGameInstance.h"
 #include "Character/BasePlayerController.h"
 #include "Character/PlayerCharacter.h"
+#include "Enemy/BaseEnemy.h"
 
 
 // 게임 승리
@@ -76,6 +77,26 @@ void AStageGameModeBase::BeginPlay()
         UE_LOG(LogTemp, Warning, TEXT("Subsystem binding completed"));
         StageSub->OnAllEnemiesDead.AddDynamic(this, &AStageGameModeBase::OnStageClear);
         StageSub->OnPlayerDead.AddDynamic(this, &AStageGameModeBase::OnGameOver);
+
+        if (DummyEnemyClass && DummyPoolSize > 0)
+        {
+            TArray<AActor*> SpawnPointActors;
+            UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("DummySpawn"), SpawnPointActors);
+
+            TArray<FTransform> SpawnTransforms;
+            for (AActor* Actor : SpawnPointActors)
+            {
+                if (Actor)
+                {
+                    SpawnTransforms.Add(Actor->GetActorTransform());
+                }
+            }
+
+            if (SpawnTransforms.Num() > 0)
+            {
+                StageSub->InitDummyPool(DummyEnemyClass, DummyPoolSize, SpawnTransforms, DummySpawnRadius);
+            }
+        }
     }
 }
 

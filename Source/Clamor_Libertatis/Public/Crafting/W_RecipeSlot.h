@@ -17,7 +17,7 @@ class UW_RecipeSlot : public UUserWidget
     GENERATED_BODY()
 
 public:
-    void Init(URecipeData* InRecipe, const FString& DisplayName, UCraftingComponent* InComp);
+    void Init(URecipeData* InRecipe, UCraftingComponent* InComp);
 
     UPROPERTY(BlueprintAssignable, Category = "Crafting")
     FOnRecipeUseClicked OnRecipeUseClicked;

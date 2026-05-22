@@ -7,6 +7,7 @@
 #include "StageGameModeBase.generated.h"
 
 class AGameStateBase;
+class ABaseEnemy;
 
 
 
@@ -32,6 +33,15 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void HandleStartingNewPlayer_Implementation(APlayerController* NewPlayer) override;
 	virtual void PostLogin(APlayerController* NewPlayer);
+
+	UPROPERTY(EditAnywhere, Category = "Dummy")
+	TSubclassOf<ABaseEnemy> DummyEnemyClass;
+
+	UPROPERTY(EditAnywhere, Category = "Dummy")
+	int32 DummyPoolSize = 5;
+
+	UPROPERTY(EditAnywhere, Category = "Dummy")
+	float DummySpawnRadius = 300.f;
 
 private:
 	UFUNCTION()
