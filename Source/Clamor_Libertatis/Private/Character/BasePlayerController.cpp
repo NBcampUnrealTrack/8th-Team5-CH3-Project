@@ -78,6 +78,12 @@ void ABasePlayerController::BeginPlay()
         {
             // 전투 레벨 -> HUD 표시
             StartGame();
+
+            // 텍스쳐 스트리밍 대기 시간 고려하여 페이드 인 처리
+            if (PlayerCameraManager)
+            {
+                PlayerCameraManager->StartCameraFade(1.0f, 0.0f, 3.0f, FLinearColor::Black, false, false);
+            }
         }
     }
 
@@ -244,7 +250,7 @@ void ABasePlayerController::ContinueGame()
     UIManager->HideWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), false);
 
-    if (GetWorld()->GetAuthGameMode<AStageGameModeBase>())
+    if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>())
     {
         // 로비 -> UI 모드 유지
         bShowMouseCursor = true;
@@ -326,7 +332,7 @@ void ABasePlayerController::HideMasterInventory()
     bShowMouseCursor = false;
 
     // 로비면 UI 모드 유지, 전투면 게임 모드로
-    if (GetWorld()->GetAuthGameMode<AStageGameModeBase>()) // 추후 진짜 게임 모드로 변경
+    if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) // 추후 진짜 게임 모드로 변경
     {
         // 로비 -> UI 모드 유지
         FInputModeGameAndUI InputMode;

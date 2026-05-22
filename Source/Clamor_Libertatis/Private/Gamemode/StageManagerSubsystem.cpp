@@ -10,6 +10,18 @@ UStageManagerSubsystem::UStageManagerSubsystem() : RemainingBossCount(0)
 
 }
 
+bool UStageManagerSubsystem::ShouldCreateSubsystem(UObject* Outer) const
+{
+	if (!Super::ShouldCreateSubsystem(Outer)) return false;
+
+	UWorld* World = Cast<UWorld>(Outer);
+	if (!World) return false;
+
+	AWorldSettings* WS = World->GetWorldSettings();
+	return WS && WS->DefaultGameMode
+		&& WS->DefaultGameMode->IsChildOf(AStageGameModeBase::StaticClass());
+}
+
 void UStageManagerSubsystem::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);

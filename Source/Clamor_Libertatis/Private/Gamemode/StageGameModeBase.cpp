@@ -16,12 +16,14 @@
 void AStageGameModeBase::OnStageClear()
 {
     bool bGoToEnding = false;
+    int32 WonCount = 0;
 
     if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
     {
         GI->CurrentStatus = ECheckStageResult::Win;
         GI->AddWonBattle();
-        bGoToEnding = (GI->GetWonBattleCount() >= 3);
+        WonCount = GI->GetWonBattleCount();
+        bGoToEnding = (WonCount >= 3);
     }
 
     if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
@@ -29,9 +31,36 @@ void AStageGameModeBase::OnStageClear()
         PC->ShowVictoryUI();
     }
 
-    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this, bGoToEnding]()
+    GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this, bGoToEnding, WonCount]()
     {
         SaveInventoryToGameInstance();
+
+        // 스테이지 클리어 퀘스트 아이템을 GI에 추가 (Lobby 진입 시 CraftingComp가 로드)
+        if (UCLGameInstance* GI = GetGameInstance<UCLGameInstance>())
+        {
+            TArray<FName> QuestItems;
+            if (WonCount == 1)
+            {
+                QuestItems = { FName("Quest_001"), FName("Quest_002"), FName("Quest_003") };
+            }
+            else if (WonCount == 2)
+            {
+                QuestItems = { FName("Quest_004"), FName("Quest_005"), FName("Quest_006") };
+            }
+
+            if (!QuestItems.IsEmpty())
+            {
+                TArray<FInventorySlot> UpdatedSlots = GI->GetSavedInventory();
+                for (const FName& QuestID : QuestItems)
+                {
+                    FInventorySlot Slot;
+                    Slot.ItemID = QuestID;
+                    Slot.Quantity = 1;
+                    UpdatedSlots.Add(Slot);
+                }
+                GI->SaveInventory(UpdatedSlots);
+            }
+        }
 
         if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
         {
@@ -64,12 +93,10 @@ void AStageGameModeBase::OnGameOver()
     }
 
     GetWorldTimerManager().SetTimer(ReturnToLobbyHandle, [this]()
-    {
-        SaveInventoryToGameInstance();
-
+    {        
         if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
         {
-            PC->GoToLobby();
+            PC->RestartGame();
         }
     }, 5.f, false);
 }

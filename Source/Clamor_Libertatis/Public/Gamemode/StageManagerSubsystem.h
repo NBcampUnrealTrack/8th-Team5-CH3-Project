@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "Subsystems/WorldSubsystem.h"
+#include "Gamemode/StageGameModeBase.h"
 #include "StageManagerSubsystem.generated.h"
 
 class ABaseEnemy;
@@ -16,6 +17,7 @@ class UStageManagerSubsystem : public UWorldSubsystem
 	UStageManagerSubsystem();
 
 public:
+	virtual bool ShouldCreateSubsystem(UObject* Outer) const override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 
 	UPROPERTY(BlueprintAssignable)
