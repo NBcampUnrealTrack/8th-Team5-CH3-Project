@@ -84,6 +84,8 @@ public:
 	UAnimMontage* LeftDodgeReactMontage;
 	UPROPERTY(EditAnywhere, Category = "Animation")
 	UAnimMontage* RightDodgeReactMontage;
+	UPROPERTY(EditAnywhere, Category = "Animation")
+	UAnimMontage* PickUpReactMontage;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category="Skill")
 	TArray<TObjectPtr<UDA_SkillData>> SkillDatas;
@@ -148,10 +150,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeed;
 
-	// 애니메이션 실행
-	void HitAnimMontage();
-	void DeathAnimMontage();
+	// 구르기 애니메이션 실행
 	void DodgeAnimMontage(EDodgeDirection DodgeDirection);
+
+	// 애니메이션 실행 하나로 통일
+	void PlayAnimMontage(UAnimMontage* AnimMontage);
 
 	void SpawnHitEffect();
 
