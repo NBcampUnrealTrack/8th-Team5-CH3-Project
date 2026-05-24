@@ -96,7 +96,7 @@ void AStageGameModeBase::OnGameOver()
     {        
         if (ABasePlayerController* PC = GetWorld()->GetFirstPlayerController<ABasePlayerController>())
         {
-            PC->RestartGame();
+            PC->GoToLobby();
         }
     }, 5.f, false);
 }
