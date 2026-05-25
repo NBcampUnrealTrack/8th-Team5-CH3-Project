@@ -117,7 +117,7 @@ void AStageGameModeBase::BeginPlay()
         StageSub->OnAllEnemiesDead.AddDynamic(this, &AStageGameModeBase::OnStageClear);
         StageSub->OnPlayerDead.AddDynamic(this, &AStageGameModeBase::OnGameOver);
 
-        if (DummyEnemyClass && DummyPoolSize > 0)
+        if (DummyEnemyClasses.Num() > 0 && DummyPoolSize > 0)
         {
             TArray<AActor*> SpawnPointActors;
             UGameplayStatics::GetAllActorsWithTag(GetWorld(), FName("DummySpawn"), SpawnPointActors);
@@ -127,13 +127,14 @@ void AStageGameModeBase::BeginPlay()
             {
                 if (Actor)
                 {
+                    Actor->SetActorHiddenInGame(true);
                     SpawnTransforms.Add(Actor->GetActorTransform());
                 }
             }
 
             if (SpawnTransforms.Num() > 0)
             {
-                StageSub->InitDummyPool(DummyEnemyClass, DummyPoolSize, SpawnTransforms, DummySpawnRadius);
+                StageSub->InitDummyPool(DummyEnemyClasses, DummyPoolSize, SpawnTransforms, DummySpawnRadius);
             }
         }
     }

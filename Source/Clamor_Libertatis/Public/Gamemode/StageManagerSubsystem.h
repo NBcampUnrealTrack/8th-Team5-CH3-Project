@@ -26,7 +26,7 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnPlayerDead OnPlayerDead;
 
-	void InitDummyPool(TSubclassOf<ABaseEnemy> EnemyClass, int32 PoolSize, const TArray<FTransform>& SpawnTransforms, float SpawnRadius = 300.f);
+	void InitDummyPool(TArray<TSubclassOf<ABaseEnemy>> EnemyClasses, int32 PoolSize, const TArray<FTransform>& SpawnTransforms, float SpawnRadius = 300.f);
 
 private:
 	UFUNCTION()
@@ -44,7 +44,6 @@ private:
 
 	int32 RemainingBossCount;
 
-	TSubclassOf<ABaseEnemy> DummyEnemyClass;
 	TArray<TObjectPtr<ABaseEnemy>> DummyPool;
 	TArray<FTransform> DummySpawnTransforms;
 	TArray<TObjectPtr<ABaseEnemy>> PendingRespawnDummies;

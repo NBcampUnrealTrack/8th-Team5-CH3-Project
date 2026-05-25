@@ -106,14 +106,13 @@ FVector UStageManagerSubsystem::PickSpawnLocation(const TArray<FVector>& PlacedL
 	return BestLocation;
 }
 
-void UStageManagerSubsystem::InitDummyPool(TSubclassOf<ABaseEnemy> EnemyClass, int32 PoolSize, const TArray<FTransform>& SpawnTransforms, float SpawnRadius)
+void UStageManagerSubsystem::InitDummyPool(TArray<TSubclassOf<ABaseEnemy>> EnemyClasses, int32 PoolSize, const TArray<FTransform>& SpawnTransforms, float SpawnRadius)
 {
-	if (!EnemyClass || PoolSize <= 0 || SpawnTransforms.IsEmpty())
+	if (EnemyClasses.IsEmpty() || PoolSize <= 0 || SpawnTransforms.IsEmpty())
 	{
 		return;
 	}
 
-	DummyEnemyClass = EnemyClass;
 	DummySpawnTransforms = SpawnTransforms;
 	DummySpawnRadius = SpawnRadius;
 
@@ -126,6 +125,8 @@ void UStageManagerSubsystem::InitDummyPool(TSubclassOf<ABaseEnemy> EnemyClass, i
 	TArray<FVector> PlacedLocations;
 	for (int32 i = 0; i < PoolSize; i++)
 	{
+		TSubclassOf<ABaseEnemy> EnemyClass = EnemyClasses[i % EnemyClasses.Num()];
+
 		FVector SpawnLoc = PickSpawnLocation(PlacedLocations);
 		FTransform SpawnTransform(FRotator::ZeroRotator, SpawnLoc);
 
@@ -181,7 +182,7 @@ void UStageManagerSubsystem::OnDummyHPChanged(float CurrentHP, float MaxHP)
 
 void UStageManagerSubsystem::RespawnDummy(ABaseEnemy* OldEnemy)
 {
-	if (!DummyEnemyClass || DummySpawnTransforms.IsEmpty()) { return; }
+	if (DummySpawnTransforms.IsEmpty()) { return; }
 
 	UWorld* World = GetWorld();
 	if (!World) { return; }
@@ -198,6 +199,7 @@ void UStageManagerSubsystem::RespawnDummy(ABaseEnemy* OldEnemy)
 
 	if (OldIdx == INDEX_NONE) { return; }
 
+	TSubclassOf<ABaseEnemy> EnemyClass = OldEnemy->GetClass();
 	OldEnemy->Destroy();
 	DummyPool[OldIdx] = nullptr;
 
@@ -216,7 +218,7 @@ void UStageManagerSubsystem::RespawnDummy(ABaseEnemy* OldEnemy)
 	FActorSpawnParameters Params;
 	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 
-	ABaseEnemy* NewEnemy = World->SpawnActor<ABaseEnemy>(DummyEnemyClass, SpawnTransform, Params);
+	ABaseEnemy* NewEnemy = World->SpawnActor<ABaseEnemy>(EnemyClass, SpawnTransform, Params);
 	if (NewEnemy)
 	{
 		BindDummyDeath(NewEnemy);
