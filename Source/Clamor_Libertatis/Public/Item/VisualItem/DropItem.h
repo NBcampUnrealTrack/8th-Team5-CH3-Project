@@ -4,6 +4,8 @@
 #include "BaseItem.h"
 #include "DropItem.generated.h"
 
+class UBoxComponent;
+
 UCLASS()
 class CLAMOR_LIBERTATIS_API ADropItem : public ABaseItem
 {
@@ -17,6 +19,8 @@ protected:
 	TObjectPtr<USceneComponent> SceneComp;
 	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Mesh")
 	TObjectPtr<UStaticMeshComponent> StaticMeshComp;
+	UPROPERTY(VisibleAnywhere,BlueprintReadOnly,Category="Collision")
+	TObjectPtr<UBoxComponent> BoxCollision;
 	
 	UFUNCTION()
 	void OnItemBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor

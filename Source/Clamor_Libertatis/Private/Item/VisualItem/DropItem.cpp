@@ -1,5 +1,7 @@
 #include "Item/VisualItem/DropItem.h"
 
+#include "Components/BoxComponent.h"
+
 
 ADropItem::ADropItem()
 {
@@ -11,8 +13,13 @@ ADropItem::ADropItem()
 	StaticMeshComp = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMeshComponent"));
 	StaticMeshComp->SetupAttachment(SceneComp);
 	
-	StaticMeshComp->OnComponentBeginOverlap.AddDynamic(this, &ADropItem::OnItemBeginOverlap);
+	// StaticMeshComp->OnComponentBeginOverlap.AddDynamic(this, &ADropItem::OnItemBeginOverlap);
 	StaticMeshComp->SetCollisionResponseToChannel(ECollisionChannel::ECC_Pawn, ECollisionResponse::ECR_Overlap);
+	
+	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("ItemRootingCollision"));
+	BoxCollision->SetupAttachment(RootComponent);
+	BoxCollision->OnComponentBeginOverlap.AddDynamic(this, &ADropItem::OnItemBeginOverlap);
+	BoxCollision->SetCollisionResponseToChannel(ECC_Pawn,ECR_Overlap);
 }
 
 
