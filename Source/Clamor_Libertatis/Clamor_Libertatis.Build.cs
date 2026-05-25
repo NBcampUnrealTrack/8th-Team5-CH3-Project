@@ -16,6 +16,7 @@ public class Clamor_Libertatis : ModuleRules
             "InputCore",
             "EnhancedInput",
             "AIModule",
+            "NavigationSystem",
             "AnimGraphRuntime",
             "UMG",
             "Niagara"
