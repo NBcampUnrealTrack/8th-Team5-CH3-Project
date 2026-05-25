@@ -26,7 +26,7 @@ protected:
 	virtual void PostLogin(APlayerController* NewPlayer);
 
 	UPROPERTY(EditAnywhere, Category = "Dummy")
-	TSubclassOf<ABaseEnemy> DummyEnemyClass;
+	TArray<TSubclassOf<ABaseEnemy>> DummyEnemyClasses;
 
 	UPROPERTY(EditAnywhere, Category = "Dummy")
 	int32 DummyPoolSize = 5;
