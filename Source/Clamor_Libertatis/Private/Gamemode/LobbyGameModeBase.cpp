@@ -8,11 +8,14 @@
 #include "UI/Lobby/LobbyWidget.h"
 #include "Blueprint/UserWidget.h"
 #include "Kismet/GameplayStatics.h"
+#include "Character/PlayerCharacter.h"
+#include "Item/ItemTableRow.h"
 
 
 ALobbyGameModeBase::ALobbyGameModeBase()
 {
     ScenarioManagerComp = CreateDefaultSubobject<UScenarioManagerComponent>(TEXT("ScenarioManagerComp"));
+    DefaultPawnClass = nullptr;
 }
 
 void ALobbyGameModeBase::BeginPlay()
@@ -225,6 +228,36 @@ void ALobbyGameModeBase::SetMouseUI()
     FInputModeUIOnly InputMode;
     InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
     PC->SetInputMode(InputMode);
+}
+
+void ALobbyGameModeBase::PostLogin(APlayerController* NewPlayer)
+{
+    Super::PostLogin(NewPlayer);
+
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+    if (!GI) return;
+
+    APlayerCharacter* Player = Cast<APlayerCharacter>(NewPlayer->GetPawn());
+    if (!Player || !Player->ConsumableInventory) return;
+
+    UDataTable* DT = Player->ConsumableInventory->ItemDataTable;
+    if (!DT) return;
+
+    for (const FInventorySlot& Slot : GI->GetSavedInventory())
+    {
+        if (Slot.IsEmpty()) continue;
+        FItemTableRow* Row = DT->FindRow<FItemTableRow>(Slot.ItemID, TEXT(""));
+        if (!Row) continue;
+
+        if (Row->ItemType == EItemType::Consumable && Player->ConsumableInventory)
+        {
+            Player->ConsumableInventory->AddItem(Slot.ItemID, Slot.Quantity);
+        }
+        else if (Row->ItemType == EItemType::SocketItem && Player->SocketItemInventory)
+        {
+            Player->SocketItemInventory->AddItem(Slot.ItemID, Slot.Quantity);
+        }
+    }
 }
 
 void ALobbyGameModeBase::SetMouseGame()

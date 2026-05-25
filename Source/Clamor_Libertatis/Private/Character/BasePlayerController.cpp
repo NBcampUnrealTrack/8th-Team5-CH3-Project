@@ -310,14 +310,22 @@ void ABasePlayerController::ShowMasterInventory()
     );
 
     UIManager->ShowWidget(EUIType::MasterInventory);
-    FInputModeGameAndUI InputMode;
-    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-    InputMode.SetHideCursorDuringCapture(false);
-    SetInputMode(InputMode);
     bShowMouseCursor = true;
 
-    if (!GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) //추후 진짜 로비 게임 모드로
+    if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>())
+    {
+        FInputModeUIOnly InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        SetInputMode(InputMode);
+    }
+    else
+    {
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
+        SetInputMode(InputMode);
         UGameplayStatics::SetGamePaused(GetWorld(), true);
+    }
 }
 
 void ABasePlayerController::HideMasterInventory()
