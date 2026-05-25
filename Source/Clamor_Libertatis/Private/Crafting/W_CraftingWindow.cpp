@@ -203,7 +203,7 @@ void UW_CraftingWindow::HandleRecipeModeChanged(bool bIsRecipeMode, URecipeData*
 
     if (bIsRecipeMode && Recipe)
     {
-        SelectedRecipeName->SetText(FText::FromString(Recipe->GetName()));
+        SelectedRecipeName->SetText(Recipe->ResultItem.DisplayName);
     }
     else
     {
