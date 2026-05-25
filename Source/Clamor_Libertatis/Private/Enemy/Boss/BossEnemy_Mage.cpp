@@ -5,6 +5,7 @@
 #include "Enemy/BaseEnemy.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "NavigationSystem.h"
 
 
 ABossEnemy_Mage::ABossEnemy_Mage()
@@ -174,7 +175,21 @@ void ABossEnemy_Mage::OnDead()
 
 UAnimMontage* ABossEnemy_Mage::DodgeBackward()
 {
-	LaunchCharacter(-GetActorForwardVector() * DodgeSpeed, true, false);
+	FVector DodgeDirection = -GetActorForwardVector();
+	FVector EstimatedLandingPos = GetActorLocation() + DodgeDirection * DodgeCheckDistance;
+
+	UNavigationSystemV1* NavSys = UNavigationSystemV1::GetCurrent(GetWorld());
+	if (NavSys)
+	{
+		FNavLocation NavLocation;
+		// 착지 예상 지점이 NavMesh 위에 투영되지 않으면 NavMeshBoundVolume 밖이므로 회피 중단
+		if (!NavSys->ProjectPointToNavigation(EstimatedLandingPos, NavLocation, FVector(50.f, 50.f, 400.f)))
+		{
+			return nullptr;
+		}
+	}
+
+	LaunchCharacter(DodgeDirection * DodgeSpeed, true, false);
 	return nullptr;
 }
 
