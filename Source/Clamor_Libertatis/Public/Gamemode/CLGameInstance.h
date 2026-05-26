@@ -1,10 +1,11 @@
-// Fill out your copyright notice in the Description page of Project Settings.
+﻿// Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "Item/Inventory/InventoryComponent.h"
+#include "Combat/Weapon/WeaponSocketItemData.h"
 #include "CLGameInstance.generated.h"
 
 UENUM(BlueprintType)
@@ -15,9 +16,19 @@ enum class ECheckStageResult : uint8
 	NotEnd,
 };
 
-/**
- *
- */
+USTRUCT(BlueprintType)
+struct FEquippedSocketSaveData
+{
+    GENERATED_BODY()
+
+    UPROPERTY()
+    EWeaponSocketType SocketType = EWeaponSocketType::None;
+
+    UPROPERTY()
+    FName ItemID = NAME_None;
+};
+
+
 UCLASS()
 class UCLGameInstance : public UGameInstance
 {
@@ -42,6 +53,9 @@ public:
 	void SaveInventory(const TArray<FInventorySlot>& Slots);
 	const TArray<FInventorySlot>& GetSavedInventory() const { return SavedInventorySlots; }
 
+	void SaveEquippedSockets(const TArray<FEquippedSocketSaveData>& InSockets);
+	const TArray<FEquippedSocketSaveData>& GetSavedEquippedSockets() const;
+
 	FName LastScenarioRowName;
 
 	void ResetGame();
@@ -54,4 +68,7 @@ private:
 	TSet<FName> ViewedQuestions;
 
 	TArray<FInventorySlot> SavedInventorySlots;
+
+	UPROPERTY()
+	TArray<FEquippedSocketSaveData> SavedEquippedSockets;
 };

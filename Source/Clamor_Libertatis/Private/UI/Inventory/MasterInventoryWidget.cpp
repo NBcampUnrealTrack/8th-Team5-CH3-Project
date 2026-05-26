@@ -1,4 +1,4 @@
-#include "UI/Inventory/MasterInventoryWidget.h"
+﻿#include "UI/Inventory/MasterInventoryWidget.h"
 #include "UI/Inventory/QuickSlotWidget.h"
 #include "Item/Inventory/ConsumableInventoryComponent.h"
 #include "Item/Inventory/SocketItemInventoryComponent.h"
@@ -305,4 +305,38 @@ void UMasterInventoryWidget::OnBackButtonClicked()
     ABasePlayerController* PC = Cast<ABasePlayerController>(GetOwningPlayer());
     if (!PC) return;
     PC->HideMasterInventory();
+
+    //인벤토리를 닫을때 소켓 저장
+
+    UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+    if (!GI) return;
+
+    APlayerCharacter* PlayerCharacter =
+        Cast<APlayerCharacter>(GetOwningPlayerPawn());
+    if (!PlayerCharacter) return;
+
+    UCombatComponent* CombatComp = PlayerCharacter->FindComponentByClass<UCombatComponent>();
+    if (CombatComp) {
+        TArray<FEquippedSocketSaveData> EquippedSocketItems;
+
+        AWeaponBase* Weapon = CombatComp->GetCurrentWeapon();
+        //Blade Socket Item
+        UWeaponSocketItemData* BladeSocketItem = Weapon->GetEquippedSocketItem(EWeaponSocketType::Blade);
+        if (BladeSocketItem) {
+            FEquippedSocketSaveData BladeSaveData;
+            BladeSaveData.SocketType = EWeaponSocketType::Blade;
+            BladeSaveData.ItemID = BladeSocketItem->InventoryItemID;
+            EquippedSocketItems.Add(BladeSaveData);
+        }
+
+        //Grip Socket Item
+        UWeaponSocketItemData* GripSocketItem = Weapon->GetEquippedSocketItem(EWeaponSocketType::Grip);
+        if (GripSocketItem) {
+            FEquippedSocketSaveData BladeSaveData;
+            BladeSaveData.SocketType = EWeaponSocketType::Grip;
+            BladeSaveData.ItemID = GripSocketItem->InventoryItemID;
+            EquippedSocketItems.Add(BladeSaveData);
+        }
+        GI->SaveEquippedSockets(EquippedSocketItems);
+    }
 }

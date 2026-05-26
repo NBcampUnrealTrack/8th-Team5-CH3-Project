@@ -81,6 +81,30 @@ void APlayerCharacter::BeginPlay()
     if (CombatComp && SpawnedWeapon)
     {
         CombatComp->SetCurrentWeapon(SpawnedWeapon);
+
+
+        UCLGameInstance* GI = GetGameInstance<UCLGameInstance>();
+        //소켓 불러오기
+        for (FEquippedSocketSaveData row : GI->GetSavedEquippedSockets()) {
+            //FItemTableRow* Row = ItemDataTable->FindRow<FItemTableRow>(ItemID, TEXT("GetItemData"));
+            UDataTable* SocketDT = SocketItemInventory->ItemDataTable;
+
+            if (!SocketDT) return;
+
+            FItemTableRow* ItemData = SocketDT->FindRow<FItemTableRow>(row.ItemID, TEXT(""));
+
+            if (!ItemData) return;
+
+            UWeaponSocketItemData* SocketData = ItemData->SocketItemData.LoadSynchronous();
+
+            if (!SocketData) return;
+
+            AWeaponBase* Weapon = CombatComp->GetCurrentWeapon();
+
+            if (!Weapon) return;
+
+            CombatComp->GetCurrentWeapon()->EquipSocketItem(SocketData, row.SocketType);
+        }
     }
 
     ABasePlayerController* PC =

@@ -51,3 +51,13 @@ void UCLGameInstance::SaveInventory(const TArray<FInventorySlot>& Slots)
     UE_LOG(LogTemp, Log, TEXT("[CLGameInstance] 인벤토리 저장 완료: %d 슬롯"), Slots.Num());
 }
 
+void UCLGameInstance::SaveEquippedSockets(const TArray<FEquippedSocketSaveData>& InSockets)
+{
+    SavedEquippedSockets = InSockets;
+}
+
+const TArray<FEquippedSocketSaveData>& UCLGameInstance::GetSavedEquippedSockets() const
+{
+    return SavedEquippedSockets;
+}
+
