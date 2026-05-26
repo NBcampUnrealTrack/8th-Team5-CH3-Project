@@ -405,7 +405,7 @@ float APlayerCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Damag
 
         if (HealthComp->GetCurrentHealth() > 0.0f && CombatComp->IsSuperarmor() == false)
         {
-            HitAnimMontage();
+            PlayAnimMontage(HitReactMontage);
             SpawnHitEffect();
         }
     }
@@ -419,18 +419,7 @@ void APlayerCharacter::OnDeath()
     if (CombatComp->IsDead()) return;
 
     CombatComp->SetCombatState(ECombatEnumState::Dead);
-    DeathAnimMontage();
-}
-
-// 사망 시 애니메이션 몽타주 실행
-void APlayerCharacter::DeathAnimMontage()
-{
-    if (!DeathReactMontage) return;
-
-    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
-    {
-        AnimInstance->Montage_Play(DeathReactMontage);
-    }
+    PlayAnimMontage(DeathReactMontage);
 }
 
 void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
@@ -487,18 +476,6 @@ void APlayerCharacter::DodgeAnimMontage(EDodgeDirection DodgeDirection)
 
     if (TargetLockComp) {
         TargetLockComp->ToggleCharacterRotationLock(false);
-    }
-}
-
-// 피격 시 애니메이션 몽타주 실행
-void APlayerCharacter::HitAnimMontage()
-{
-    if (!HitReactMontage) return;
-
-    UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
-    if (AnimInstance)
-    {
-        AnimInstance->Montage_Play(HitReactMontage);
     }
 }
 
@@ -595,7 +572,6 @@ void APlayerCharacter::PickupItem(FItemTableRow* ItemData)
             {
                 ConsumableInventory->AddItem(Name, 1);
                 UE_LOG(LogTemp, Warning, TEXT("소비 아이템 획득: %s"), *Name.ToString());
-                return;
             }
         }
     }
@@ -609,8 +585,20 @@ void APlayerCharacter::PickupItem(FItemTableRow* ItemData)
             {
                 SocketItemInventory->AddItem(Name, 1);
                 UE_LOG(LogTemp, Warning, TEXT("소켓 아이템 획득: %s"), *Name.ToString());
-                return;
             }
         }
+    }
+
+    PlayAnimMontage(PickUpReactMontage);
+    return;
+}
+
+// 애니메이션 몽타주 실행
+void APlayerCharacter::PlayAnimMontage(UAnimMontage* AnimMontage)
+{
+    if (!AnimMontage) return;
+    if (UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance())
+    {
+        AnimInstance->Montage_Play(AnimMontage);
     }
 }

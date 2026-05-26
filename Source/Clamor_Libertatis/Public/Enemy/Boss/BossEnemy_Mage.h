@@ -36,6 +36,10 @@ public:
 	UPROPERTY(EditAnywhere, Category = "Dodge")
 	float DodgeSpeed = 1200.f;
 
+	// 회피 전 NavMesh 경계 체크에 사용할 예상 이동 거리
+	UPROPERTY(EditAnywhere, Category = "Dodge")
+	float DodgeCheckDistance = 500.f;
+
 protected:
 	virtual void BeginPlay() override;
 	virtual void OnDead() override;

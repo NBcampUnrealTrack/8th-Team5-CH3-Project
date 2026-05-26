@@ -165,10 +165,17 @@ void UW_CraftingWindow::OnSelectRecipeButtonClicked()
     if (Popup)
     {
         Popup->SetCraftingComp(CraftingComp);
-        SubWindowOverlay->AddChild(Popup);
+
+        UPanelSlot* PanelSlot = SubWindowOverlay->AddChild(Popup);
+
+        if (UOverlaySlot* OverlaySlot = Cast<UOverlaySlot>(PanelSlot))
+        {
+            OverlaySlot->SetPadding(FMargin(0.0f));
+            OverlaySlot->SetHorizontalAlignment(EHorizontalAlignment::HAlign_Fill);
+            OverlaySlot->SetVerticalAlignment(EVerticalAlignment::VAlign_Fill);
+        }
     }
 }
-
 void UW_CraftingWindow::PrintMessageScreen(const FString& Message)
 {
     if (!ScreenMessage || !SubWindowOverlay) return;
@@ -196,7 +203,7 @@ void UW_CraftingWindow::HandleRecipeModeChanged(bool bIsRecipeMode, URecipeData*
 
     if (bIsRecipeMode && Recipe)
     {
-        SelectedRecipeName->SetText(FText::FromString(Recipe->GetName()));
+        SelectedRecipeName->SetText(Recipe->ResultItem.DisplayName);
     }
     else
     {

@@ -201,10 +201,10 @@ void ABasePlayerController::OnOpeningEnd()
         bShowMouseCursor = true;
         bEnableClickEvents = true;
         bEnableMouseOverEvents = true;
-        FInputModeGameAndUI InputMode;
-        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        SetInputMode(InputMode);
+        SetInputMode(FInputModeUIOnly{});
+
         LobbyGM->ShowLobbyPhase();
+        SetInputMode(FInputModeUIOnly{});
     }
     else
     {
@@ -237,10 +237,7 @@ void ABasePlayerController::ShowMainMenu()
     UIManager->ShowWidget(EUIType::MainMenu);
     UGameplayStatics::SetGamePaused(GetWorld(), true);
 
-    FInputModeGameAndUI InputMode;
-    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-    InputMode.SetHideCursorDuringCapture(false);
-    SetInputMode(InputMode);
+    SetInputMode(FInputModeUIOnly{});
     bShowMouseCursor = true;;
 }
 
@@ -256,9 +253,7 @@ void ABasePlayerController::ContinueGame()
         bShowMouseCursor = true;
         bEnableClickEvents = true;
         bEnableMouseOverEvents = true;
-        FInputModeGameAndUI InputMode;
-        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        SetInputMode(InputMode);
+        SetInputMode(FInputModeUIOnly{});
     }
     else
     {
@@ -315,14 +310,22 @@ void ABasePlayerController::ShowMasterInventory()
     );
 
     UIManager->ShowWidget(EUIType::MasterInventory);
-    FInputModeGameAndUI InputMode;
-    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-    InputMode.SetHideCursorDuringCapture(false);
-    SetInputMode(InputMode);
     bShowMouseCursor = true;
 
-    if (!GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) //추후 진짜 로비 게임 모드로
+    if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>())
+    {
+        FInputModeUIOnly InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        SetInputMode(InputMode);
+    }
+    else
+    {
+        FInputModeGameAndUI InputMode;
+        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+        InputMode.SetHideCursorDuringCapture(false);
+        SetInputMode(InputMode);
         UGameplayStatics::SetGamePaused(GetWorld(), true);
+    }
 }
 
 void ABasePlayerController::HideMasterInventory()
@@ -335,10 +338,7 @@ void ABasePlayerController::HideMasterInventory()
     if (GetWorld()->GetAuthGameMode<ALobbyGameModeBase>()) // 추후 진짜 게임 모드로 변경
     {
         // 로비 -> UI 모드 유지
-        FInputModeGameAndUI InputMode;
-        InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
-        InputMode.SetHideCursorDuringCapture(false);
-        SetInputMode(InputMode);
+        SetInputMode(FInputModeUIOnly{});   // GameAndUI -> UIOnly
         bShowMouseCursor = true;
     }
     else

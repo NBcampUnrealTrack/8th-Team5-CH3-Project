@@ -37,6 +37,8 @@ public:
 	void ShowLobbyPhase();
 	void ShowQuestionPhase(const TArray<FScenarioData>& Choices);
 
+	virtual void PostLogin(APlayerController* NewPlayer) override;
+
 	UPROPERTY(EditAnywhere, Category = "Crafting")
 	TSubclassOf<UUserWidget> CraftingWindowClass;
 

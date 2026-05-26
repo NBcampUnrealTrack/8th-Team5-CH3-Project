@@ -45,6 +45,9 @@ void UCombatComponent::BasicAttack()
 {
 	if (!OwnerCharacter || !CurrentWeapon)
 		return;
+	if(IsDodging() || IsInvincible()){
+		return;
+	}
 	if (IsAttacking()) 
 	{
 		if (bIsComboEnabled && ComboIndex < GetMaxComboCount()) 
