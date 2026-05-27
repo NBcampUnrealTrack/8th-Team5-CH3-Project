@@ -31,18 +31,33 @@ void USocketSlotWidget::RefreshSlot()
     {
         if (ItemNameText)
             ItemNameText->SetText(EquippedItem->DisplayName);
-        if (ItemIcon)
+
+        if (ItemIcon && InventoryCompRef)
+        {
+            FItemTableRow* ItemData = InventoryCompRef->GetItemData(EquippedItem->InventoryItemID);
+            if (ItemData && !ItemData->Icon.IsNull())
+            {
+                UTexture2D* IconTexture = ItemData->Icon.LoadSynchronous();
+                if (IconTexture)
+                {
+                    ItemIcon->SetBrushFromTexture(IconTexture);
+                    ItemIcon->SetColorAndOpacity(FLinearColor(1.f, 1.f, 1.f, 1.f));
+                }
+            }
             ItemIcon->SetVisibility(ESlateVisibility::Visible);
+        }
     }
     else
     {
         if (ItemNameText)
             ItemNameText->SetText(FText::FromString(TEXT("Empty")));
         if (ItemIcon)
+        {
+            ItemIcon->SetBrushFromTexture(nullptr);
             ItemIcon->SetVisibility(ESlateVisibility::Hidden);
+        }
     }
 }
-
 FReply USocketSlotWidget::NativeOnMouseButtonDown(
     const FGeometry& InGeometry, const FPointerEvent& InMouseEvent)
 {
